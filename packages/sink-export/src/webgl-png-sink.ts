@@ -1,8 +1,21 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { FrameBuffer, Signal, Sink } from '@overscan/types'
-import createContext from 'gl'
 import { writeRgbaPng } from './write-rgba-png.js'
+
+async function loadHeadlessGl(): Promise<
+  (w: number, h: number) => WebGLRenderingContext & { destroy(): void }
+> {
+  try {
+    const mod = await import('gl')
+    return mod.default
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err)
+    throw new Error(
+      `png-gl export needs the optional native "gl" package (optionalDependency). It is missing or failed to load: ${detail}. Use --png instead, or install build prerequisites for "gl" on this platform.`,
+    )
+  }
+}
 
 export interface WebglPngSequenceSinkOptions {
   outputDir: string
@@ -96,6 +109,7 @@ export class WebglPngSequenceSink implements Sink {
     this.h = height
     await mkdir(this.opts.outputDir, { recursive: true })
 
+    const createContext = await loadHeadlessGl()
     const gl = createContext(width, height)
     this.gl = gl
 

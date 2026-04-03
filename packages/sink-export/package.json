@@ -19,7 +19,9 @@
   "dependencies": {
     "@overscan/sink-terminal": "workspace:*",
     "@overscan/types": "workspace:*",
-    "canvas": "^3.2.2",
+    "canvas": "^3.2.2"
+  },
+  "optionalDependencies": {
     "gl": "^8.1.6"
   },
   "devDependencies": {
