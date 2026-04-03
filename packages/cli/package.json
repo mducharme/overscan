@@ -1,0 +1,33 @@
+{
+  "name": "@overscan/cli",
+  "version": "0.1.0",
+  "description": "demo CLI — run, export, init, validate",
+  "type": "module",
+  "bin": {
+    "overscan": "./dist/cli.js",
+    "demo": "./dist/cli.js"
+  },
+  "main":  "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "scripts": {
+    "build":     "tsc",
+    "typecheck": "tsc --noEmit",
+    "test":      "vitest run",
+    "clean":     "rm -rf dist"
+  },
+  "dependencies": {
+    "@overscan/types":         "workspace:*",
+    "@overscan/core":          "workspace:*",
+    "@overscan/nodes":         "workspace:*",
+    "@overscan/sequencer":     "workspace:*",
+    "@overscan/sink-export":   "workspace:*",
+    "@overscan/sink-terminal": "workspace:*",
+    "vite": "^5.4.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "typescript": "*",
+    "vitest":     "*"
+  }
+}

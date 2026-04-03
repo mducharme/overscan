@@ -1,0 +1,32 @@
+{
+  "id": "lissajous",
+  "title": "Lissajous",
+  "duration": 10,
+  "bpm": 122,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "curve1",
+        "type": "generator",
+        "impl": "lissajous",
+        "config": {
+          "a": 3,
+          "b": 2,
+          "delta": 1.57,
+          "amplitude": 0.82,
+          "trailLength": 680,
+          "decay": 0.95,
+          "color": "#68ffca",
+          "lineWidth": 1.5,
+          "glow": 0.5
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "curve1", "browser": "curve1", "export": "curve1" }
+  }
+}

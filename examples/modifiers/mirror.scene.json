@@ -1,0 +1,18 @@
+{
+  "id": "mirror",
+  "title": "Mirror",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "moire1", "type": "generator", "impl": "moire", "config": { "mode": "grid", "freq1": 10, "freq2": 11, "contrast": 1.3 } },
+      { "id": "mirror1", "type": "modifier", "impl": "mirror", "config": { "mode": "octal", "originX": 0.5, "originY": 0.5 } }
+    ],
+    "edges": [{ "from": { "node": "moire1", "output": "color" }, "to": { "node": "mirror1", "input": "color" } }],
+    "outputs": { "terminal": "mirror1", "browser": "mirror1", "export": "mirror1" }
+  }
+}

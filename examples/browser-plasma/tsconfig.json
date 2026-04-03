@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "lib": ["ES2022", "DOM"],
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@overscan/types": ["../../packages/types/src/index.ts"],
+      "@overscan/text": ["../../packages/text/src/index.ts"],
+      "@overscan/core/browser": ["../../packages/core/src/browser.ts"],
+      "@overscan/nodes/generators/plasma": ["../../packages/nodes/src/generators/plasma/index.ts"],
+      "@overscan/nodes/browser": ["../../packages/nodes/src/browser.ts"],
+      "@overscan/sink-browser": ["../../packages/sink-browser/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

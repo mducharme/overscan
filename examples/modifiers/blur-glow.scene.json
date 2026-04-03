@@ -1,0 +1,38 @@
+{
+  "id": "blur-glow",
+  "title": "Blur Glow",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "text1",
+        "type": "generator",
+        "impl": "text",
+        "config": {
+          "text": "BLUR/GLOW",
+          "font": "overscan://fonts/Press2P",
+          "fontSize": 34,
+          "align": "center",
+          "x": 0.5,
+          "y": 0.5,
+          "color": "#fff0c6"
+        }
+      },
+      {
+        "id": "blur1",
+        "type": "modifier",
+        "impl": "blur-glow",
+        "config": { "radius": 8, "strength": 0.5 }
+      }
+    ],
+    "edges": [
+      { "from": { "node": "text1", "output": "color" }, "to": { "node": "blur1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "blur1", "browser": "blur1", "export": "blur1" }
+  }
+}

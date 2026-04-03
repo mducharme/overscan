@@ -1,0 +1,20 @@
+{
+  "id": "emboss",
+  "title": "Emboss",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "plasma1", "type": "generator", "impl": "plasma", "config": { "speed": 0.48, "scale": 1.4 } },
+      { "id": "emboss1", "type": "modifier", "impl": "emboss", "config": { "angle": 45, "strength": 1.6, "color": true } }
+    ],
+    "edges": [
+      { "from": { "node": "plasma1", "output": "color" }, "to": { "node": "emboss1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "emboss1", "browser": "emboss1", "export": "emboss1" }
+  }
+}

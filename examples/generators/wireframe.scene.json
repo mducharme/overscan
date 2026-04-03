@@ -1,0 +1,27 @@
+{
+  "id": "wireframe",
+  "title": "Wireframe",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "wire1",
+        "type": "generator",
+        "impl": "wireframe",
+        "config": {
+          "color": "#88f8ff",
+          "backgroundColor": "#04070f",
+          "lineWidth": 2.4,
+          "scale": 1.1
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "wire1", "browser": "wire1", "export": "wire1" }
+  }
+}

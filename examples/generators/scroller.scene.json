@@ -1,0 +1,28 @@
+{
+  "id": "scroller",
+  "title": "Scroller",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "scroll1",
+        "type": "generator",
+        "impl": "scroller",
+        "config": {
+          "text": "  >>> OVERSCAN SCROLLER  >>>  ",
+          "fontSize": 26,
+          "speed": 32,
+          "waveAmplitude": 4,
+          "waveFrequency": 0.12
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "scroll1", "browser": "scroll1", "export": "scroll1" }
+  }
+}

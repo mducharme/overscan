@@ -1,0 +1,28 @@
+{
+  "name": "@overscan/sink-terminal",
+  "version": "0.1.0",
+  "description": "Sixel, ANSI block, and ASCII terminal output sink",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@overscan/types": "workspace:*",
+    "sixel": "^0.16.0"
+  },
+  "devDependencies": {
+    "typescript": "*",
+    "vitest": "*"
+  }
+}

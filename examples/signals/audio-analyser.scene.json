@@ -1,0 +1,27 @@
+{
+  "id": "audio-analyser",
+  "title": "Audio Analyser",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "audio1", "type": "signal", "impl": "audio-analyser", "config": { "bpmEstimate": 120 } },
+      {
+        "id": "bars1",
+        "type": "generator",
+        "impl": "copperbars",
+        "config": {
+          "speed": { "node": "audio1", "output": "beat" },
+          "alpha": { "node": "audio1", "output": "rms" },
+          "barHeight": 10
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "bars1", "browser": "bars1", "export": "bars1" }
+  }
+}

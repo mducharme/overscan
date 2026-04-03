@@ -1,0 +1,28 @@
+{
+  "id": "water-ripple",
+  "title": "Water Ripple",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "water1",
+        "type": "generator",
+        "impl": "water-ripple",
+        "config": {
+          "damping": 0.99,
+          "tapMode": "random",
+          "tapRate": 2.2,
+          "tapStrength": 0.85,
+          "refraction": 0.38
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "water1", "browser": "water1", "export": "water1" }
+  }
+}

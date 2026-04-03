@@ -1,0 +1,22 @@
+{
+  "id": "tunnel-roto-stack",
+  "title": "Tunnel Roto Stack",
+  "duration": 10,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "tunnel1", "type": "generator", "impl": "tunnel", "config": {} },
+      { "id": "roto1", "type": "generator", "impl": "rotozoom", "config": {} },
+      { "id": "blend1", "type": "compositor", "impl": "overlay-blend", "config": { "opacity": 0.8 } }
+    ],
+    "edges": [
+      { "from": { "node": "tunnel1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "roto1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "blend1", "browser": "blend1", "export": "blend1" }
+  }
+}

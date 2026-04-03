@@ -1,0 +1,28 @@
+{
+  "name": "@overscan/sink-export",
+  "version": "0.1.0",
+  "description": "PNG sequence and MP4/GIF export via ffmpeg",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@overscan/sink-terminal": "workspace:*",
+    "@overscan/types": "workspace:*",
+    "canvas": "^3.2.2",
+    "gl": "^8.1.6"
+  },
+  "devDependencies": {
+    "typescript": "*"
+  }
+}

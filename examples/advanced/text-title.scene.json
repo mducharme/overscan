@@ -1,0 +1,60 @@
+{
+  "id": "text-title",
+  "title": "Text Title",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "plasma1",
+        "type": "generator",
+        "impl": "plasma",
+        "config": {
+          "speed": 0.75,
+          "scale": 1.45,
+          "palette": [[18, 12, 48], [64, 32, 120], [0, 160, 255], [255, 120, 200], [255, 248, 200]]
+        }
+      },
+      {
+        "id": "title1",
+        "type": "generator",
+        "impl": "text",
+        "config": {
+          "text": "OVERSCAN",
+          "font": "overscan://fonts/Press2P",
+          "fontSize": 72,
+          "align": "center",
+          "x": 0.5,
+          "y": 0.46,
+          "color": "#ffffff"
+        }
+      },
+      { "id": "blend1", "type": "compositor", "impl": "screen-blend", "config": { "opacity": 0.55 } },
+      {
+        "id": "fb1",
+        "type": "modifier",
+        "impl": "feedback",
+        "config": { "decay": 0.9, "blendMode": "alpha", "scale": 1.002, "offsetX": 0, "offsetY": 0.001 }
+      },
+      { "id": "glow1", "type": "modifier", "impl": "glow", "config": { "radius": 5, "strength": 0.32 } },
+      {
+        "id": "crt1",
+        "type": "modifier",
+        "impl": "crt",
+        "config": { "scanlineStrength": 0.22, "vignetteStrength": 0.1, "phosphorGlow": 0.16, "brightness": 1.06 }
+      }
+    ],
+    "edges": [
+      { "from": { "node": "plasma1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "title1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } },
+      { "from": { "node": "blend1", "output": "color" }, "to": { "node": "fb1", "input": "color" } },
+      { "from": { "node": "fb1", "output": "color" }, "to": { "node": "glow1", "input": "color" } },
+      { "from": { "node": "glow1", "output": "color" }, "to": { "node": "crt1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "crt1", "browser": "crt1", "export": "crt1" }
+  }
+}

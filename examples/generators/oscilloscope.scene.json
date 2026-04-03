@@ -1,0 +1,28 @@
+{
+  "id": "oscilloscope",
+  "title": "Oscilloscope",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "scope1",
+        "type": "generator",
+        "impl": "oscilloscope",
+        "config": {
+          "color": "#5dffc8",
+          "lineWidth": 2,
+          "timeScale": 1.1,
+          "voltScale": 1,
+          "gridDivisions": 8
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "scope1", "browser": "scope1", "export": "scope1" }
+  }
+}

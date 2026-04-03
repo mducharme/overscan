@@ -1,0 +1,22 @@
+{
+  "id": "tunnel",
+  "title": "Tunnel",
+  "duration": 10,
+  "bpm": 126,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "tunnel1",
+        "type": "generator",
+        "impl": "tunnel",
+        "config": { "speed": 1.8, "twist": 0.12, "fog": 0.35, "zoom": 1.05 }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "tunnel1", "browser": "tunnel1", "export": "tunnel1" }
+  }
+}

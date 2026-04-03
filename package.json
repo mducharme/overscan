@@ -1,0 +1,36 @@
+{
+  "name": "overscan",
+  "private": false,
+  "scripts": {
+    "build":     "turbo run build",
+    "dev":       "turbo run dev",
+    "test":      "turbo run test",
+    "lint":      "turbo run lint",
+    "overscan":  "node packages/cli/dist/cli.js",
+    "demo":      "node packages/cli/dist/cli.js",
+    "smoke":     "node packages/cli/dist/cli.js run examples/generators/plasma.scene.json --frames 30 --no-display",
+    "export-example-gifs": "node scripts/export-example-gifs.mjs",
+    "validate-examples": "node scripts/validate-examples.mjs",
+    "build-examples-html": "node scripts/build-examples-html.mjs",
+    "typecheck": "turbo run typecheck",
+    "clean":     "turbo run clean"
+  },
+  "devDependencies": {
+    "@overscan/cli":                       "workspace:*",
+    "@types/node":                     "^20.0.0",
+    "@eslint/js":                      "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser":        "^7.0.0",
+    "eslint":                          "^9.0.0",
+    "prettier":                        "^3.2.0",
+    "turbo":                           "^2.0.0",
+    "typescript":                      "^5.4.0",
+    "typescript-eslint":               "^7.0.0",
+    "vitest":                          "^1.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

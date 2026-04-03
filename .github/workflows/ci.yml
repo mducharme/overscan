@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Validate all example scenes and demos
+        run: pnpm validate-examples
+
+      - name: Headless plasma (Phase 1 smoke)
+        run: node packages/cli/dist/cli.js run examples/generators/plasma.scene.json --frames 30 --no-display
+
+      - name: Headless generators tour demo
+        run: node packages/cli/dist/cli.js run examples/generators.demo.json --frames 4 --no-display
+
+      - name: Headless advanced tour demo
+        run: node packages/cli/dist/cli.js run examples/advanced.demo.json --frames 4 --no-display
+
+      - name: Headless scroller (Phase 2 smoke)
+        run: node packages/cli/dist/cli.js run examples/advanced/scroller-ascii.scene.json --frames 4 --no-display
+
+      - name: Headless fire scroller (Phase 2 advanced smoke)
+        run: node packages/cli/dist/cli.js run examples/advanced/fire-scroller.scene.json --frames 4 --no-display
+
+      - name: Headless stateful scene smoke
+        run: node packages/cli/dist/cli.js run examples/advanced/water-dot.scene.json --frames 4 --no-display
+
+      - name: Headless packaged demo smoke
+        run: node packages/cli/dist/cli.js run examples/overscan-demo/overscan.demo.json --frames 10 --no-display
+
+      - name: Browser example build
+        run: pnpm --dir examples/browser-plasma build
+
+      - name: WebGL export smoke
+        run: node packages/cli/dist/cli.js export examples/generators/plasma.scene.json --png-gl out/ci-gl --frames 2
+
+      - name: Lint
+        run: pnpm lint

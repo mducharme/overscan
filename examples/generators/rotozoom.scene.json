@@ -1,0 +1,22 @@
+{
+  "id": "rotozoom",
+  "title": "Rotozoom",
+  "duration": 10,
+  "bpm": 124,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "roto1",
+        "type": "generator",
+        "impl": "rotozoom",
+        "config": { "rotationSpeed": 0.9, "zoomSpeed": 0.45, "zoomRange": [0.55, 1.85] }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "roto1", "browser": "roto1", "export": "roto1" }
+  }
+}

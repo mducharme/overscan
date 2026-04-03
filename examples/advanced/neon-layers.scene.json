@@ -1,0 +1,68 @@
+{
+  "id": "neon-layers",
+  "title": "Neon Layers",
+  "duration": 10,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "plasma1",
+        "type": "generator",
+        "impl": "plasma",
+        "config": {
+          "speed": 1.1,
+          "scale": 1.35,
+          "palette": [[8, 4, 28], [120, 0, 180], [0, 220, 255], [255, 40, 200], [255, 250, 120]]
+        }
+      },
+      {
+        "id": "tunnel1",
+        "type": "generator",
+        "impl": "tunnel",
+        "config": { "speed": 2.2, "twist": 0.18, "fog": 0.2, "zoom": 1.08 }
+      },
+      {
+        "id": "laser1",
+        "type": "generator",
+        "impl": "lasers",
+        "config": {
+          "beamCount": 16,
+          "emitterCount": 3,
+          "spread": 1.6,
+          "sweepSpeed": 1.2,
+          "glowWidth": 22,
+          "backgroundColor": "#000000"
+        }
+      },
+      { "id": "blend1", "type": "compositor", "impl": "screen-blend", "config": { "opacity": 0.55 } },
+      { "id": "blend2", "type": "compositor", "impl": "additive-blend", "config": { "opacity": 0.45 } },
+      {
+        "id": "chroma1",
+        "type": "modifier",
+        "impl": "chromatic-aberration",
+        "config": { "amount": 2.2, "radial": true }
+      },
+      { "id": "glow1", "type": "modifier", "impl": "glow", "config": { "radius": 6, "strength": 0.38 } },
+      {
+        "id": "crt1",
+        "type": "modifier",
+        "impl": "crt",
+        "config": { "scanlineStrength": 0.22, "vignetteStrength": 0.12, "phosphorGlow": 0.2, "brightness": 1.08 }
+      }
+    ],
+    "edges": [
+      { "from": { "node": "plasma1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "tunnel1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } },
+      { "from": { "node": "blend1", "output": "color" }, "to": { "node": "blend2", "input": "base" } },
+      { "from": { "node": "laser1", "output": "color" }, "to": { "node": "blend2", "input": "overlay" } },
+      { "from": { "node": "blend2", "output": "color" }, "to": { "node": "chroma1", "input": "color" } },
+      { "from": { "node": "chroma1", "output": "color" }, "to": { "node": "glow1", "input": "color" } },
+      { "from": { "node": "glow1", "output": "color" }, "to": { "node": "crt1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "crt1", "browser": "crt1", "export": "crt1" }
+  }
+}

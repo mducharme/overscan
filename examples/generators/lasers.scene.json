@@ -1,0 +1,31 @@
+{
+  "id": "lasers",
+  "title": "Lasers",
+  "duration": 10,
+  "bpm": 132,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "laser1",
+        "type": "generator",
+        "impl": "lasers",
+        "config": {
+          "beamCount": 20,
+          "emitterCount": 4,
+          "spread": 1.8,
+          "sweepSpeed": 1.1,
+          "rotationSpeed": 0.55,
+          "beamWidth": 2.4,
+          "glowWidth": 20,
+          "backgroundColor": "#020409"
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "laser1", "browser": "laser1", "export": "laser1" }
+  }
+}

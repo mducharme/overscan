@@ -1,0 +1,27 @@
+{
+  "id": "fire-scroller",
+  "title": "Fire Scroller",
+  "duration": 10,
+  "bpm": 124,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "fire1", "type": "generator", "impl": "fire", "config": {} },
+      {
+        "id": "scroll1",
+        "type": "generator",
+        "impl": "scroller",
+        "config": { "text": "OVERSCAN FIRE SCROLLER", "fontSize": 28, "speed": 30, "waveAmplitude": 4, "waveFrequency": 0.12 }
+      },
+      { "id": "blend1", "type": "compositor", "impl": "additive-blend", "config": { "opacity": 0.9 } }
+    ],
+    "edges": [
+      { "from": { "node": "fire1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "scroll1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "blend1", "browser": "blend1", "export": "blend1" }
+  }
+}

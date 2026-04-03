@@ -1,0 +1,60 @@
+{
+  "id": "cells-matrix-scope",
+  "title": "Cells Matrix Scope",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "life1",
+        "type": "generator",
+        "impl": "game-of-life",
+        "config": {
+          "seed": "random",
+          "seedDensity": 0.32,
+          "scale": 3,
+          "speed": 2,
+          "colorMode": "age",
+          "agePalette": [[10, 14, 22], [0, 200, 120], [255, 255, 255]]
+        }
+      },
+      {
+        "id": "matrix1",
+        "type": "generator",
+        "impl": "matrix-rain",
+        "config": { "charset": "katakana", "speed": 1.1, "density": 0.55, "trailLength": 0.35, "fontSize": 14 }
+      },
+      {
+        "id": "scope1",
+        "type": "generator",
+        "impl": "oscilloscope",
+        "config": { "color": "#7dffb8", "lineWidth": 2, "timeScale": 1.2, "voltScale": 1.1, "gridDivisions": 8 }
+      },
+      { "id": "blend1", "type": "compositor", "impl": "screen-blend", "config": { "opacity": 0.48 } },
+      { "id": "blend2", "type": "compositor", "impl": "additive-blend", "config": { "opacity": 0.28 } },
+      {
+        "id": "grade1",
+        "type": "modifier",
+        "impl": "color-grade",
+        "config": {
+          "palette": [[0, 8, 12], [0, 90, 70], [0, 255, 140], [220, 255, 200]],
+          "strength": 0.35
+        }
+      },
+      { "id": "crt1", "type": "modifier", "impl": "crt", "config": { "scanlineStrength": 0.2, "vignetteStrength": 0.1 } }
+    ],
+    "edges": [
+      { "from": { "node": "life1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "matrix1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } },
+      { "from": { "node": "blend1", "output": "color" }, "to": { "node": "blend2", "input": "base" } },
+      { "from": { "node": "scope1", "output": "color" }, "to": { "node": "blend2", "input": "overlay" } },
+      { "from": { "node": "blend2", "output": "color" }, "to": { "node": "grade1", "input": "color" } },
+      { "from": { "node": "grade1", "output": "color" }, "to": { "node": "crt1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "crt1", "browser": "crt1", "export": "crt1" }
+  }
+}

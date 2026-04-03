@@ -1,0 +1,36 @@
+{
+  "id": "voxel-cruise",
+  "title": "Voxel Cruise",
+  "duration": 10,
+  "bpm": 126,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "star1",
+        "type": "generator",
+        "impl": "starfield",
+        "config": { "count": 220, "warpSpeed": 1.4, "starColor": [200, 220, 255] }
+      },
+      { "id": "vox1", "type": "generator", "impl": "voxel-landscape", "config": {} },
+      { "id": "blend1", "type": "compositor", "impl": "additive-blend", "config": { "opacity": 0.55 } },
+      {
+        "id": "fb1",
+        "type": "modifier",
+        "impl": "feedback",
+        "config": { "decay": 0.88, "blendMode": "additive", "scale": 0.998, "offsetX": 0.001, "offsetY": 0 }
+      },
+      { "id": "crt1", "type": "modifier", "impl": "crt", "config": { "scanlineStrength": 0.2, "vignetteStrength": 0.12 } }
+    ],
+    "edges": [
+      { "from": { "node": "star1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "vox1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } },
+      { "from": { "node": "blend1", "output": "color" }, "to": { "node": "fb1", "input": "color" } },
+      { "from": { "node": "fb1", "output": "color" }, "to": { "node": "crt1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "crt1", "browser": "crt1", "export": "crt1" }
+  }
+}

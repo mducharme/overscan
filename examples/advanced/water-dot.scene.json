@@ -1,0 +1,42 @@
+{
+  "id": "water-dot",
+  "title": "Water Dot",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "water1",
+        "type": "generator",
+        "impl": "water-ripple",
+        "config": {
+          "damping": 0.988,
+          "tapMode": "random",
+          "tapRate": 2.5,
+          "tapStrength": 0.9,
+          "refraction": 0.42
+        }
+      },
+      {
+        "id": "dots1",
+        "type": "generator",
+        "impl": "dot-matrix",
+        "config": { "shape": "sphere", "count": 1600, "pointSize": 2.2, "rotationY": 0.9 }
+      },
+      { "id": "blend1", "type": "compositor", "impl": "screen-blend", "config": { "opacity": 0.65 } },
+      { "id": "mirror1", "type": "modifier", "impl": "mirror", "config": { "mode": "quad", "originX": 0.5, "originY": 0.5 } },
+      { "id": "crt1", "type": "modifier", "impl": "crt", "config": { "scanlineStrength": 0.15, "vignetteStrength": 0.08 } }
+    ],
+    "edges": [
+      { "from": { "node": "water1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "dots1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } },
+      { "from": { "node": "blend1", "output": "color" }, "to": { "node": "mirror1", "input": "color" } },
+      { "from": { "node": "mirror1", "output": "color" }, "to": { "node": "crt1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "crt1", "browser": "crt1", "export": "crt1" }
+  }
+}

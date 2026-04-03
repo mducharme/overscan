@@ -1,0 +1,23 @@
+{
+  "id": "ansi-art",
+  "title": "ANSI Art",
+  "duration": 10,
+  "bpm": 110,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "star1", "type": "generator", "impl": "starfield", "config": { "count": 160, "warpSpeed": 0.7, "starColor": [210, 230, 255] } },
+      {
+        "id": "ansi1",
+        "type": "modifier",
+        "impl": "ansi-art",
+        "config": { "charset": "ascii", "colorMode": "mono", "dither": true }
+      }
+    ],
+    "edges": [{ "from": { "node": "star1", "output": "color" }, "to": { "node": "ansi1", "input": "color" } }],
+    "outputs": { "terminal": "ansi1", "browser": "ansi1", "export": "ansi1" }
+  }
+}

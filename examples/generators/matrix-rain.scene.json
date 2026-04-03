@@ -1,0 +1,22 @@
+{
+  "id": "matrix-rain",
+  "title": "Matrix Rain",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "matrix1",
+        "type": "generator",
+        "impl": "matrix-rain",
+        "config": { "charset": "katakana", "speed": 1, "density": 0.65, "trailLength": 0.32, "fontSize": 15 }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "matrix1", "browser": "matrix1", "export": "matrix1" }
+  }
+}

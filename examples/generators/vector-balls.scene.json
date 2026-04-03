@@ -1,0 +1,15 @@
+{
+  "id": "vector-balls",
+  "title": "Vector Balls",
+  "duration": 10,
+  "bpm": 126,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [{ "id": "balls1", "type": "generator", "impl": "vector-balls", "config": {} }],
+    "edges": [],
+    "outputs": { "terminal": "balls1", "browser": "balls1", "export": "balls1" }
+  }
+}

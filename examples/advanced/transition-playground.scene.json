@@ -1,0 +1,31 @@
+{
+  "id": "transition-playground",
+  "title": "Transition Playground",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "transition.progress",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "smooth" },
+        { "row": 32, "value": 1, "interpolation": "smooth" },
+        { "row": 64, "value": 0, "interpolation": "smooth" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "plasma1", "type": "generator", "impl": "plasma", "config": { "speed": 0.6, "scale": 1.4 } },
+      { "id": "curve1", "type": "generator", "impl": "lissajous", "config": { "a": 3, "b": 2, "delta": 1.57, "trailLength": 680, "decay": 0.95, "color": "#68ffca", "lineWidth": 1.5, "glow": 0.5 } },
+      { "id": "transition1", "type": "compositor", "impl": "transition", "config": { "mode": "iris", "progress": { "track": "transition.progress" }, "easing": "smooth", "flashColor": "#ffffff" } }
+    ],
+    "edges": [
+      { "from": { "node": "plasma1", "output": "color" }, "to": { "node": "transition1", "input": "base" } },
+      { "from": { "node": "curve1", "output": "color" }, "to": { "node": "transition1", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "transition1", "browser": "transition1", "export": "transition1" }
+  }
+}

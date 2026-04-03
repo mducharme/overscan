@@ -1,0 +1,50 @@
+{
+  "id": "floor-metaballs",
+  "title": "Floor Metaballs",
+  "duration": 10,
+  "bpm": 124,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "floor1",
+        "type": "generator",
+        "impl": "checkerboard-floor",
+        "config": {
+          "color1": "#2a1848",
+          "color2": "#0c0820",
+          "skyColor": "#04020c",
+          "fogColor": "#100818",
+          "horizon": 0.44,
+          "scrollSpeed": 0.22,
+          "rotationSpeed": 0.14
+        }
+      },
+      {
+        "id": "meta1",
+        "type": "generator",
+        "impl": "metaballs",
+        "config": {
+          "count": 7,
+          "threshold": 0.44,
+          "speed": 1.05,
+          "glow": 0.9,
+          "palette": [[120, 255, 220], [80, 140, 255], [255, 100, 200], [255, 240, 120]]
+        }
+      },
+      { "id": "blend1", "type": "compositor", "impl": "screen-blend", "config": { "opacity": 0.78 } },
+      { "id": "glow1", "type": "modifier", "impl": "glow", "config": { "radius": 5, "strength": 0.28 } },
+      { "id": "crt1", "type": "modifier", "impl": "crt", "config": { "scanlineStrength": 0.16, "vignetteStrength": 0.09 } }
+    ],
+    "edges": [
+      { "from": { "node": "floor1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "meta1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } },
+      { "from": { "node": "blend1", "output": "color" }, "to": { "node": "glow1", "input": "color" } },
+      { "from": { "node": "glow1", "output": "color" }, "to": { "node": "crt1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "crt1", "browser": "crt1", "export": "crt1" }
+  }
+}

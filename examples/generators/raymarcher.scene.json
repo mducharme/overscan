@@ -1,0 +1,26 @@
+{
+  "id": "raymarcher",
+  "title": "Raymarcher",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "rm1",
+        "type": "generator",
+        "impl": "raymarcher",
+        "config": {
+          "fogColor": "#050a14",
+          "cameraPos": [0, 0, 3],
+          "scene": "return sdSphere(p, 0.85);"
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "rm1", "browser": "rm1", "export": "rm1" }
+  }
+}

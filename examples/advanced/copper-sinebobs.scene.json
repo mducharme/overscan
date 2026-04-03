@@ -1,0 +1,22 @@
+{
+  "id": "copper-sinebobs",
+  "title": "Copper Sinebobs",
+  "duration": 10,
+  "bpm": 126,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "bars1", "type": "generator", "impl": "copperbars", "config": {} },
+      { "id": "bobs1", "type": "generator", "impl": "sinebobs", "config": {} },
+      { "id": "blend1", "type": "compositor", "impl": "screen-blend", "config": { "opacity": 0.72 } }
+    ],
+    "edges": [
+      { "from": { "node": "bars1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "bobs1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "blend1", "browser": "blend1", "export": "blend1" }
+  }
+}

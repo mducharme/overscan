@@ -1,0 +1,26 @@
+{
+  "id": "noise",
+  "title": "Noise Signal",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "noise1", "type": "signal", "impl": "noise", "config": { "frequency": 5, "smoothing": 0.82, "seed": 7 } },
+      {
+        "id": "plasma1",
+        "type": "generator",
+        "impl": "plasma",
+        "config": {
+          "speed": { "node": "noise1", "output": "value" },
+          "scale": 1.6
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "plasma1", "browser": "plasma1", "export": "plasma1" }
+  }
+}

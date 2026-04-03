@@ -1,0 +1,28 @@
+{
+  "id": "crt",
+  "title": "CRT",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "plasma1", "type": "generator", "impl": "plasma", "config": { "speed": 0.7, "scale": 1.5 } },
+      {
+        "id": "crt1",
+        "type": "modifier",
+        "impl": "crt",
+        "config": {
+          "scanlineStrength": 0.28,
+          "vignetteStrength": 0.14,
+          "phosphorGlow": 0.2,
+          "brightness": 1.08
+        }
+      }
+    ],
+    "edges": [{ "from": { "node": "plasma1", "output": "color" }, "to": { "node": "crt1", "input": "color" } }],
+    "outputs": { "terminal": "crt1", "browser": "crt1", "export": "crt1" }
+  }
+}

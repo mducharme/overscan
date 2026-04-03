@@ -1,0 +1,27 @@
+{
+  "id": "alpha-blend",
+  "title": "Alpha Blend",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "base1", "type": "generator", "impl": "plasma", "config": { "speed": 0.6, "scale": 1.45 } },
+      {
+        "id": "over1",
+        "type": "generator",
+        "impl": "text",
+        "config": { "text": "ALPHA", "font": "overscan://fonts/Press2P", "fontSize": 38, "align": "center", "x": 0.5, "y": 0.5, "color": "#ffffff" }
+      },
+      { "id": "blend1", "type": "compositor", "impl": "alpha-blend", "config": { "opacity": 0.72 } }
+    ],
+    "edges": [
+      { "from": { "node": "base1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "over1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "blend1", "browser": "blend1", "export": "blend1" }
+  }
+}

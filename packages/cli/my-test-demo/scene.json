@@ -1,0 +1,32 @@
+{
+  "id": "my-test-demo",
+  "title": "my-test-demo",
+  "duration": 30,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": {
+    "width": 640,
+    "height": 360
+  },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "plasma1",
+        "type": "generator",
+        "impl": "plasma",
+        "config": {
+          "speed": 1,
+          "scale": 1
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": {
+      "terminal": "plasma1",
+      "browser": "plasma1",
+      "export": "plasma1"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "palette-cycle",
+  "title": "Palette Cycle",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "plasma1", "type": "generator", "impl": "plasma", "config": { "speed": 0.5, "scale": 1.6 } },
+      {
+        "id": "cycle1",
+        "type": "modifier",
+        "impl": "palette-cycle",
+        "config": {
+          "speed": 0.22,
+          "range": [0.12, 0.92],
+          "palette": [[12, 8, 28], [0, 140, 255], [255, 60, 200], [255, 230, 100], [240, 250, 255]]
+        }
+      }
+    ],
+    "edges": [{ "from": { "node": "plasma1", "output": "color" }, "to": { "node": "cycle1", "input": "color" } }],
+    "outputs": { "terminal": "cycle1", "browser": "cycle1", "export": "cycle1" }
+  }
+}

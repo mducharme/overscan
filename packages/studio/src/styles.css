@@ -1,0 +1,745 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  min-height: 100vh;
+  height: 100%;
+  background: #0f0f0f;
+  font: 13px/1.4 Inter, system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.studioShell {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 56px minmax(0, 1fr);
+}
+
+.studioHeader {
+  padding: 0 16px;
+  background: #121212;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.studioToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 100%;
+  flex-wrap: wrap;
+}
+
+.studioContent {
+  position: relative;
+  min-height: 0;
+  height: 100%;
+  padding: 16px;
+  background: #0f0f0f;
+  overflow: hidden;
+}
+
+.studioShellGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-rows: 1fr;
+  height: 100%;
+}
+
+.studioGridSceneOnly {
+  height: 100%;
+}
+
+.studioGridWithTimeline {
+  height: 100%;
+}
+
+.studioSider,
+.studioMainColumn,
+.studioPreviewRegion,
+.studioInspectorRegion {
+  min-width: 0 !important;
+  min-height: 0;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.studioMainColumn {
+  display: grid !important;
+  gap: 0;
+}
+
+.studioPanel {
+  height: 100%;
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.studioPanel .ant-card-body {
+  height: calc(100% - 57px);
+  overflow: auto;
+}
+
+.studioResizeHandle {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  transition: background 120ms ease-out;
+}
+
+.studioResizeHandle:hover {
+  background: rgba(232, 87, 10, 0.55);
+}
+
+.studioResizeHandleVertical {
+  cursor: col-resize;
+}
+
+.studioResizeHandleHorizontal,
+.studioResizeHandleTimeline {
+  margin: 8px 0;
+  height: 8px;
+  cursor: row-resize;
+}
+
+.previewPanelCard .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.previewPanelCard .ant-tabs,
+.previewPanelCard .ant-tabs-content-holder,
+.previewPanelCard .ant-tabs-content,
+.previewPanelCard .ant-tabs-tabpane {
+  height: 100%;
+}
+
+.previewLayoutSingle {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.previewPane {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px;
+  background: #111;
+  overflow: hidden;
+}
+
+.previewPaneToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.previewPaneBody {
+  height: calc(100% - 28px);
+  min-height: 140px;
+}
+
+.previewSnapshot {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #0a0a0a;
+}
+
+.previewCanvasPlaceholder {
+  display: grid;
+  place-items: center;
+  color: #666;
+}
+
+.previewControls {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+}
+
+.previewCanvas,
+.terminalPreview,
+.graphNodeItem,
+.timelineSectionButton {
+  width: 100%;
+}
+
+.previewCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background: #0a0a0a;
+  image-rendering: pixelated;
+}
+
+.previewCanvasStack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.previewCanvasStack .previewCanvas {
+  position: absolute;
+  inset: 0;
+}
+
+.previewCanvasVisible {
+  visibility: visible;
+}
+
+.previewCanvasHidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.terminalPreview {
+  margin: 0;
+  padding: 12px;
+  overflow: hidden;
+  white-space: pre;
+  font: 13px/1 JetBrains Mono, Cascadia Code, monospace;
+}
+
+.terminalPreviewFit {
+  height: 100%;
+  font-variant-ligatures: none;
+}
+
+.graphNodeItem,
+.timelineSectionButton {
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: #1a1a1a;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.graphNodeItemSelected,
+.timelineSectionButtonActive {
+  border-color: #e8570a;
+  box-shadow: inset 0 0 0 1px rgba(232, 87, 10, 0.35);
+}
+
+.graphNodeMeta,
+.timelineSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.studioTimelineRegion {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.graphFlow {
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #101010;
+}
+
+.graphFlowInvalid {
+  animation: graph-invalid-pulse 320ms ease-out;
+}
+
+.graphFlow .react-flow__renderer,
+.graphFlow .react-flow__pane,
+.graphFlow .react-flow__container,
+.graphFlow .react-flow__viewport {
+  background: #101010;
+}
+
+.graphFlow .react-flow__node.selected {
+  box-shadow: 0 0 0 1px rgba(232, 87, 10, 0.75);
+}
+
+.graphFlow .react-flow__node {
+  background: transparent;
+  border: none;
+}
+
+.graphFlow .react-flow__edge-text {
+  fill: #888;
+}
+
+.graphFlow .react-flow__edge.selected path {
+  filter: drop-shadow(0 0 6px rgba(232, 87, 10, 0.45));
+}
+
+.studioFlowNode {
+  position: relative;
+  min-height: 110px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 4px solid var(--studio-node-accent);
+  background: #1a1a1a;
+  color: #e8e8e8;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+}
+
+.studioFlowNodeSelected {
+  border-color: rgba(232, 87, 10, 0.5);
+  box-shadow: 0 0 0 1px rgba(232, 87, 10, 0.55), 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.studioFlowNodeHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.studioFlowNodeImpl {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.studioFlowNodeThumb {
+  height: 68px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #101010;
+  display: grid;
+  place-items: center;
+  color: #666;
+  font-size: 11px;
+}
+
+.studioFlowNodeThumb img,
+.inspectorThumbCard img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.studioFlowNodePorts {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.studioFlowNodePortsLeft {
+  padding-right: 28px;
+}
+
+.studioFlowNodePortsRight {
+  margin-top: 10px;
+  justify-items: end;
+  padding-left: 28px;
+}
+
+.studioFlowPortLabel {
+  color: #9a9a9a;
+  white-space: nowrap;
+}
+
+.studioFlowHandle {
+  width: 10px !important;
+  height: 10px !important;
+  border: 2px solid currentColor !important;
+}
+
+.studioFlowEdgeLabel {
+  position: absolute;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.92);
+  color: #9a9a9a;
+  font-size: 10px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.inspectorThumbCard {
+  margin-top: 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.inspectorThumbCard img {
+  height: 96px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #101010;
+}
+
+.nodePickerGrid {
+  display: grid;
+  gap: 10px;
+  max-height: 62vh;
+  overflow: auto;
+}
+
+.nodePickerGroup {
+  display: grid;
+  gap: 10px;
+}
+
+.nodePickerGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nodePickerGroupHeader .ant-typography {
+  margin: 0;
+}
+
+.nodePickerGroupGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.nodePickerOption {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #171717;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nodePickerOptionSelected {
+  border-color: #e8570a;
+  box-shadow: inset 0 0 0 1px rgba(232, 87, 10, 0.35);
+}
+
+.graphSettingsModal {
+  display: grid;
+  gap: 16px;
+}
+
+.graphSettingsRow {
+  display: grid;
+  gap: 8px;
+}
+
+.paletteEditor {
+  display: grid;
+  gap: 12px;
+}
+
+.paletteSwatchRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.paletteSwatchPreview {
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: transparent;
+}
+
+.paletteList {
+  display: grid;
+  gap: 8px;
+}
+
+.paletteEntry {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.nodePickerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.toolbarTimeInput {
+  width: 96px;
+}
+
+.timelineViewport {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+}
+
+.timelineScrub {
+  position: relative;
+  min-width: 0;
+  height: 144px;
+  border-radius: 10px;
+  background: #111;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.timelineRuler {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 24px;
+}
+
+.timelineRulerTick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255,255,255,0.18);
+}
+
+.timelineRulerTick span {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 10px;
+  color: #9a9a9a;
+  white-space: nowrap;
+}
+
+.timelineScrubTrack {
+  position: absolute;
+  inset: 24px 0 0 0;
+  background-image: linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px);
+  background-size: 32px 100%;
+}
+
+.timelineScrubHead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e24b4a;
+  z-index: 2;
+}
+
+.timelineRange {
+  position: absolute;
+  top: 42px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(127, 119, 221, 0.35);
+  border: 1px solid rgba(255,255,255,0.14);
+  padding: 8px 14px 8px 8px;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.timelineAudioLane {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  height: 22px;
+}
+
+.timelineResizeHandle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  border: none;
+  background: transparent;
+  cursor: ew-resize;
+}
+
+.timelineResizeHandleEnd {
+  right: 0;
+}
+
+.timelineResizeHandle::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  right: 3px;
+  width: 2px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.65);
+}
+
+.timelineAudioClip {
+  position: absolute;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 2px 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  isolation: isolate;
+}
+
+.timelineAudioClipDemo {
+  background: rgba(29, 158, 117, 0.32);
+}
+
+.timelineAudioClipScene {
+  background: rgba(232, 87, 10, 0.28);
+}
+
+.timelineWaveform {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.85;
+  z-index: 0;
+}
+
+.timelineAudioClip span {
+  position: relative;
+  z-index: 1;
+}
+
+.timelineRangeContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.timelineRangeActive {
+  border-color: #fff;
+}
+
+.timelineTransitionChip,
+.timelineTransitionButton {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(22, 22, 22, 0.95);
+  color: #d9d9d9;
+}
+
+.timelineTransitionChip {
+  padding: 2px 8px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.timelineTransitionChipBelow {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  max-width: 100%;
+  z-index: 3;
+}
+
+.timelineTransitionField {
+  display: grid;
+  gap: 8px;
+}
+
+.timelineSectionMeta,
+.timelineSectionActions,
+.timelineSectionEditor {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.timelineSectionButton {
+  display: grid;
+  gap: 10px;
+}
+
+.timelineDemoControls,
+.timelineModifierStack {
+  display: grid;
+  gap: 10px;
+}
+
+.timelineAudioControlRow,
+.timelineModifierHeader,
+.timelineModifierRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.timelineAudioControlRow .ant-slider {
+  flex: 1;
+}
+
+.timelineModifierRow .ant-input {
+  max-width: 220px;
+}
+
+@keyframes graph-invalid-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(226, 75, 74, 0.45);
+  }
+  45% {
+    box-shadow: 0 0 0 4px rgba(226, 75, 74, 0.22);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(226, 75, 74, 0);
+  }
+}
+
+.timelinePanel .ant-card-body {
+  min-width: 0;
+  overflow: auto;
+}
+
+.timelinePanel {
+  min-width: 0;
+}
+
+.timelinePanel .ant-space,
+.timelinePanel .ant-space-item {
+  min-width: 0;
+}
+
+.previewAlert,
+.studioGlobalAlert {
+  margin-top: 12px;
+}
+
+.studioOverlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 1000;
+}
+
+@media (max-width: 1200px) {
+  .studioShellGrid {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(280px, 0.9fr) 8px minmax(520px, 1.1fr);
+  }
+}

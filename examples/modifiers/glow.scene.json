@@ -1,0 +1,18 @@
+{
+  "id": "glow",
+  "title": "Glow",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "text1", "type": "generator", "impl": "text", "config": { "text": "GLOW", "font": "overscan://fonts/Press2P", "fontSize": 44, "align": "center", "x": 0.5, "y": 0.5, "color": "#fff4c8" } },
+      { "id": "glow1", "type": "modifier", "impl": "glow", "config": { "radius": 10, "strength": 0.55 } }
+    ],
+    "edges": [{ "from": { "node": "text1", "output": "color" }, "to": { "node": "glow1", "input": "color" } }],
+    "outputs": { "terminal": "glow1", "browser": "glow1", "export": "glow1" }
+  }
+}

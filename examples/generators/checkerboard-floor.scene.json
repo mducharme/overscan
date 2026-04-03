@@ -1,0 +1,30 @@
+{
+  "id": "checkerboard-floor",
+  "title": "Checkerboard Floor",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "floor1",
+        "type": "generator",
+        "impl": "checkerboard-floor",
+        "config": {
+          "color1": "#ffe59b",
+          "color2": "#0c1430",
+          "fogColor": "#08111f",
+          "skyColor": "#050814",
+          "horizon": 0.42,
+          "scrollSpeed": 0.2,
+          "rotationSpeed": 0.12
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "floor1", "browser": "floor1", "export": "floor1" }
+  }
+}

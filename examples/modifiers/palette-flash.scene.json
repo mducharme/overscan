@@ -1,0 +1,32 @@
+{
+  "id": "palette-flash",
+  "title": "Palette Flash",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "flash.strength",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "smooth" },
+        { "row": 24, "value": 0.4, "interpolation": "ease-in-out" },
+        { "row": 48, "value": 0, "interpolation": "smooth" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "plasma1", "type": "generator", "impl": "plasma", "config": { "speed": 0.55, "scale": 1.4 } },
+      {
+        "id": "flash1",
+        "type": "modifier",
+        "impl": "palette-flash",
+        "config": { "color": "#a0fff0", "strength": { "track": "flash.strength" }, "blendMode": "additive" }
+      }
+    ],
+    "edges": [{ "from": { "node": "plasma1", "output": "color" }, "to": { "node": "flash1", "input": "color" } }],
+    "outputs": { "terminal": "flash1", "browser": "flash1", "export": "flash1" }
+  }
+}

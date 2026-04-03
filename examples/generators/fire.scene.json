@@ -1,0 +1,22 @@
+{
+  "id": "fire",
+  "title": "Fire",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "fire1",
+        "type": "generator",
+        "impl": "fire",
+        "config": { "cooling": 0.09, "seed": "noise", "seedIntensity": 1.1 }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "fire1", "browser": "fire1", "export": "fire1" }
+  }
+}

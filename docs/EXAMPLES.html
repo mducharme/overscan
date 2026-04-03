@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overscan — Examples gallery</title>
+<meta name="description" content="Generator and advanced scene examples with terminal and WebGL GIF previews.">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0c0e14;
+  --surface: #12151f;
+  --border: #252a38;
+  --text: #e4e9f5;
+  --muted: #8b93a8;
+  --link: #6ec8ff;
+  --link-hover: #9fdcff;
+  --code-bg: #1a1e2a;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: system-ui, 'Segoe UI', Roboto, Ubuntu, Cantarell, sans-serif;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--text);
+  background: var(--bg);
+}
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: 1rem; top: 1rem; z-index: 99; padding: .5rem 1rem; background: var(--surface); }
+header.doc-head {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  padding: 1rem 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+header.doc-head h1 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+header.doc-head p {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+header.doc-head a { color: var(--link); }
+header.doc-head a:hover { color: var(--link-hover); }
+main {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+main h1 { font-size: 1.75rem; margin-top: 0; color: #fff; }
+main h2 {
+  font-size: 1.35rem;
+  margin-top: 2.25rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border);
+  color: #fff;
+}
+main h3 { font-size: 1.1rem; margin-top: 1.75rem; color: #c8d0e0; }
+a { color: var(--link); text-decoration: none; }
+a:hover { color: var(--link-hover); text-decoration: underline; }
+a code { color: inherit; }
+code, pre {
+  font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace;
+  font-size: 0.88em;
+}
+code {
+  background: var(--code-bg);
+  padding: 0.12em 0.35em;
+  border-radius: 4px;
+}
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  line-height: 1.45;
+}
+pre code { background: none; padding: 0; font-size: 0.9rem; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.92rem;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.65rem;
+  vertical-align: top;
+}
+th { background: var(--surface); text-align: left; color: #cbd5e1; }
+tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+td img {
+  max-width: min(100%, 220px);
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+ul { padding-left: 1.35rem; }
+li { margin: 0.25rem 0; }
+strong { color: #fff; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="doc-head">
+  <h1>Overscan — Examples gallery</h1>
+  <p>HTML export of <a href="EXAMPLES.md">EXAMPLES.md</a> · GIFs under <code>docs/examples/</code> · Regenerate: <code>node scripts/build-examples-html.mjs</code></p>
+</header>
+<main id="main">
+<h1>Examples gallery</h1>
+<p>Single-scene <strong>generators</strong> live under <a href="../examples/generators/"><code>examples/generators/</code></a>; <strong>advanced</strong> multi-node graphs under <a href="../examples/advanced/"><code>examples/advanced/</code></a>. Each section matches a <code>*.scene.json</code> basename.</p>
+<p><strong>Animated GIF previews</strong> are stored under <code>docs/examples/</code> (next to this file):</p>
+<ul>
+<li><code>docs/examples/generators/{name}-terminal.gif</code> — terminal raster export (80×24, ANSI half-block)</li>
+<li><code>docs/examples/generators/{name}-ascii.gif</code> — ASCII raster at <strong>160×48</strong> character cells (2× the ANSI grid), then <strong>scaled to 640×384</strong> to match the ANSI GIF (<code>export-example-gifs</code> uses Lanczos + palette)</li>
+<li><code>docs/examples/generators/{name}-webgl.gif</code> — headless WebGL blit + palette GIF</li>
+</ul>
+<p>The same pattern applies in <code>docs/examples/advanced/</code>.</p>
+<p><strong>Image paths in this document are relative to <code>docs/EXAMPLES.md</code></strong> (e.g. <code>examples/generators/plasma-terminal.gif</code>, <code>…-ascii.gif</code>, <code>…-webgl.gif</code>). They render in GitHub, VS Code Markdown Preview, and most static site generators <strong>after</strong> you generate the files:</p>
+<pre><code class="language-bash">pnpm build
+pnpm export-example-gifs
+</code></pre>
+<p>Full option tables for every <code>impl</code> are in <a href="../overscan-effects-catalogue.md"><code>overscan-effects-catalogue.md</code></a>. JSON blocks below are <strong>this repo’s example <code>config</code></strong> only.</p>
+<hr>
+<h2>Contents</h2>
+<ul>
+<li><a href="#generator-examples">Generator examples</a></li>
+<li><a href="#advanced-compositions">Advanced compositions</a></li>
+<li><a href="#see-also">See also</a></li>
+</ul>
+<hr>
+<h2>Generator examples</h2>
+<table>
+<thead>
+<tr>
+<th>Impl</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>checkerboard-floor</code></td>
+<td>Perspective checker ground, sky, fog, scroll</td>
+</tr>
+<tr>
+<td><code>copperbars</code></td>
+<td>Horizontal colour bars (Amiga-style copper)</td>
+</tr>
+<tr>
+<td><code>dot-matrix</code></td>
+<td>Point grids / paths (e.g. helix)</td>
+</tr>
+<tr>
+<td><code>fire</code></td>
+<td>2D heat simulation (stateful)</td>
+</tr>
+<tr>
+<td><code>fractal-zoom</code></td>
+<td>Mandelbrot / Julia zoom</td>
+</tr>
+<tr>
+<td><code>game-of-life</code></td>
+<td>Cellular automaton on a grid</td>
+</tr>
+<tr>
+<td><code>glenz</code></td>
+<td>Stacked transparent shaded shapes</td>
+</tr>
+<tr>
+<td><code>lasers</code></td>
+<td>Beams from emitters, sweep and glow</td>
+</tr>
+<tr>
+<td><code>lissajous</code></td>
+<td>Parametric curves, trail, glow</td>
+</tr>
+<tr>
+<td><code>matrix-rain</code></td>
+<td>Falling glyph columns</td>
+</tr>
+<tr>
+<td><code>metaballs</code></td>
+<td>2D metaball field</td>
+</tr>
+<tr>
+<td><code>moire</code></td>
+<td>Interference patterns</td>
+</tr>
+<tr>
+<td><code>oscilloscope</code></td>
+<td>Faux scope trace + grid</td>
+</tr>
+<tr>
+<td><code>plasma</code></td>
+<td>Summed waves + palette</td>
+</tr>
+<tr>
+<td><code>raymarcher</code></td>
+<td>SDF ray marching (inline or <code>scenePath</code> GLSL)</td>
+</tr>
+<tr>
+<td><code>rotozoom</code></td>
+<td>Rotate + zoom texture</td>
+</tr>
+<tr>
+<td><code>scroller</code></td>
+<td>Horizontal text + sine warp</td>
+</tr>
+<tr>
+<td><code>shadebobs</code></td>
+<td>Shaded blobs + palette</td>
+</tr>
+<tr>
+<td><code>sinebobs</code></td>
+<td>Circles on sine paths</td>
+</tr>
+<tr>
+<td><code>starfield</code></td>
+<td>3D star motion</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td>Positioned text + font</td>
+</tr>
+<tr>
+<td><code>tunnel</code></td>
+<td>Cylindrical tunnel</td>
+</tr>
+<tr>
+<td><code>twister</code></td>
+<td>Vertical sine “twister” bars</td>
+</tr>
+<tr>
+<td><code>vector-balls</code></td>
+<td>3D balls (defaults in node)</td>
+</tr>
+<tr>
+<td><code>voxel-landscape</code></td>
+<td>Heightfield voxels</td>
+</tr>
+<tr>
+<td><code>water-ripple</code></td>
+<td>Ripple sim + refraction look</td>
+</tr>
+<tr>
+<td><code>wireframe</code></td>
+<td>3D wire mesh</td>
+</tr>
+</tbody></table>
+<h3>Checkerboard Floor</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/checkerboard-floor.scene.json"><code>examples/generators/checkerboard-floor.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;color1&quot;: &quot;#ffe59b&quot;,
+  &quot;color2&quot;: &quot;#0c1430&quot;,
+  &quot;fogColor&quot;: &quot;#08111f&quot;,
+  &quot;skyColor&quot;: &quot;#050814&quot;,
+  &quot;horizon&quot;: 0.42,
+  &quot;scrollSpeed&quot;: 0.2,
+  &quot;rotationSpeed&quot;: 0.12
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/checkerboard-floor-terminal.gif" alt="checkerboard-floor terminal"></td>
+<td align="center"><img src="examples/generators/checkerboard-floor-ascii.gif" alt="checkerboard-floor ascii"></td>
+<td align="center"><img src="examples/generators/checkerboard-floor-webgl.gif" alt="checkerboard-floor webgl"></td>
+</tr>
+</tbody></table>
+<h3>Copperbars</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/copperbars.scene.json"><code>examples/generators/copperbars.scene.json</code></a></p>
+<pre><code class="language-json">{ &quot;speed&quot;: 1.2, &quot;count&quot;: 18 }
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/copperbars-terminal.gif" alt="copperbars terminal"></td>
+<td align="center"><img src="examples/generators/copperbars-ascii.gif" alt="copperbars ascii"></td>
+<td align="center"><img src="examples/generators/copperbars-webgl.gif" alt="copperbars webgl"></td>
+</tr>
+</tbody></table>
+<h3>Dot Matrix</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/dot-matrix.scene.json"><code>examples/generators/dot-matrix.scene.json</code></a></p>
+<pre><code class="language-json">{ &quot;shape&quot;: &quot;helix&quot;, &quot;count&quot;: 1800, &quot;pointSize&quot;: 2.5 }
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/dot-matrix-terminal.gif" alt="dot-matrix terminal"></td>
+<td align="center"><img src="examples/generators/dot-matrix-ascii.gif" alt="dot-matrix ascii"></td>
+<td align="center"><img src="examples/generators/dot-matrix-webgl.gif" alt="dot-matrix webgl"></td>
+</tr>
+</tbody></table>
+<h3>Fire</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/fire.scene.json"><code>examples/generators/fire.scene.json</code></a></p>
+<pre><code class="language-json">{ &quot;cooling&quot;: 0.09, &quot;seed&quot;: &quot;noise&quot;, &quot;seedIntensity&quot;: 1.1 }
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/fire-terminal.gif" alt="fire terminal"></td>
+<td align="center"><img src="examples/generators/fire-ascii.gif" alt="fire ascii"></td>
+<td align="center"><img src="examples/generators/fire-webgl.gif" alt="fire webgl"></td>
+</tr>
+</tbody></table>
+<h3>Fractal Zoom</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/fractal-zoom.scene.json"><code>examples/generators/fractal-zoom.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;mandelbrot&quot;,
+  &quot;zoom&quot;: 1.1,
+  &quot;zoomSpeed&quot;: 0.06,
+  &quot;maxIter&quot;: 80,
+  &quot;smooth&quot;: true
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/fractal-zoom-terminal.gif" alt="fractal-zoom terminal"></td>
+<td align="center"><img src="examples/generators/fractal-zoom-ascii.gif" alt="fractal-zoom ascii"></td>
+<td align="center"><img src="examples/generators/fractal-zoom-webgl.gif" alt="fractal-zoom webgl"></td>
+</tr>
+</tbody></table>
+<h3>Game of Life</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/game-of-life.scene.json"><code>examples/generators/game-of-life.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;seed&quot;: &quot;random&quot;,
+  &quot;seedDensity&quot;: 0.28,
+  &quot;scale&quot;: 4,
+  &quot;speed&quot;: 2,
+  &quot;colorMode&quot;: &quot;age&quot;,
+  &quot;agePalette&quot;: [[8, 10, 18], [0, 180, 100], [255, 255, 255]]
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/game-of-life-terminal.gif" alt="game-of-life terminal"></td>
+<td align="center"><img src="examples/generators/game-of-life-ascii.gif" alt="game-of-life ascii"></td>
+<td align="center"><img src="examples/generators/game-of-life-webgl.gif" alt="game-of-life webgl"></td>
+</tr>
+</tbody></table>
+<h3>Glenz</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/glenz.scene.json"><code>examples/generators/glenz.scene.json</code></a></p>
+<pre><code class="language-json">{ &quot;backgroundColor&quot;: &quot;#04060e&quot;, &quot;alpha&quot;: 0.36 }
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="./examples/generators/glenz-terminal.gif" alt="glenz terminal"></td>
+<td align="center"><img src="./examples/generators/glenz-ascii.gif" alt="glenz ascii"></td>
+<td align="center"><img src="./examples/generators/glenz-webgl.gif" alt="glenz webgl"></td>
+</tr>
+</tbody></table>
+<h3>Lasers</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/lasers.scene.json"><code>examples/generators/lasers.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;beamCount&quot;: 20,
+  &quot;emitterCount&quot;: 4,
+  &quot;spread&quot;: 1.8,
+  &quot;sweepSpeed&quot;: 1.1,
+  &quot;rotationSpeed&quot;: 0.55,
+  &quot;beamWidth&quot;: 2.4,
+  &quot;glowWidth&quot;: 20,
+  &quot;backgroundColor&quot;: &quot;#020409&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/lasers-terminal.gif" alt="lasers terminal"></td>
+<td align="center"><img src="examples/generators/lasers-ascii.gif" alt="lasers ascii"></td>
+<td align="center"><img src="examples/generators/lasers-webgl.gif" alt="lasers webgl"></td>
+</tr>
+</tbody></table>
+<h3>Lissajous</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/lissajous.scene.json"><code>examples/generators/lissajous.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;a&quot;: 3,
+  &quot;b&quot;: 2,
+  &quot;delta&quot;: 1.57,
+  &quot;amplitude&quot;: 0.82,
+  &quot;trailLength&quot;: 680,
+  &quot;decay&quot;: 0.95,
+  &quot;color&quot;: &quot;#68ffca&quot;,
+  &quot;lineWidth&quot;: 1.5,
+  &quot;glow&quot;: 0.5
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/lissajous-terminal.gif" alt="lissajous terminal"></td>
+<td align="center"><img src="examples/generators/lissajous-ascii.gif" alt="lissajous ascii"></td>
+<td align="center"><img src="examples/generators/lissajous-webgl.gif" alt="lissajous webgl"></td>
+</tr>
+</tbody></table>
+<h3>Matrix Rain</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/matrix-rain.scene.json"><code>examples/generators/matrix-rain.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;charset&quot;: &quot;katakana&quot;,
+  &quot;speed&quot;: 1,
+  &quot;density&quot;: 0.65,
+  &quot;trailLength&quot;: 0.32,
+  &quot;fontSize&quot;: 15
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/matrix-rain-terminal.gif" alt="matrix-rain terminal"></td>
+<td align="center"><img src="examples/generators/matrix-rain-ascii.gif" alt="matrix-rain ascii"></td>
+<td align="center"><img src="examples/generators/matrix-rain-webgl.gif" alt="matrix-rain webgl"></td>
+</tr>
+</tbody></table>
+<h3>Metaballs</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/metaballs.scene.json"><code>examples/generators/metaballs.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;count&quot;: 6,
+  &quot;threshold&quot;: 0.46,
+  &quot;speed&quot;: 1,
+  &quot;glow&quot;: 0.8,
+  &quot;palette&quot;: [[6, 255, 210], [0, 148, 255], [186, 48, 255], [255, 78, 152], [255, 242, 92]]
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/metaballs-terminal.gif" alt="metaballs terminal"></td>
+<td align="center"><img src="examples/generators/metaballs-ascii.gif" alt="metaballs ascii"></td>
+<td align="center"><img src="examples/generators/metaballs-webgl.gif" alt="metaballs webgl"></td>
+</tr>
+</tbody></table>
+<h3>Moiré</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/moire.scene.json"><code>examples/generators/moire.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;mode&quot;: &quot;radial&quot;,
+  &quot;freq1&quot;: 14,
+  &quot;freq2&quot;: 15.5,
+  &quot;speed1&quot;: 0.5,
+  &quot;speed2&quot;: -0.35,
+  &quot;contrast&quot;: 1.5,
+  &quot;palette&quot;: [[0, 0, 0], [80, 20, 120], [255, 100, 200], [255, 255, 255]]
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/moire-terminal.gif" alt="moire terminal"></td>
+<td align="center"><img src="examples/generators/moire-ascii.gif" alt="moire ascii"></td>
+<td align="center"><img src="examples/generators/moire-webgl.gif" alt="moire webgl"></td>
+</tr>
+</tbody></table>
+<h3>Oscilloscope</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/oscilloscope.scene.json"><code>examples/generators/oscilloscope.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;color&quot;: &quot;#5dffc8&quot;,
+  &quot;lineWidth&quot;: 2,
+  &quot;timeScale&quot;: 1.1,
+  &quot;voltScale&quot;: 1,
+  &quot;gridDivisions&quot;: 8
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/oscilloscope-terminal.gif" alt="oscilloscope terminal"></td>
+<td align="center"><img src="examples/generators/oscilloscope-ascii.gif" alt="oscilloscope ascii"></td>
+<td align="center"><img src="examples/generators/oscilloscope-webgl.gif" alt="oscilloscope webgl"></td>
+</tr>
+</tbody></table>
+<h3>Plasma</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/plasma.scene.json"><code>examples/generators/plasma.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;speed&quot;: 0.85,
+  &quot;scale&quot;: 1.7,
+  &quot;palette&quot;: [[14, 10, 42], [64, 28, 126], [0, 176, 255], [255, 104, 196], [255, 240, 116]]
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/plasma-terminal.gif" alt="plasma terminal"></td>
+<td align="center"><img src="examples/generators/plasma-ascii.gif" alt="plasma ascii"></td>
+<td align="center"><img src="examples/generators/plasma-webgl.gif" alt="plasma webgl"></td>
+</tr>
+</tbody></table>
+<h3>Raymarcher (sphere)</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/raymarcher.scene.json"><code>examples/generators/raymarcher.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;fogColor&quot;: &quot;#050a14&quot;,
+  &quot;cameraPos&quot;: [0, 0, 3],
+  &quot;scene&quot;: &quot;return sdSphere(p, 0.85);&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/raymarcher-terminal.gif" alt="raymarcher terminal"></td>
+<td align="center"><img src="examples/generators/raymarcher-ascii.gif" alt="raymarcher ascii"></td>
+<td align="center"><img src="examples/generators/raymarcher-webgl.gif" alt="raymarcher webgl"></td>
+</tr>
+</tbody></table>
+<h3>Raymarcher Monument</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/raymarcher-monument.scene.json"><code>examples/generators/raymarcher-monument.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;fogColor&quot;: &quot;#02050b&quot;,
+  &quot;cameraPos&quot;: [0, 0.25, 3.4],
+  &quot;scenePath&quot;: &quot;../../shaders/raymarcher-monument.glsl&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/raymarcher-monument-terminal.gif" alt="raymarcher-monument terminal"></td>
+<td align="center"><img src="examples/generators/raymarcher-monument-ascii.gif" alt="raymarcher-monument ascii"></td>
+<td align="center"><img src="examples/generators/raymarcher-monument-webgl.gif" alt="raymarcher-monument webgl"></td>
+</tr>
+</tbody></table>
+<h3>Rotozoom</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/rotozoom.scene.json"><code>examples/generators/rotozoom.scene.json</code></a></p>
+<pre><code class="language-json">{ &quot;rotationSpeed&quot;: 0.9, &quot;zoomSpeed&quot;: 0.45, &quot;zoomRange&quot;: [0.55, 1.85] }
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/rotozoom-terminal.gif" alt="rotozoom terminal"></td>
+<td align="center"><img src="examples/generators/rotozoom-ascii.gif" alt="rotozoom ascii"></td>
+<td align="center"><img src="examples/generators/rotozoom-webgl.gif" alt="rotozoom webgl"></td>
+</tr>
+</tbody></table>
+<h3>Scroller</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/scroller.scene.json"><code>examples/generators/scroller.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;text&quot;: &quot;  &gt;&gt;&gt; OVERSCAN SCROLLER  &gt;&gt;&gt;  &quot;,
+  &quot;fontSize&quot;: 26,
+  &quot;speed&quot;: 32,
+  &quot;waveAmplitude&quot;: 4,
+  &quot;waveFrequency&quot;: 0.12
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/scroller-terminal.gif" alt="scroller terminal"></td>
+<td align="center"><img src="examples/generators/scroller-ascii.gif" alt="scroller ascii"></td>
+<td align="center"><img src="examples/generators/scroller-webgl.gif" alt="scroller webgl"></td>
+</tr>
+</tbody></table>
+<h3>Shadebobs</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/shadebobs.scene.json"><code>examples/generators/shadebobs.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;count&quot;: 9,
+  &quot;radius&quot;: 30,
+  &quot;speed&quot;: 1.2,
+  &quot;palette&quot;: [[24, 20, 56], [96, 46, 172], [255, 84, 180], [255, 226, 108]]
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/shadebobs-terminal.gif" alt="shadebobs terminal"></td>
+<td align="center"><img src="examples/generators/shadebobs-ascii.gif" alt="shadebobs ascii"></td>
+<td align="center"><img src="examples/generators/shadebobs-webgl.gif" alt="shadebobs webgl"></td>
+</tr>
+</tbody></table>
+<h3>Sinebobs</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/sinebobs.scene.json"><code>examples/generators/sinebobs.scene.json</code></a></p>
+<pre><code class="language-json">{ &quot;count&quot;: 18, &quot;radius&quot;: 22, &quot;freqX&quot;: 1.1, &quot;freqY&quot;: 1.35, &quot;amplitude&quot;: 0.42 }
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/sinebobs-terminal.gif" alt="sinebobs terminal"></td>
+<td align="center"><img src="examples/generators/sinebobs-ascii.gif" alt="sinebobs ascii"></td>
+<td align="center"><img src="examples/generators/sinebobs-webgl.gif" alt="sinebobs webgl"></td>
+</tr>
+</tbody></table>
+<h3>Starfield</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/starfield.scene.json"><code>examples/generators/starfield.scene.json</code></a></p>
+<pre><code class="language-json">{ &quot;count&quot;: 260, &quot;warpSpeed&quot;: 1.15, &quot;starColor&quot;: [230, 244, 255] }
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/starfield-terminal.gif" alt="starfield terminal"></td>
+<td align="center"><img src="examples/generators/starfield-ascii.gif" alt="starfield ascii"></td>
+<td align="center"><img src="examples/generators/starfield-webgl.gif" alt="starfield webgl"></td>
+</tr>
+</tbody></table>
+<h3>Text</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/text.scene.json"><code>examples/generators/text.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;text&quot;: &quot;OVERSCAN&quot;,
+  &quot;font&quot;: &quot;overscan://fonts/Press2P&quot;,
+  &quot;fontSize&quot;: 42,
+  &quot;align&quot;: &quot;center&quot;,
+  &quot;x&quot;: 0.5,
+  &quot;y&quot;: 0.5,
+  &quot;color&quot;: &quot;#f4f7ff&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/text-terminal.gif" alt="text terminal"></td>
+<td align="center"><img src="examples/generators/text-ascii.gif" alt="text ascii"></td>
+<td align="center"><img src="examples/generators/text-webgl.gif" alt="text webgl"></td>
+</tr>
+</tbody></table>
+<h3>Tunnel</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/tunnel.scene.json"><code>examples/generators/tunnel.scene.json</code></a></p>
+<pre><code class="language-json">{ &quot;speed&quot;: 1.8, &quot;twist&quot;: 0.12, &quot;fog&quot;: 0.35, &quot;zoom&quot;: 1.05 }
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/tunnel-terminal.gif" alt="tunnel terminal"></td>
+<td align="center"><img src="examples/generators/tunnel-ascii.gif" alt="tunnel ascii"></td>
+<td align="center"><img src="examples/generators/tunnel-webgl.gif" alt="tunnel webgl"></td>
+</tr>
+</tbody></table>
+<h3>Twister</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/twister.scene.json"><code>examples/generators/twister.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;twistSpeed&quot;: 1.8,
+  &quot;verticalFrequency&quot;: 1.45,
+  &quot;width&quot;: 0.28,
+  &quot;sway&quot;: 0.12,
+  &quot;shading&quot;: 0.82,
+  &quot;backgroundColor&quot;: &quot;#050812&quot;,
+  &quot;palette&quot;: [[255, 78, 150], [255, 208, 72], [90, 246, 168], [82, 164, 255]]
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/twister-terminal.gif" alt="twister terminal"></td>
+<td align="center"><img src="examples/generators/twister-ascii.gif" alt="twister ascii"></td>
+<td align="center"><img src="examples/generators/twister-webgl.gif" alt="twister webgl"></td>
+</tr>
+</tbody></table>
+<h3>Vector Balls</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/vector-balls.scene.json"><code>examples/generators/vector-balls.scene.json</code></a></p>
+<pre><code class="language-json">{}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/vector-balls-terminal.gif" alt="vector-balls terminal"></td>
+<td align="center"><img src="examples/generators/vector-balls-ascii.gif" alt="vector-balls ascii"></td>
+<td align="center"><img src="examples/generators/vector-balls-webgl.gif" alt="vector-balls webgl"></td>
+</tr>
+</tbody></table>
+<h3>Voxel Landscape</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/voxel-landscape.scene.json"><code>examples/generators/voxel-landscape.scene.json</code></a></p>
+<pre><code class="language-json">{}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/voxel-landscape-terminal.gif" alt="voxel-landscape terminal"></td>
+<td align="center"><img src="examples/generators/voxel-landscape-ascii.gif" alt="voxel-landscape ascii"></td>
+<td align="center"><img src="examples/generators/voxel-landscape-webgl.gif" alt="voxel-landscape webgl"></td>
+</tr>
+</tbody></table>
+<h3>Water Ripple</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/water-ripple.scene.json"><code>examples/generators/water-ripple.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;damping&quot;: 0.99,
+  &quot;tapMode&quot;: &quot;random&quot;,
+  &quot;tapRate&quot;: 2.2,
+  &quot;tapStrength&quot;: 0.85,
+  &quot;refraction&quot;: 0.38
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/water-ripple-terminal.gif" alt="water-ripple terminal"></td>
+<td align="center"><img src="examples/generators/water-ripple-ascii.gif" alt="water-ripple ascii"></td>
+<td align="center"><img src="examples/generators/water-ripple-webgl.gif" alt="water-ripple webgl"></td>
+</tr>
+</tbody></table>
+<h3>Wireframe</h3>
+<p><strong>Scene:</strong> <a href="../examples/generators/wireframe.scene.json"><code>examples/generators/wireframe.scene.json</code></a></p>
+<pre><code class="language-json">{
+  &quot;color&quot;: &quot;#88f8ff&quot;,
+  &quot;backgroundColor&quot;: &quot;#04070f&quot;,
+  &quot;lineWidth&quot;: 2.4,
+  &quot;scale&quot;: 1.1
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/generators/wireframe-terminal.gif" alt="wireframe terminal"></td>
+<td align="center"><img src="examples/generators/wireframe-ascii.gif" alt="wireframe ascii"></td>
+<td align="center"><img src="examples/generators/wireframe-webgl.gif" alt="wireframe webgl"></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Advanced compositions</h2>
+<p>Pipeline summaries; full graphs are in each linked <code>*.scene.json</code>.</p>
+<h3>Blur Glow Stack</h3>
+<p>Metaballs + text → screen-blend → blur-glow → glow → crt.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/blur-glow-stack.scene.json"><code>examples/advanced/blur-glow-stack.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/blur-glow-stack-terminal.gif" alt="blur-glow-stack terminal"></td>
+<td align="center"><img src="examples/advanced/blur-glow-stack-ascii.gif" alt="blur-glow-stack ascii"></td>
+<td align="center"><img src="examples/advanced/blur-glow-stack-webgl.gif" alt="blur-glow-stack webgl"></td>
+</tr>
+</tbody></table>
+<h3>Cells Matrix Scope</h3>
+<p>Game of life + matrix rain (screen) + oscilloscope (additive) → color-grade → crt.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/cells-matrix-scope.scene.json"><code>examples/advanced/cells-matrix-scope.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/cells-matrix-scope-terminal.gif" alt="cells-matrix-scope terminal"></td>
+<td align="center"><img src="examples/advanced/cells-matrix-scope-ascii.gif" alt="cells-matrix-scope ascii"></td>
+<td align="center"><img src="examples/advanced/cells-matrix-scope-webgl.gif" alt="cells-matrix-scope webgl"></td>
+</tr>
+</tbody></table>
+<h3>Copper Sinebobs</h3>
+<p>Copperbars + sinebobs → screen-blend.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/copper-sinebobs.scene.json"><code>examples/advanced/copper-sinebobs.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/copper-sinebobs-terminal.gif" alt="copper-sinebobs terminal"></td>
+<td align="center"><img src="examples/advanced/copper-sinebobs-ascii.gif" alt="copper-sinebobs ascii"></td>
+<td align="center"><img src="examples/advanced/copper-sinebobs-webgl.gif" alt="copper-sinebobs webgl"></td>
+</tr>
+</tbody></table>
+<h3>Fire Scroller</h3>
+<p>Fire + scroller → additive-blend.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/fire-scroller.scene.json"><code>examples/advanced/fire-scroller.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/fire-scroller-terminal.gif" alt="fire-scroller terminal"></td>
+<td align="center"><img src="examples/advanced/fire-scroller-ascii.gif" alt="fire-scroller ascii"></td>
+<td align="center"><img src="examples/advanced/fire-scroller-webgl.gif" alt="fire-scroller webgl"></td>
+</tr>
+</tbody></table>
+<h3>Floor Metaballs</h3>
+<p>Checkerboard floor + metaballs → screen-blend → glow → crt.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/floor-metaballs.scene.json"><code>examples/advanced/floor-metaballs.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/floor-metaballs-terminal.gif" alt="floor-metaballs terminal"></td>
+<td align="center"><img src="examples/advanced/floor-metaballs-ascii.gif" alt="floor-metaballs ascii"></td>
+<td align="center"><img src="examples/advanced/floor-metaballs-webgl.gif" alt="floor-metaballs webgl"></td>
+</tr>
+</tbody></table>
+<h3>Fractal Floor</h3>
+<p>Fractal zoom + checkerboard floor → overlay-blend → lens → crt.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/fractal-floor.scene.json"><code>examples/advanced/fractal-floor.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/fractal-floor-terminal.gif" alt="fractal-floor terminal"></td>
+<td align="center"><img src="examples/advanced/fractal-floor-ascii.gif" alt="fractal-floor ascii"></td>
+<td align="center"><img src="examples/advanced/fractal-floor-webgl.gif" alt="fractal-floor webgl"></td>
+</tr>
+</tbody></table>
+<h3>Moiré Mirror Cycle</h3>
+<p>Moire → mirror (octal) → palette-cycle.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/moire-mirror-cycle.scene.json"><code>examples/advanced/moire-mirror-cycle.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/moire-mirror-cycle-terminal.gif" alt="moire-mirror-cycle terminal"></td>
+<td align="center"><img src="examples/advanced/moire-mirror-cycle-ascii.gif" alt="moire-mirror-cycle ascii"></td>
+<td align="center"><img src="examples/advanced/moire-mirror-cycle-webgl.gif" alt="moire-mirror-cycle webgl"></td>
+</tr>
+</tbody></table>
+<h3>Neon Layers</h3>
+<p>Plasma + tunnel (screen) + lasers (additive) → chromatic-aberration → glow → crt.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/neon-layers.scene.json"><code>examples/advanced/neon-layers.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/neon-layers-terminal.gif" alt="neon-layers terminal"></td>
+<td align="center"><img src="examples/advanced/neon-layers-ascii.gif" alt="neon-layers ascii"></td>
+<td align="center"><img src="examples/advanced/neon-layers-webgl.gif" alt="neon-layers webgl"></td>
+</tr>
+</tbody></table>
+<h3>Raymarcher Metaballs</h3>
+<p>Raymarcher (GLSL file) + metaballs → screen-blend → color-grade.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/raymarcher-metaballs.scene.json"><code>examples/advanced/raymarcher-metaballs.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/raymarcher-metaballs-terminal.gif" alt="raymarcher-metaballs terminal"></td>
+<td align="center"><img src="examples/advanced/raymarcher-metaballs-ascii.gif" alt="raymarcher-metaballs ascii"></td>
+<td align="center"><img src="examples/advanced/raymarcher-metaballs-webgl.gif" alt="raymarcher-metaballs webgl"></td>
+</tr>
+</tbody></table>
+<h3>Scroller ASCII</h3>
+<p>Starfield + scroller (<code>asciiFont</code>) → alpha-blend → palette-flash (track) → ansi-art.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/scroller-ascii.scene.json"><code>examples/advanced/scroller-ascii.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/scroller-ascii-terminal.gif" alt="scroller-ascii terminal"></td>
+<td align="center"><img src="examples/advanced/scroller-ascii-ascii.gif" alt="scroller-ascii ascii"></td>
+<td align="center"><img src="examples/advanced/scroller-ascii-webgl.gif" alt="scroller-ascii webgl"></td>
+</tr>
+</tbody></table>
+<h3>Text Title</h3>
+<p>Plasma + text → screen-blend → feedback → glow → crt.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/text-title.scene.json"><code>examples/advanced/text-title.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/text-title-terminal.gif" alt="text-title terminal"></td>
+<td align="center"><img src="examples/advanced/text-title-ascii.gif" alt="text-title ascii"></td>
+<td align="center"><img src="examples/advanced/text-title-webgl.gif" alt="text-title webgl"></td>
+</tr>
+</tbody></table>
+<h3>Transition Playground</h3>
+<p>Plasma ↔ lissajous via <code>transition</code> (<code>iris</code>, Rocket <code>transition.progress</code>).</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/transition-playground.scene.json"><code>examples/advanced/transition-playground.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/transition-playground-terminal.gif" alt="transition-playground terminal"></td>
+<td align="center"><img src="examples/advanced/transition-playground-ascii.gif" alt="transition-playground ascii"></td>
+<td align="center"><img src="examples/advanced/transition-playground-webgl.gif" alt="transition-playground webgl"></td>
+</tr>
+</tbody></table>
+<h3>Tunnel Roto Stack</h3>
+<p>Tunnel + rotozoom → overlay-blend.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/tunnel-roto-stack.scene.json"><code>examples/advanced/tunnel-roto-stack.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/tunnel-roto-stack-terminal.gif" alt="tunnel-roto-stack terminal"></td>
+<td align="center"><img src="examples/advanced/tunnel-roto-stack-ascii.gif" alt="tunnel-roto-stack ascii"></td>
+<td align="center"><img src="examples/advanced/tunnel-roto-stack-webgl.gif" alt="tunnel-roto-stack webgl"></td>
+</tr>
+</tbody></table>
+<h3>Vector Balls Show</h3>
+<p>Starfield + vector-balls → screen-blend → glow → crt.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/vectorballs-show.scene.json"><code>examples/advanced/vectorballs-show.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/vectorballs-show-terminal.gif" alt="vectorballs-show terminal"></td>
+<td align="center"><img src="examples/advanced/vectorballs-show-ascii.gif" alt="vectorballs-show ascii"></td>
+<td align="center"><img src="examples/advanced/vectorballs-show-webgl.gif" alt="vectorballs-show webgl"></td>
+</tr>
+</tbody></table>
+<h3>Voxel Cruise</h3>
+<p>Starfield + voxel-landscape → additive-blend → feedback → crt.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/voxel-cruise.scene.json"><code>examples/advanced/voxel-cruise.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/voxel-cruise-terminal.gif" alt="voxel-cruise terminal"></td>
+<td align="center"><img src="examples/advanced/voxel-cruise-ascii.gif" alt="voxel-cruise ascii"></td>
+<td align="center"><img src="examples/advanced/voxel-cruise-webgl.gif" alt="voxel-cruise webgl"></td>
+</tr>
+</tbody></table>
+<h3>Water Dot</h3>
+<p>Water ripple + dot-matrix → screen-blend → mirror (quad) → crt.</p>
+<p><strong>Scene:</strong> <a href="../examples/advanced/water-dot.scene.json"><code>examples/advanced/water-dot.scene.json</code></a></p>
+<table>
+<thead>
+<tr>
+<th align="center">ANSI (80×24)</th>
+<th align="center">ASCII (160×48 downscaled)</th>
+<th align="center">WebGL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="examples/advanced/water-dot-terminal.gif" alt="water-dot terminal"></td>
+<td align="center"><img src="examples/advanced/water-dot-ascii.gif" alt="water-dot ascii"></td>
+<td align="center"><img src="examples/advanced/water-dot-webgl.gif" alt="water-dot webgl"></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>See also</h2>
+<ul>
+<li><a href="graph-model.md">Graph model</a></li>
+<li><a href="scene-format.md">Scene format</a></li>
+<li><a href="terminal-sink.md">Terminal sink</a></li>
+<li><a href="../overscan-effects-catalogue.md"><code>overscan-effects-catalogue.md</code></a></li>
+</ul>
+
+
+</main>
+</body>
+</html>

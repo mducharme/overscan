@@ -1,0 +1,22 @@
+{
+  "id": "dot-matrix",
+  "title": "Dot Matrix",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "dots1",
+        "type": "generator",
+        "impl": "dot-matrix",
+        "config": { "shape": "helix", "count": 1800, "pointSize": 2.5 }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "dots1", "browser": "dots1", "export": "dots1" }
+  }
+}

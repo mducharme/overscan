@@ -1,0 +1,22 @@
+{
+  "id": "glenz",
+  "title": "Glenz",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "glenz1",
+        "type": "generator",
+        "impl": "glenz",
+        "config": { "backgroundColor": "#04060e", "alpha": 0.36 }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "glenz1", "browser": "glenz1", "export": "glenz1" }
+  }
+}

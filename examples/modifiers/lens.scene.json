@@ -1,0 +1,30 @@
+{
+  "id": "lens",
+  "title": "Lens Distortion",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "plasma1",
+        "type": "generator",
+        "impl": "plasma",
+        "config": { "speed": 0.55, "scale": 1.5 }
+      },
+      {
+        "id": "lens1",
+        "type": "modifier",
+        "impl": "lens",
+        "config": { "strength": 0.85, "radius": 0.34, "zoom": 1.35, "chroma": 1.2 }
+      }
+    ],
+    "edges": [
+      { "from": { "node": "plasma1", "output": "color" }, "to": { "node": "lens1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "lens1", "browser": "lens1", "export": "lens1" }
+  }
+}

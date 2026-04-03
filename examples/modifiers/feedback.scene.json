@@ -1,0 +1,20 @@
+{
+  "id": "feedback",
+  "title": "Feedback",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "liss1", "type": "generator", "impl": "lissajous", "config": { "trailLength": 320, "glow": 0.3 } },
+      { "id": "fb1", "type": "modifier", "impl": "feedback", "config": { "decay": 0.84, "offsetX": 0.002, "offsetY": -0.002, "scale": 1.01 } }
+    ],
+    "edges": [
+      { "from": { "node": "liss1", "output": "color" }, "to": { "node": "fb1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "fb1", "browser": "fb1", "export": "fb1" }
+  }
+}

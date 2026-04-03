@@ -1,0 +1,27 @@
+{
+  "id": "shadebobs",
+  "title": "Shadebobs",
+  "duration": 10,
+  "bpm": 124,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "shade1",
+        "type": "generator",
+        "impl": "shadebobs",
+        "config": {
+          "count": 9,
+          "radius": 30,
+          "speed": 1.2,
+          "palette": [[24, 20, 56], [96, 46, 172], [255, 84, 180], [255, 226, 108]]
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "shade1", "browser": "shade1", "export": "shade1" }
+  }
+}

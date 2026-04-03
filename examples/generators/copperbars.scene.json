@@ -1,0 +1,15 @@
+{
+  "id": "copperbars",
+  "title": "Copperbars",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [{ "id": "bars1", "type": "generator", "impl": "copperbars", "config": { "speed": 1.2, "count": 18 } }],
+    "edges": [],
+    "outputs": { "terminal": "bars1", "browser": "bars1", "export": "bars1" }
+  }
+}

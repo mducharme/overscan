@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overscan Showcase — browser preview</title>
+    <style>
+      body { margin: 0; background: #111; display: flex; min-height: 100vh; align-items: center; justify-content: center; }
+      canvas { image-rendering: pixelated; box-shadow: 0 0 0 2px #333; max-width: 100%; height: auto; }
+    </style>
+  </head>
+  <body>
+    <canvas id="screen" width="640" height="360"></canvas>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

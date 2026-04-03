@@ -1,0 +1,26 @@
+{
+  "id": "plasma",
+  "title": "Plasma",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "plasma1",
+        "type": "generator",
+        "impl": "plasma",
+        "config": {
+          "speed": 0.85,
+          "scale": 1.7,
+          "palette": [[14, 10, 42], [64, 28, 126], [0, 176, 255], [255, 104, 196], [255, 240, 116]]
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "plasma1", "browser": "plasma1", "export": "plasma1" }
+  }
+}

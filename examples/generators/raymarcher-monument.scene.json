@@ -1,0 +1,26 @@
+{
+  "id": "raymarcher-monument",
+  "title": "Raymarcher Monument",
+  "duration": 10,
+  "bpm": 122,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "rm1",
+        "type": "generator",
+        "impl": "raymarcher",
+        "config": {
+          "fogColor": "#02050b",
+          "cameraPos": [0, 0.25, 3.4],
+          "scenePath": "../../shaders/raymarcher-monument.glsl"
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "rm1", "browser": "rm1", "export": "rm1" }
+  }
+}

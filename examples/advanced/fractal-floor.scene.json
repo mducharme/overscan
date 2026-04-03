@@ -1,0 +1,50 @@
+{
+  "id": "fractal-floor",
+  "title": "Fractal Floor",
+  "duration": 10,
+  "bpm": 118,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "frac1",
+        "type": "generator",
+        "impl": "fractal-zoom",
+        "config": {
+          "type": "mandelbrot",
+          "zoom": 1.2,
+          "zoomSpeed": 0.08,
+          "maxIter": 96,
+          "smooth": true
+        }
+      },
+      {
+        "id": "floor1",
+        "type": "generator",
+        "impl": "checkerboard-floor",
+        "config": {
+          "color1": "#1a1030",
+          "color2": "#3d2060",
+          "skyColor": "#050208",
+          "fogColor": "#120818",
+          "horizon": 0.48,
+          "scrollSpeed": 0.25,
+          "rotationSpeed": 0.1
+        }
+      },
+      { "id": "blend1", "type": "compositor", "impl": "overlay-blend", "config": { "opacity": 0.62 } },
+      { "id": "lens1", "type": "modifier", "impl": "lens", "config": { "strength": 0.35, "radius": 0.42, "zoom": 1.15, "chroma": 0.4 } },
+      { "id": "crt1", "type": "modifier", "impl": "crt", "config": { "scanlineStrength": 0.16, "vignetteStrength": 0.1 } }
+    ],
+    "edges": [
+      { "from": { "node": "frac1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "floor1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } },
+      { "from": { "node": "blend1", "output": "color" }, "to": { "node": "lens1", "input": "color" } },
+      { "from": { "node": "lens1", "output": "color" }, "to": { "node": "crt1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "crt1", "browser": "crt1", "export": "crt1" }
+  }
+}

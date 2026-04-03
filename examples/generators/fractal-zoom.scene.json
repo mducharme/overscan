@@ -1,0 +1,28 @@
+{
+  "id": "fractal-zoom",
+  "title": "Fractal Zoom",
+  "duration": 10,
+  "bpm": 118,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "frac1",
+        "type": "generator",
+        "impl": "fractal-zoom",
+        "config": {
+          "type": "mandelbrot",
+          "zoom": 1.1,
+          "zoomSpeed": 0.06,
+          "maxIter": 80,
+          "smooth": true
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "frac1", "browser": "frac1", "export": "frac1" }
+  }
+}

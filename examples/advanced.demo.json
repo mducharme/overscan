@@ -1,0 +1,23 @@
+{
+  "id": "advanced-tour",
+  "title": "Advanced Composites Tour",
+  "loop": false,
+  "sections": [
+    { "id": "blur-glow-stack", "scene": "./advanced/blur-glow-stack.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "cells-matrix-scope", "scene": "./advanced/cells-matrix-scope.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "copper-sinebobs", "scene": "./advanced/copper-sinebobs.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "fire-scroller", "scene": "./advanced/fire-scroller.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "floor-metaballs", "scene": "./advanced/floor-metaballs.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "fractal-floor", "scene": "./advanced/fractal-floor.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "moire-mirror-cycle", "scene": "./advanced/moire-mirror-cycle.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "neon-layers", "scene": "./advanced/neon-layers.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "raymarcher-metaballs", "scene": "./advanced/raymarcher-metaballs.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "scroller-ascii", "scene": "./advanced/scroller-ascii.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "text-title", "scene": "./advanced/text-title.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "transition-playground", "scene": "./advanced/transition-playground.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "tunnel-roto-stack", "scene": "./advanced/tunnel-roto-stack.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "vectorballs-show", "scene": "./advanced/vectorballs-show.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "voxel-cruise", "scene": "./advanced/voxel-cruise.scene.json", "duration": 10, "transition": { "type": "cut" } },
+    { "id": "water-dot", "scene": "./advanced/water-dot.scene.json", "duration": 10, "transition": { "type": "cut" } }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "lfo",
+  "title": "LFO Signal",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "lfo1",
+        "type": "signal",
+        "impl": "lfo",
+        "config": { "shape": "sine", "rate": { "bars": 0.5 }, "amplitude": 2.2, "offset": 2.4, "bipolar": false }
+      },
+      {
+        "id": "curve1",
+        "type": "generator",
+        "impl": "lissajous",
+        "config": {
+          "a": { "node": "lfo1", "output": "value" },
+          "b": 3,
+          "delta": 1.57,
+          "amplitude": 0.78,
+          "trailLength": 600,
+          "decay": 0.95,
+          "color": "#8cf0ff",
+          "lineWidth": 1.5,
+          "glow": 0.4
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "curve1", "browser": "curve1", "export": "curve1" }
+  }
+}

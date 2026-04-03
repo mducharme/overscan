@@ -1,0 +1,30 @@
+{
+  "id": "moire",
+  "title": "Moire",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "moire1",
+        "type": "generator",
+        "impl": "moire",
+        "config": {
+          "mode": "radial",
+          "freq1": 14,
+          "freq2": 15.5,
+          "speed1": 0.5,
+          "speed2": -0.35,
+          "contrast": 1.5,
+          "palette": [[0, 0, 0], [80, 20, 120], [255, 100, 200], [255, 255, 255]]
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "moire1", "browser": "moire1", "export": "moire1" }
+  }
+}

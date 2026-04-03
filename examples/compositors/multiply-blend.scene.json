@@ -1,0 +1,22 @@
+{
+  "id": "multiply-blend",
+  "title": "Multiply Blend",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "base1", "type": "generator", "impl": "plasma", "config": { "speed": 0.55, "scale": 1.4 } },
+      { "id": "over1", "type": "generator", "impl": "moire", "config": { "mode": "radial", "freq1": 12, "freq2": 13.5, "contrast": 1.4 } },
+      { "id": "blend1", "type": "compositor", "impl": "multiply-blend", "config": { "opacity": 0.92 } }
+    ],
+    "edges": [
+      { "from": { "node": "base1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "over1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "blend1", "browser": "blend1", "export": "blend1" }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@overscan/types",
+  "version": "0.1.0",
+  "description": "Shared TypeScript interfaces for the demoscene toolkit",
+  "type": "module",
+  "main":  "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types":  "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build":     "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean":     "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "*"
+  }
+}

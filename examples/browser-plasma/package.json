@@ -1,0 +1,22 @@
+{
+  "name": "browser-plasma",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@overscan/core": "workspace:*",
+    "@overscan/nodes": "workspace:*",
+    "@overscan/sequencer": "workspace:*",
+    "@overscan/sink-browser": "workspace:*",
+    "@overscan/text": "workspace:*",
+    "@overscan/types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "*",
+    "vite": "^5.4.0"
+  }
+}

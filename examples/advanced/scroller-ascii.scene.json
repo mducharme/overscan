@@ -1,0 +1,62 @@
+{
+  "id": "scroller-ascii",
+  "title": "Scroller ASCII",
+  "duration": 10,
+  "bpm": 110,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "flash.strength",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "smooth" },
+        { "row": 16, "value": 0.35, "interpolation": "ease-in-out" },
+        { "row": 32, "value": 0, "interpolation": "smooth" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "id": "star1",
+        "type": "generator",
+        "impl": "starfield",
+        "config": { "count": 180, "warpSpeed": 0.8, "starColor": [220, 240, 255] }
+      },
+      {
+        "id": "scroll1",
+        "type": "generator",
+        "impl": "scroller",
+        "config": {
+          "text": "  >>> TERMINAL SCROLLER · HIGH CONTRAST · BPM TRACK FLASH  <<<  ",
+          "fontSize": 22,
+          "speed": 35,
+          "asciiFont": true,
+          "waveAmplitude": 5,
+          "waveFrequency": 0.15
+        }
+      },
+      { "id": "blend1", "type": "compositor", "impl": "alpha-blend", "config": { "opacity": 1 } },
+      {
+        "id": "flash1",
+        "type": "modifier",
+        "impl": "palette-flash",
+        "config": { "color": "#80ffe0", "strength": { "track": "flash.strength" }, "blendMode": "additive" }
+      },
+      {
+        "id": "ansi1",
+        "type": "modifier",
+        "impl": "ansi-art",
+        "config": { "charset": "ascii", "colorMode": "mono", "dither": true }
+      }
+    ],
+    "edges": [
+      { "from": { "node": "star1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "scroll1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } },
+      { "from": { "node": "blend1", "output": "color" }, "to": { "node": "flash1", "input": "color" } },
+      { "from": { "node": "flash1", "output": "color" }, "to": { "node": "ansi1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "ansi1", "browser": "ansi1", "export": "ansi1" }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "twister",
+  "title": "Twister",
+  "duration": 10,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "twister1",
+        "type": "generator",
+        "impl": "twister",
+        "config": {
+          "twistSpeed": 1.8,
+          "verticalFrequency": 1.45,
+          "width": 0.28,
+          "sway": 0.12,
+          "shading": 0.82,
+          "backgroundColor": "#050812",
+          "palette": [[255, 78, 150], [255, 208, 72], [90, 246, 168], [82, 164, 255]]
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "twister1", "browser": "twister1", "export": "twister1" }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "sinebobs",
+  "title": "Sinebobs",
+  "duration": 10,
+  "bpm": 122,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "bobs1",
+        "type": "generator",
+        "impl": "sinebobs",
+        "config": { "count": 18, "radius": 22, "freqX": 1.1, "freqY": 1.35, "amplitude": 0.42 }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "bobs1", "browser": "bobs1", "export": "bobs1" }
+  }
+}

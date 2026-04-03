@@ -1,0 +1,26 @@
+{
+  "id": "starfield",
+  "title": "Starfield",
+  "duration": 10,
+  "bpm": 118,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "stars1",
+        "type": "generator",
+        "impl": "starfield",
+        "config": {
+          "count": 260,
+          "warpSpeed": 1.15,
+          "starColor": [230, 244, 255]
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "stars1", "browser": "stars1", "export": "stars1" }
+  }
+}

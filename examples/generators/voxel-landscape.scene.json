@@ -1,0 +1,15 @@
+{
+  "id": "voxel-landscape",
+  "title": "Voxel Landscape",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [{ "id": "vox1", "type": "generator", "impl": "voxel-landscape", "config": {} }],
+    "edges": [],
+    "outputs": { "terminal": "vox1", "browser": "vox1", "export": "vox1" }
+  }
+}

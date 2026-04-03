@@ -1,0 +1,36 @@
+{
+  "id": "vectorballs-show",
+  "title": "Vector Balls Show",
+  "duration": 10,
+  "bpm": 124,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "star1",
+        "type": "generator",
+        "impl": "starfield",
+        "config": { "count": 200, "warpSpeed": 0.9, "starColor": [180, 200, 255] }
+      },
+      { "id": "balls1", "type": "generator", "impl": "vector-balls", "config": {} },
+      { "id": "blend1", "type": "compositor", "impl": "screen-blend", "config": { "opacity": 0.82 } },
+      { "id": "glow1", "type": "modifier", "impl": "glow", "config": { "radius": 6, "strength": 0.36 } },
+      {
+        "id": "crt1",
+        "type": "modifier",
+        "impl": "crt",
+        "config": { "scanlineStrength": 0.2, "vignetteStrength": 0.1, "brightness": 1.05 }
+      }
+    ],
+    "edges": [
+      { "from": { "node": "star1", "output": "color" }, "to": { "node": "blend1", "input": "base" } },
+      { "from": { "node": "balls1", "output": "color" }, "to": { "node": "blend1", "input": "overlay" } },
+      { "from": { "node": "blend1", "output": "color" }, "to": { "node": "glow1", "input": "color" } },
+      { "from": { "node": "glow1", "output": "color" }, "to": { "node": "crt1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "crt1", "browser": "crt1", "export": "crt1" }
+  }
+}

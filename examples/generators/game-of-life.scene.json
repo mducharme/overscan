@@ -1,0 +1,29 @@
+{
+  "id": "game-of-life",
+  "title": "Game of Life",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "life1",
+        "type": "generator",
+        "impl": "game-of-life",
+        "config": {
+          "seed": "random",
+          "seedDensity": 0.28,
+          "scale": 6,
+          "speed": 2,
+          "colorMode": "age",
+          "agePalette": [[8, 10, 18], [0, 180, 100], [255, 255, 255]]
+        }
+      }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "life1", "browser": "life1", "export": "life1" }
+  }
+}

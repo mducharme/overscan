@@ -1,0 +1,27 @@
+{
+  "id": "moire-mirror-cycle",
+  "title": "Moire Mirror Cycle",
+  "duration": 10,
+  "bpm": 122,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "moire1", "type": "generator", "impl": "moire", "config": { "mode": "radial", "freq1": 17, "freq2": 18.4, "contrast": 1.6 } },
+      { "id": "mirror1", "type": "modifier", "impl": "mirror", "config": { "mode": "octal", "originX": 0.5, "originY": 0.5 } },
+      {
+        "id": "cycle1",
+        "type": "modifier",
+        "impl": "palette-cycle",
+        "config": { "speed": 0.18, "range": [0.15, 0.95], "palette": [[10, 8, 24], [0, 180, 255], [255, 0, 170], [255, 200, 80], [245, 245, 255]] }
+      }
+    ],
+    "edges": [
+      { "from": { "node": "moire1", "output": "color" }, "to": { "node": "mirror1", "input": "color" } },
+      { "from": { "node": "mirror1", "output": "color" }, "to": { "node": "cycle1", "input": "color" } }
+    ],
+    "outputs": { "terminal": "cycle1", "browser": "cycle1", "export": "cycle1" }
+  }
+}

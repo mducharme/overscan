@@ -1,0 +1,26 @@
+{
+  "id": "color-grade",
+  "title": "Color Grade",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "plasma1", "type": "generator", "impl": "plasma", "config": { "speed": 0.65, "scale": 1.35 } },
+      {
+        "id": "grade1",
+        "type": "modifier",
+        "impl": "color-grade",
+        "config": {
+          "palette": [[6, 8, 20], [40, 20, 90], [255, 90, 60], [255, 220, 140], [255, 255, 255]],
+          "strength": 0.75
+        }
+      }
+    ],
+    "edges": [{ "from": { "node": "plasma1", "output": "color" }, "to": { "node": "grade1", "input": "color" } }],
+    "outputs": { "terminal": "grade1", "browser": "grade1", "export": "grade1" }
+  }
+}
