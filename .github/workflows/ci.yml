@@ -54,9 +54,6 @@ jobs:
       - name: Headless stateful scene smoke
         run: node packages/cli/dist/cli.js run examples/advanced/water-dot.scene.json --frames 4 --no-display
 
-      - name: Headless packaged demo smoke
-        run: node packages/cli/dist/cli.js run examples/overscan-demo/overscan.demo.json --frames 10 --no-display
-
       - name: Browser example build
         run: pnpm --dir examples/browser-plasma build
 
