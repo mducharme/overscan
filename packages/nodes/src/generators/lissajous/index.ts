@@ -1,3 +1,4 @@
+import { frameSteps } from '../../frame-time.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -68,7 +69,7 @@ export function LissajousGenerator(config: Partial<LissajousConfig> = {}): Gener
       )
       const glow = Math.max(0, Math.min(1, resolveAnimatableFloat(glowRef, signal)))
 
-      fadeTrail(trail, decay)
+      fadeTrail(trail, decay ** frameSteps(signal))
       const cx = w * 0.5
       const cy = h * 0.5
       const ampX = cx * amplitude

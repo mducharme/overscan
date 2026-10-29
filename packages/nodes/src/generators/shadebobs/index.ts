@@ -1,3 +1,4 @@
+import { frameSteps } from '../../frame-time.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -219,7 +220,8 @@ void main() {
       const { width: w, height: h, data } = out
       const rCpu = Math.max(1, radius)
       const accum = ensureField(w, h)
-      for (let i = 0; i < accum.length; i++) accum[i] = (accum[i] ?? 0) * decay
+      const frameDecay = decay ** frameSteps(signal)
+      for (let i = 0; i < accum.length; i++) accum[i] = (accum[i] ?? 0) * frameDecay
       const rx = w * amplitude
       const ry = h * amplitude * 0.72
       for (let i = 0; i < count; i++) {

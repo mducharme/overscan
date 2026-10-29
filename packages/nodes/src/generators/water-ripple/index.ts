@@ -1,3 +1,4 @@
+import { FixedStepClock, REFERENCE_FPS } from '../../frame-time.js'
 import { createRng, DEFAULT_RANDOM_SEED } from '../../random.js'
 import {
   resolveAnimatableFloat,
@@ -38,6 +39,7 @@ export function WaterRippleGenerator(config: Partial<WaterRippleConfig> = {}): G
   let back: Float32Array | null = null
   const randomSeed = config.randomSeed ?? DEFAULT_RANDOM_SEED
   let rng = createRng(randomSeed)
+  const clock = new FixedStepClock()
   let rw = 0
   let rh = 0
   let lastTapT = -999
@@ -49,6 +51,7 @@ export function WaterRippleGenerator(config: Partial<WaterRippleConfig> = {}): G
     config: config as Generator['config'],
     init() {
       rng = createRng(randomSeed)
+      clock.reset()
       front = null
       back = null
       rw = 0
@@ -63,31 +66,41 @@ export function WaterRippleGenerator(config: Partial<WaterRippleConfig> = {}): G
         rw = w
         rh = h
         lastTapT = -999
+        clock.reset()
       }
       const damping = Math.max(0.85, Math.min(0.999, resolveAnimatableFloat(dampingRef, signal)))
       const tapRate = Math.max(0, resolveAnimatableFloat(tapRateRef, signal))
       const tapStrength = Math.max(0, resolveAnimatableFloat(tapStrengthRef, signal))
       const refraction = Math.max(0, Math.min(1, resolveAnimatableFloat(refractionRef, signal)))
 
-      if (shouldTap(signal, tapMode, tapRate, lastTapT)) {
-        const px = tapMode === 'beat' ? ((Math.sin(signal.beat * Math.PI * 0.5) * 0.35 + 0.5) * (w - 1)) : rng() * (w - 1)
-        const py = tapMode === 'beat' ? h * 0.55 : rng() * (h - 1)
-        addImpulse(front, w, h, px, py, Math.max(2, Math.round(Math.min(w, h) * 0.035)), tapStrength)
-        lastTapT = signal.t
-      }
-
-      for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-          const i = y * w + x
-          const next =
-            (((front[i - 1] ?? 0) + (front[i + 1] ?? 0) + (front[i - w] ?? 0) + (front[i + w] ?? 0)) * 0.5 - (back[i] ?? 0)) *
-            damping
-          back[i] = next
+      clock.advance(signal.t, () => {
+        front?.fill(0)
+        back?.fill(0)
+        lastTapT = -999
+        rng = createRng(randomSeed)
+      }, tickTime => {
+        if (!front || !back) return
+        const tickSignal = { ...signal, t: tickTime, beat: tickTime * signal.bpm / 60, dt: 1 / REFERENCE_FPS }
+        if (shouldTap(tickSignal, tapMode, tapRate, lastTapT)) {
+          const px = tapMode === 'beat' ? ((Math.sin(tickSignal.beat * Math.PI * 0.5) * 0.35 + 0.5) * (w - 1)) : rng() * (w - 1)
+          const py = tapMode === 'beat' ? h * 0.55 : rng() * (h - 1)
+          addImpulse(front, w, h, px, py, Math.max(2, Math.round(Math.min(w, h) * 0.035)), tapStrength)
+          lastTapT = tickTime
         }
-      }
-      const tmp = front
-      front = back
-      back = tmp
+
+        for (let y = 1; y < h - 1; y++) {
+          for (let x = 1; x < w - 1; x++) {
+            const i = y * w + x
+            const next =
+              (((front[i - 1] ?? 0) + (front[i + 1] ?? 0) + (front[i - w] ?? 0) + (front[i + w] ?? 0)) * 0.5 - (back[i] ?? 0)) *
+              damping
+            back[i] = next
+          }
+        }
+        const tmp = front
+        front = back
+        back = tmp
+      })
 
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {

@@ -1,3 +1,4 @@
+import { frameSteps } from '../frame-time.js'
 import { bindTexture, createFullscreenPipeline, type FullscreenPipeline } from '../webgl/fullscreen.js'
 import {
   resolveAnimatableFloat,
@@ -92,7 +93,8 @@ void main() {
       out: FrameBuffer,
       signal: Signal,
     ): void {
-      const decay = Math.min(1, Math.max(0, resolveAnimatableFloat(decayRef, signal)))
+      // Per-frame retention, normalized to 30 fps so trails last the same time at any frame rate.
+      const decay = Math.min(1, Math.max(0, resolveAnimatableFloat(decayRef, signal))) ** frameSteps(signal)
       const offsetX = resolveAnimatableFloat(offsetXRef, signal)
       const offsetY = resolveAnimatableFloat(offsetYRef, signal)
       const scale = Math.max(0.001, resolveAnimatableFloat(scaleRef, signal))

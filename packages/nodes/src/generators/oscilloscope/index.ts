@@ -1,3 +1,4 @@
+import { frameSteps } from '../../frame-time.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -51,7 +52,7 @@ export function OscilloscopeGenerator(config: Partial<OscilloscopeConfig> = {}):
       const persistence = Math.max(0, Math.min(1, resolveAnimatableFloat(persistenceRef, signal)))
       // The pool hands out cleared buffers, so the previous frame comes from our own trail copy.
       data.set(trail)
-      fade(data, persistence)
+      fade(data, persistence, frameSteps(signal))
       drawGrid(data, w, h, gridColor, gridDivisions)
       const lineWidth = scaleThickness(
         Math.max(1, resolveAnimatableFloat(lineWidthRef, signal)),
@@ -104,8 +105,8 @@ function drawGrid(data: Uint8ClampedArray, w: number, h: number, color: [number,
   }
 }
 
-function fade(data: Uint8ClampedArray, persistence: number): void {
-  const keep = persistence * 0.92
+function fade(data: Uint8ClampedArray, persistence: number, steps: number): void {
+  const keep = (persistence * 0.92) ** steps
   for (let i = 0; i < data.length; i += 4) {
     data[i] = Math.round((data[i] ?? 0) * keep)
     data[i + 1] = Math.round((data[i + 1] ?? 0) * keep)

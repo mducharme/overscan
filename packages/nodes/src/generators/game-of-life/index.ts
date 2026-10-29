@@ -1,3 +1,4 @@
+import { FixedStepClock } from '../../frame-time.js'
 import { createRng, DEFAULT_RANDOM_SEED } from '../../random.js'
 import { type FrameBuffer, type Generator, type NodeContext, type Signal } from '@overscan/types'
 import { VIEWPORT_REF_HEIGHT, VIEWPORT_REF_WIDTH } from '../../viewport-scale.js'
@@ -38,6 +39,7 @@ export function GameOfLifeGenerator(config: Partial<GameOfLifeConfig> = {}): Gen
   let ages: Uint16Array | null = null
   let cw = 0
   let ch = 0
+  const clock = new FixedStepClock()
 
   return {
     type: 'generator',
@@ -46,8 +48,9 @@ export function GameOfLifeGenerator(config: Partial<GameOfLifeConfig> = {}): Gen
     config: config as Generator['config'],
     init() {
       cells = null; next = null; ages = null; cw = 0; ch = 0
+      clock.reset()
     },
-    render(_ctx: NodeContext, out: FrameBuffer, _signal: Signal): void {
+    render(_ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const gw = Math.max(1, Math.floor(VIEWPORT_REF_WIDTH / scale))
       const gh = Math.max(1, Math.floor(VIEWPORT_REF_HEIGHT / scale))
       if (!cells || !next || !ages || cw !== gw || ch !== gh) {
@@ -56,40 +59,46 @@ export function GameOfLifeGenerator(config: Partial<GameOfLifeConfig> = {}): Gen
         next = new Uint8Array(gw * gh)
         ages = new Uint16Array(gw * gh)
         seedCells(cells, gw, gh, seed, seedDensity, createRng(randomSeed))
+        clock.reset()
       }
       let state = cells!
       let nextState = next!
       const ageState = ages!
-      for (let step = 0; step < speed; step++) {
-        for (let y = 0; y < gh; y++) {
-          for (let x = 0; x < gw; x++) {
-            const i = y * gw + x
-            const live = state[i] ?? 0
-            let n = 0
-            for (let yy = -1; yy <= 1; yy++) {
-              for (let xx = -1; xx <= 1; xx++) {
-                if (xx === 0 && yy === 0) continue
-                let nx = x + xx
-                let ny = y + yy
-                if (wrap) {
-                  nx = (nx + gw) % gw
-                  ny = (ny + gh) % gh
+      clock.advance(signal.t, () => {
+        seedCells(state, gw, gh, seed, seedDensity, createRng(randomSeed))
+        ageState.fill(0)
+      }, () => {
+        for (let step = 0; step < speed; step++) {
+          for (let y = 0; y < gh; y++) {
+            for (let x = 0; x < gw; x++) {
+              const i = y * gw + x
+              const live = state[i] ?? 0
+              let n = 0
+              for (let yy = -1; yy <= 1; yy++) {
+                for (let xx = -1; xx <= 1; xx++) {
+                  if (xx === 0 && yy === 0) continue
+                  let nx = x + xx
+                  let ny = y + yy
+                  if (wrap) {
+                    nx = (nx + gw) % gw
+                    ny = (ny + gh) % gh
+                  }
+                  if (nx < 0 || ny < 0 || nx >= gw || ny >= gh) continue
+                  n += state[ny * gw + nx] ?? 0
                 }
-                if (nx < 0 || ny < 0 || nx >= gw || ny >= gh) continue
-                n += state[ny * gw + nx] ?? 0
               }
+              const alive = live ? (n === 2 || n === 3 ? 1 : 0) : (n === 3 ? 1 : 0)
+              nextState[i] = alive
+              ageState[i] = alive ? ((live ? (ageState[i] ?? 0) : 0) + 1) : 0
             }
-            const alive = live ? (n === 2 || n === 3 ? 1 : 0) : (n === 3 ? 1 : 0)
-            nextState[i] = alive
-            ageState[i] = alive ? ((live ? (ageState[i] ?? 0) : 0) + 1) : 0
           }
+          const temp: Uint8Array = state
+          state = nextState
+          nextState = temp
+          cells = state
+          next = nextState
         }
-        const temp: Uint8Array = state
-        state = nextState
-        nextState = temp
-        cells = state
-        next = nextState
-      }
+      })
       renderCells(out, state, ageState, gw, gh, colorMode, aliveColor, deadColor, agePalette)
     },
     destroy() {

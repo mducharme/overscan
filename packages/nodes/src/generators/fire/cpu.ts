@@ -1,3 +1,4 @@
+import { FixedStepClock } from '../../frame-time.js'
 import type { FrameBuffer, Signal } from '@overscan/types'
 import { resolveAnimatableFloat } from '@overscan/types'
 import { VIEWPORT_REF_HEIGHT, VIEWPORT_REF_WIDTH } from '../../viewport-scale.js'
@@ -33,11 +34,13 @@ export class FireCPU {
   private pal: Uint8Array = new Uint8Array(0)
   private w = 0
   private h = 0
+  private clock = new FixedStepClock()
 
   init(width: number, height: number, config: FireConfig): void {
     this.w = width
     this.h = height
     this.heat = new Float32Array(width * height)
+    this.clock.reset()
     this.pal = paletteTex(config.palette ?? defaultFirePalette)
   }
 
@@ -61,8 +64,39 @@ export class FireCPU {
     )
     const wind = Math.max(-3, Math.min(3, Math.round(resolveAnimatableFloat(config.wind ?? 0, signal))))
 
-    // seed bottom row
     const seedMode = config.seed ?? 'random'
+    this.clock.advance(signal.t, () => heat.fill(0), tickT => {
+      this.step(tickT, seedMode, seedWidth, seedIntensity, spread, wind, cool)
+    })
+    const pal = this.pal
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        // Use a fixed mapping instead of frame-normalizing the whole buffer.
+        // Per-frame normalization makes the fire flicker and washes out the shape.
+        const v = Math.max(0, Math.min(1, heat[y * w + x] ?? 0))
+        const idx = Math.min(LUT - 1, Math.floor(v * (LUT - 1)))
+        const pi = idx * 3
+        const o = (y * w + x) * 4
+        data[o + 0] = pal[pi + 0] ?? 0
+        data[o + 1] = pal[pi + 1] ?? 0
+        data[o + 2] = pal[pi + 2] ?? 0
+        data[o + 3] = 255
+      }
+    }
+  }
+
+  /** One 30 Hz simulation tick: seed the bottom row, then let heat rise and cool. */
+  private step(
+    tickT: number,
+    seedMode: FireConfig['seed'],
+    seedWidth: number,
+    seedIntensity: number,
+    spread: number,
+    wind: number,
+    cool: number,
+  ): void {
+    const { heat, w, h } = this
+    // seed bottom row
     const half = w * seedWidth * 0.5
     const center = w * 0.5
     for (let x = 0; x < w; x++) {
@@ -73,10 +107,10 @@ export class FireCPU {
         continue
       }
       const r = seedMode === 'noise'
-        ? (Math.sin(x * 0.3 + signal.t * 10) * 0.5 + 0.5)
+        ? (Math.sin(x * 0.3 + tickT * 10) * 0.5 + 0.5)
         : (
-          hashNoise(x * 0.37, signal.t * 2.5) * 0.55 +
-          hashNoise(x * 0.11 + 19.7, signal.t * 1.2) * 0.45
+          hashNoise(x * 0.37, tickT * 2.5) * 0.55 +
+          hashNoise(x * 0.11 + 19.7, tickT * 1.2) * 0.45
         )
       const target = Math.max(0, Math.min(1.5, r * seedIntensity))
       heat[bottom] = (heat[bottom] ?? 0) * 0.45 + target * 0.55
@@ -94,22 +128,6 @@ export class FireCPU {
         }
         const avg = count > 0 ? sum / count : 0
         heat[y * w + x] = Math.max(0, avg - cool)
-      }
-    }
-
-    const pal = this.pal
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        // Use a fixed mapping instead of frame-normalizing the whole buffer.
-        // Per-frame normalization makes the fire flicker and washes out the shape.
-        const v = Math.max(0, Math.min(1, heat[y * w + x] ?? 0))
-        const idx = Math.min(LUT - 1, Math.floor(v * (LUT - 1)))
-        const pi = idx * 3
-        const o = (y * w + x) * 4
-        data[o + 0] = pal[pi + 0] ?? 0
-        data[o + 1] = pal[pi + 1] ?? 0
-        data[o + 2] = pal[pi + 2] ?? 0
-        data[o + 3] = 255
       }
     }
   }

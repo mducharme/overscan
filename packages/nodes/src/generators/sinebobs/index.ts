@@ -1,3 +1,4 @@
+import { frameSteps } from '../../frame-time.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -202,12 +203,13 @@ void main() {
       const { width: w, height: h, data } = out
       if (prev?.length !== data.length) prev = new Uint8ClampedArray(data.length)
       data.set(prev)
-      const fade = 1 - trail * 0.92
+      const keep = trail ** frameSteps(signal)
+      const fade = 1 - keep * 0.92
       for (let i = 0; i < data.length; i += 4) {
-        data[i] = Math.round((data[i] ?? 0) * trail)
-        data[i + 1] = Math.round((data[i + 1] ?? 0) * trail)
-        data[i + 2] = Math.round((data[i + 2] ?? 0) * trail)
-        data[i + 3] = Math.round(Math.max((data[i + 3] ?? 0) * trail, 255 * fade))
+        data[i] = Math.round((data[i] ?? 0) * keep)
+        data[i + 1] = Math.round((data[i + 1] ?? 0) * keep)
+        data[i + 2] = Math.round((data[i + 2] ?? 0) * keep)
+        data[i + 3] = Math.round(Math.max((data[i + 3] ?? 0) * keep, 255 * fade))
       }
       const rx = w * amplitude
       const ry = h * amplitude * 0.72

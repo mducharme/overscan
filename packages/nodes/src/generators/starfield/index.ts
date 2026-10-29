@@ -1,3 +1,4 @@
+import { frameSteps } from '../../frame-time.js'
 import { createRng, DEFAULT_RANDOM_SEED } from '../../random.js'
 import {
   resolveAnimatableFloat,
@@ -182,9 +183,10 @@ void main() {
       const cx = w * centerX
       const cy = h * centerY
       const scale = Math.min(w, h) * 0.34
+      const steps = frameSteps(signal)
 
       for (const s of stars) {
-        s.z -= warp * 0.035
+        s.z -= warp * 0.035 * steps
         if (s.z <= 0.02) {
           s.x = (rng() * 2 - 1) * spread
           s.y = (rng() * 2 - 1) * spread

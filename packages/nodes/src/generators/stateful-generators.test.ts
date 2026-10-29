@@ -34,7 +34,8 @@ describe('stateful generators', () => {
     gen.init(ctx)
     gen.render(ctx, out1, buildSignal({ beat: 0, dt: 0 }))
     const snap1 = Uint8ClampedArray.from(out1.data)
-    gen.render(ctx, out2, buildSignal({ beat: 1, dt: 1 / 30, bpm: 120 }))
+    // Beat 1 at 120 bpm is t = 0.5 s; the simulation derives taps from its own tick time.
+    gen.render(ctx, out2, buildSignal({ t: 0.5, beat: 1, dt: 0.5, bpm: 120 }))
 
     expect(snap1).not.toEqual(out2.data)
   })
