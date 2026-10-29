@@ -1,4 +1,4 @@
-import { FixedStepClock } from '../../frame-time.js'
+import { FixedStepClock, REFERENCE_FPS } from '../../frame-time.js'
 import type { FrameBuffer, Signal } from '@overscan/types'
 import { resolveAnimatableFloat } from '@overscan/types'
 import { VIEWPORT_REF_HEIGHT, VIEWPORT_REF_WIDTH } from '../../viewport-scale.js'
@@ -27,6 +27,18 @@ function paletteTex(palette: number[][]): Uint8Array {
 function hashNoise(x: number, t: number): number {
   const n = Math.sin(x * 127.1 + t * 311.7) * 43758.5453123
   return n - Math.floor(n)
+}
+
+/** Deterministic unsigned 32-bit hash per pixel and tick, cheap enough for every pixel. */
+function coolHash(x: number, y: number, tick: number): number {
+  let n = Math.imul(x, 374761393) ^ Math.imul(y, 668265263) ^ Math.imul(tick, 2246822519)
+  n = Math.imul(n ^ (n >>> 13), 1274126177)
+  return (n ^ (n >>> 16)) >>> 0
+}
+
+/** Wraps a column index into [0, w) for offsets of at most one frame width. */
+function wrap(x: number, w: number): number {
+  return x < 0 ? x + w : x >= w ? x - w : x
 }
 
 export class FireCPU {
@@ -116,18 +128,24 @@ export class FireCPU {
       heat[bottom] = (heat[bottom] ?? 0) * 0.45 + target * 0.55
     }
 
+    // Classic fire: average the row below (across `spread`) plus the pixel two rows below, read from a
+    // randomly jittered column, then cool each pixel by a random amount (mean `cool`).
+    const tick = Math.round(tickT * REFERENCE_FPS)
+    const halfSpan = Math.floor((spread - 1) / 2)
+    const taps = halfSpan * 2 + 2
+    const coolScale = (cool * 2) / 256
     for (let y = h - 2; y >= 0; y--) {
+      const below1 = (y + 1) * w
+      const below2 = Math.min(h - 1, y + 2) * w
       for (let x = 0; x < w; x++) {
+        // One integer hash per pixel and tick: low bits pick the column jitter, high bits the cooling.
+        const r = coolHash(x, y, tick)
+        // Random sideways jitter of the source column (−1, 0 or +1) makes the flames lick and sway.
+        const src = wrap(x + wind + (r % 3) - 1, w)
         let sum = 0
-        let count = 0
-        const halfSpan = Math.floor((spread - 1) / 2)
-        for (let k = -halfSpan; k <= halfSpan; k++) {
-          const xx = ((x + k + wind) % w + w) % w
-          sum += heat[(y + 1) * w + xx] ?? 0
-          count++
-        }
-        const avg = count > 0 ? sum / count : 0
-        heat[y * w + x] = Math.max(0, avg - cool)
+        for (let k = -halfSpan; k <= halfSpan; k++) sum += heat[below1 + wrap(src + k, w)]!
+        sum += heat[below2 + src]!
+        heat[y * w + x] = Math.max(0, sum / taps - coolScale * (r >>> 24))
       }
     }
   }

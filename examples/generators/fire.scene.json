@@ -13,7 +13,7 @@
         "id": "fire1",
         "type": "generator",
         "impl": "fire",
-        "config": { "cooling": 0.09, "seed": "noise", "seedIntensity": 1.1 }
+        "config": { "cooling": 0.25, "seed": "random", "seedIntensity": 1.1 }
       }
     ],
     "edges": [],
