@@ -30,119 +30,6 @@ export function VoxelLandscapeGenerator(config: Partial<VoxelLandscapeConfig> = 
   const cameraAngleRef = config.cameraAngle ?? 0
   const drawDistance = Math.max(40, Math.min(600, Math.round(config.drawDistance ?? 300)))
   const fogColor = hexToRgb(config.fogColor ?? '#87ceeb')
-  let program: WebGLProgram | null = null
-  let vao: WebGLVertexArrayObject | null = null
-  let uResolution: WebGLUniformLocation | null = null
-  let uTime: WebGLUniformLocation | null = null
-  let uHorizon: WebGLUniformLocation | null = null
-  let uScale: WebGLUniformLocation | null = null
-  let uCameraHeight: WebGLUniformLocation | null = null
-  let uCameraAngle: WebGLUniformLocation | null = null
-  let uFog: WebGLUniformLocation | null = null
-
-  function compile(gl: WebGL2RenderingContext, type: number, source: string): WebGLShader {
-    const shader = gl.createShader(type)
-    if (!shader) throw new Error('VoxelLandscapeGenerator: createShader failed')
-    gl.shaderSource(shader, source)
-    gl.compileShader(shader)
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      const log = gl.getShaderInfoLog(shader) ?? 'compile failed'
-      gl.deleteShader(shader)
-      throw new Error(`VoxelLandscapeGenerator: ${log}`)
-    }
-    return shader
-  }
-
-  function ensureGpu(ctx: NodeContext): void {
-    const gl = ctx.gl
-    if (!gl || program) return
-    const vert = `#version 300 es
-in vec2 a_pos;
-void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }`
-    const frag = `#version 300 es
-precision mediump float;
-uniform vec2 u_resolution;
-uniform float u_time;
-uniform float u_horizon;
-uniform float u_scale;
-uniform float u_cameraHeight;
-uniform float u_cameraAngle;
-uniform vec3 u_fog;
-out vec4 fragColor;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
-float noise(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
-}
-float terrain(vec2 p) {
-  float h = noise(p * 0.045) * 0.65 + noise(p * 0.11) * 0.25 + noise(p * 0.23) * 0.10;
-  return h;
-}
-vec3 terrainColor(float h) {
-  vec3 low = vec3(0.07, 0.14, 0.24);
-  vec3 mid = vec3(0.18, 0.45, 0.22);
-  vec3 high = vec3(0.72, 0.68, 0.45);
-  return h < 0.45 ? mix(low, mid, h / 0.45) : mix(mid, high, (h - 0.45) / 0.55);
-}
-void main() {
-  vec2 uv = gl_FragCoord.xy / u_resolution;
-  float sky = smoothstep(0.0, 1.0, uv.y / max(u_horizon, 0.001));
-  vec3 col = mix(u_fog * 0.45, u_fog, sky);
-  float xNorm = (uv.x - 0.5) * 1.4;
-  float angle = u_cameraAngle + xNorm * 0.8;
-  float maxY = u_resolution.y;
-  for (float d = 1.0; d <= 320.0; d += 1.0) {
-    if (d > ${drawDistance}.0) break;
-    vec2 pos = vec2(cos(angle), sin(angle)) * (d + u_time * 22.0);
-    float h = terrain(pos) * 180.0 * u_scale;
-    float proj = u_horizon * u_resolution.y - ((h - u_cameraHeight) / d) * 55.0;
-    if (proj < maxY) {
-      float fog = clamp(1.0 - d / ${drawDistance}.0, 0.0, 1.0);
-      vec3 terr = mix(u_fog, terrainColor(h / max(1.0, 180.0 * u_scale)), fog);
-      if (gl_FragCoord.y >= proj && gl_FragCoord.y <= maxY) {
-        col = terr;
-        maxY = proj;
-      }
-    }
-  }
-  fragColor = vec4(col, 1.0);
-}`
-    const vs = compile(gl, gl.VERTEX_SHADER, vert)
-    const fs = compile(gl, gl.FRAGMENT_SHADER, frag)
-    const prog = gl.createProgram()
-    if (!prog) throw new Error('VoxelLandscapeGenerator: createProgram failed')
-    gl.attachShader(prog, vs)
-    gl.attachShader(prog, fs)
-    gl.linkProgram(prog)
-    gl.deleteShader(vs)
-    gl.deleteShader(fs)
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-      const log = gl.getProgramInfoLog(prog) ?? 'link failed'
-      gl.deleteProgram(prog)
-      throw new Error(`VoxelLandscapeGenerator: ${log}`)
-    }
-    const quad = gl.createBuffer()
-    const vaoObj = gl.createVertexArray()
-    if (!quad || !vaoObj) throw new Error('VoxelLandscapeGenerator: quad init failed')
-    gl.bindVertexArray(vaoObj)
-    gl.bindBuffer(gl.ARRAY_BUFFER, quad)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW)
-    const aPos = gl.getAttribLocation(prog, 'a_pos')
-    gl.enableVertexAttribArray(aPos)
-    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0)
-    program = prog
-    vao = vaoObj
-    uResolution = gl.getUniformLocation(prog, 'u_resolution')
-    uTime = gl.getUniformLocation(prog, 'u_time')
-    uHorizon = gl.getUniformLocation(prog, 'u_horizon')
-    uScale = gl.getUniformLocation(prog, 'u_scale')
-    uCameraHeight = gl.getUniformLocation(prog, 'u_cameraHeight')
-    uCameraAngle = gl.getUniformLocation(prog, 'u_cameraAngle')
-    uFog = gl.getUniformLocation(prog, 'u_fog')
-  }
-
   return {
     type: 'generator',
     id: 'voxel-landscape',
@@ -158,23 +45,6 @@ void main() {
       const time = signal.t * speed
       const heightmap = heightmapUrl ? ctx.assets?.getImage(heightmapUrl) : undefined
       const colormap = colormapUrl ? ctx.assets?.getImage(colormapUrl) : undefined
-      if (ctx.gl && out.fbo && program && vao) {
-        const gl = ctx.gl
-        gl.bindFramebuffer(gl.FRAMEBUFFER, out.fbo)
-        gl.viewport(0, 0, out.width, out.height)
-        gl.useProgram(program)
-        gl.bindVertexArray(vao)
-        gl.uniform2f(uResolution, out.width, out.height)
-        gl.uniform1f(uTime, time)
-        gl.uniform1f(uHorizon, horizon)
-        gl.uniform1f(uScale, scale)
-        gl.uniform1f(uCameraHeight, cameraHeight)
-        gl.uniform1f(uCameraAngle, cameraAngle)
-        gl.uniform3f(uFog, fogColor[0] / 255, fogColor[1] / 255, fogColor[2] / 255)
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
-        return
-      }
-
       const { width: w, height: h, data } = out
       const horizonY = Math.round(h * horizon)
       for (let y = 0; y < h; y++) {
@@ -188,51 +58,46 @@ void main() {
           data[o + 3] = 255
         }
       }
-      for (let x = 0; x < w; x++) {
-        let maxY = h
-        const xNorm = (x / Math.max(1, w - 1) - 0.5) * 1.4
-        const angle = cameraAngle + xNorm * 0.8
-        const rayX = Math.cos(angle)
-        const rayY = Math.sin(angle)
-        const travel = time * 22
-        for (let d = 1; d <= drawDistance; d++) {
-          const px = rayX * (d + travel)
-          const py = rayY * (d + travel)
+      // Comanche-style voxel space: sweep depth front to back; at each depth a line perpendicular to
+      // the view direction spans the screen, so every column shares that depth (no fisheye).
+      const yBuffer = new Float64Array(w).fill(h)
+      const forwardX = Math.cos(cameraAngle)
+      const forwardY = Math.sin(cameraAngle)
+      const travel = time * 22
+      const camX = forwardX * travel
+      const camY = forwardY * travel
+      const halfFov = Math.tan(0.56)
+      let visibleColumns = w
+      for (let d = 1; d <= drawDistance && visibleColumns > 0; d++) {
+        const centerX = camX + forwardX * d
+        const centerY = camY + forwardY * d
+        const span = d * halfFov
+        const fog = Math.max(0, Math.min(1, 1 - d / drawDistance))
+        for (let x = 0; x < w; x++) {
+          const maxY = yBuffer[x]!
+          if (maxY <= 0) continue
+          const side = ((x / Math.max(1, w - 1)) * 2 - 1) * span
+          const px = centerX - forwardY * side
+          const py = centerY + forwardX * side
           const terr = sampleTerrain(heightmap, px, py) * 180 * scale
           const proj = horizonY - ((terr - cameraHeight) / d) * 55
-          if (proj < maxY) {
-            const fog = Math.max(0, Math.min(1, 1 - d / drawDistance))
-            const terrCol = blend(
-              fogColor,
-              sampleTerrainColor(colormap, terr / Math.max(1, 180 * scale)),
-              fog,
-            )
-            const yStart = Math.max(0, Math.floor(proj))
-            const yEnd = Math.min(h - 1, Math.floor(maxY))
-            for (let y = yStart; y <= yEnd; y++) {
-              const o = (y * w + x) * 4
-              data[o] = terrCol[0]
-              data[o + 1] = terrCol[1]
-              data[o + 2] = terrCol[2]
-              data[o + 3] = 255
-            }
-            maxY = proj
-            if (maxY <= 0) break
+          if (proj >= maxY) continue
+          const terrCol = blend(fogColor, sampleTerrainColor(colormap, terr / Math.max(1, 180 * scale)), fog)
+          const yStart = Math.max(0, Math.floor(proj))
+          const yEnd = Math.min(h - 1, Math.floor(maxY))
+          for (let y = yStart; y <= yEnd; y++) {
+            const o = (y * w + x) * 4
+            data[o] = terrCol[0]
+            data[o + 1] = terrCol[1]
+            data[o + 2] = terrCol[2]
+            data[o + 3] = 255
           }
+          yBuffer[x] = proj
+          if (proj <= 0) visibleColumns--
         }
       }
     },
-    destroy() {
-      program = null
-      vao = null
-      uResolution = null
-      uTime = null
-      uHorizon = null
-      uScale = null
-      uCameraHeight = null
-      uCameraAngle = null
-      uFog = null
-    },
+    destroy() {},
   }
 }
 
