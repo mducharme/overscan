@@ -1,3 +1,4 @@
+import { createRng, DEFAULT_RANDOM_SEED } from '../../random.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -9,6 +10,8 @@ import {
 import { VIEWPORT_REF_MIN } from '../../viewport-scale.js'
 
 export interface StarfieldConfig {
+  /** Seed for this node's randomness (default 1); vary it to decorrelate identical nodes. */
+  randomSeed?: number
   count?: number
   warpSpeed?: AnimatableFloat
   starColor?: [number, number, number]
@@ -26,6 +29,8 @@ interface Star {
 
 export function StarfieldGenerator(config: Partial<StarfieldConfig> = {}): Generator {
   const count = Math.max(1, Math.min(2000, config.count ?? 120))
+  const randomSeed = config.randomSeed ?? DEFAULT_RANDOM_SEED
+  let rng = createRng(randomSeed)
   const speedRef = config.warpSpeed ?? 1
   const col = config.starColor ?? [255, 255, 255]
   const spread = Math.max(0.1, config.spread ?? 1)
@@ -45,12 +50,13 @@ export function StarfieldGenerator(config: Partial<StarfieldConfig> = {}): Gener
   let uSizeRange: WebGLUniformLocation | null = null
 
   function initStars(): void {
+    rng = createRng(randomSeed)
     stars.length = 0
     for (let i = 0; i < count; i++) {
       stars.push({
-        x: (Math.random() * 2 - 1) * spread,
-        y: (Math.random() * 2 - 1) * spread,
-        z: Math.random() * 0.9 + 0.1,
+        x: (rng() * 2 - 1) * spread,
+        y: (rng() * 2 - 1) * spread,
+        z: rng() * 0.9 + 0.1,
       })
     }
   }
@@ -180,8 +186,8 @@ void main() {
       for (const s of stars) {
         s.z -= warp * 0.035
         if (s.z <= 0.02) {
-          s.x = (Math.random() * 2 - 1) * spread
-          s.y = (Math.random() * 2 - 1) * spread
+          s.x = (rng() * 2 - 1) * spread
+          s.y = (rng() * 2 - 1) * spread
           s.z = 1
         }
         const px = (s.x / s.z) * scale + cx

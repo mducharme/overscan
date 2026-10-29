@@ -1,7 +1,10 @@
+import { createRng, DEFAULT_RANDOM_SEED } from '../../random.js'
 import { type FrameBuffer, type Generator, type NodeContext, type Signal } from '@overscan/types'
 import { VIEWPORT_REF_HEIGHT, VIEWPORT_REF_WIDTH } from '../../viewport-scale.js'
 
 export interface GameOfLifeConfig {
+  /** Seed for this node's randomness (default 1); vary it to decorrelate identical nodes. */
+  randomSeed?: number
   seed?: 'random' | 'glider' | 'rPentomino' | string
   seedDensity?: number
   aliveColor?: string
@@ -22,6 +25,7 @@ const DEFAULT_PALETTE = [
 export function GameOfLifeGenerator(config: Partial<GameOfLifeConfig> = {}): Generator {
   const seed = config.seed ?? 'random'
   const seedDensity = Math.max(0.01, Math.min(1, config.seedDensity ?? 0.3))
+  const randomSeed = config.randomSeed ?? DEFAULT_RANDOM_SEED
   const aliveColor = hexToRgb(config.aliveColor ?? '#ffffff')
   const deadColor = hexToRgb(config.deadColor ?? '#000000')
   const scale = Math.max(1, Math.min(16, Math.round(config.scale ?? 6)))
@@ -51,7 +55,7 @@ export function GameOfLifeGenerator(config: Partial<GameOfLifeConfig> = {}): Gen
         cells = new Uint8Array(gw * gh)
         next = new Uint8Array(gw * gh)
         ages = new Uint16Array(gw * gh)
-        seedCells(cells, gw, gh, seed, seedDensity)
+        seedCells(cells, gw, gh, seed, seedDensity, createRng(randomSeed))
       }
       let state = cells!
       let nextState = next!
@@ -94,7 +98,7 @@ export function GameOfLifeGenerator(config: Partial<GameOfLifeConfig> = {}): Gen
   }
 }
 
-function seedCells(cells: Uint8Array, w: number, h: number, seed: string, density: number): void {
+function seedCells(cells: Uint8Array, w: number, h: number, seed: string, density: number, rng: () => number): void {
   cells.fill(0)
   if (seed === 'glider') {
     const x = Math.floor(w / 2), y = Math.floor(h / 2)
@@ -108,7 +112,7 @@ function seedCells(cells: Uint8Array, w: number, h: number, seed: string, densit
     setAlive(cells, w, h, x, y - 1); setAlive(cells, w, h, x, y + 1)
     return
   }
-  for (let i = 0; i < cells.length; i++) cells[i] = Math.random() < density ? 1 : 0
+  for (let i = 0; i < cells.length; i++) cells[i] = rng() < density ? 1 : 0
 }
 
 function setAlive(cells: Uint8Array, w: number, h: number, x: number, y: number): void {

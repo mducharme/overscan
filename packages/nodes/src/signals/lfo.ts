@@ -1,3 +1,4 @@
+import { DEFAULT_RANDOM_SEED, hash01 } from '../random.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -8,6 +9,8 @@ import {
 export type LfoShape = 'sine' | 'triangle' | 'square' | 'sawtooth' | 'ramp' | 'random'
 
 export interface LFOConfig {
+  /** Seed for this node's randomness (default 1); vary it to decorrelate identical nodes. */
+  randomSeed?: number
   shape?: LfoShape
   /** Hz, track ref, or `{ bars: n }` for BPM-locked period (n bars per cycle). */
   rate?: AnimatableFloat | { bars: number }
@@ -61,6 +64,7 @@ export function LFOSource(config: Partial<LFOConfig> = {}): SignalSource {
   const ampRef = config.amplitude ?? 1
   const offsetRef = config.offset ?? 0
   const smooth = Math.min(1, Math.max(0, config.smooth ?? 0))
+  const randomSeed = config.randomSeed ?? DEFAULT_RANDOM_SEED
   let heldRandom = 0
   let lastRandomCycle = Number.NaN
   let lastValue = bipolar ? 0 : 0.5
@@ -83,7 +87,7 @@ export function LFOSource(config: Partial<LFOConfig> = {}): SignalSource {
         const cycle = Math.floor(phase / (Math.PI * 2))
         if (cycle !== lastRandomCycle) {
           lastRandomCycle = cycle
-          heldRandom = Math.random() * 2 - 1
+          heldRandom = hash01(randomSeed, cycle) * 2 - 1
         }
         v = heldRandom
       }

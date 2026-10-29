@@ -1,3 +1,4 @@
+import { createRng, DEFAULT_RANDOM_SEED } from '../../random.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -8,6 +9,8 @@ import {
 } from '@overscan/types'
 
 export interface WaterRippleConfig {
+  /** Seed for this node's randomness (default 1); vary it to decorrelate identical nodes. */
+  randomSeed?: number
   damping?: AnimatableFloat
   tapMode?: 'random' | 'beat' | 'cursor' | 'none'
   tapRate?: AnimatableFloat
@@ -33,6 +36,8 @@ export function WaterRippleGenerator(config: Partial<WaterRippleConfig> = {}): G
   const refractionRef = config.refraction ?? 0.3
   let front: Float32Array | null = null
   let back: Float32Array | null = null
+  const randomSeed = config.randomSeed ?? DEFAULT_RANDOM_SEED
+  let rng = createRng(randomSeed)
   let rw = 0
   let rh = 0
   let lastTapT = -999
@@ -43,6 +48,7 @@ export function WaterRippleGenerator(config: Partial<WaterRippleConfig> = {}): G
     renderers: ['cpu'],
     config: config as Generator['config'],
     init() {
+      rng = createRng(randomSeed)
       front = null
       back = null
       rw = 0
@@ -64,8 +70,8 @@ export function WaterRippleGenerator(config: Partial<WaterRippleConfig> = {}): G
       const refraction = Math.max(0, Math.min(1, resolveAnimatableFloat(refractionRef, signal)))
 
       if (shouldTap(signal, tapMode, tapRate, lastTapT)) {
-        const px = tapMode === 'beat' ? ((Math.sin(signal.beat * Math.PI * 0.5) * 0.35 + 0.5) * (w - 1)) : Math.random() * (w - 1)
-        const py = tapMode === 'beat' ? h * 0.55 : Math.random() * (h - 1)
+        const px = tapMode === 'beat' ? ((Math.sin(signal.beat * Math.PI * 0.5) * 0.35 + 0.5) * (w - 1)) : rng() * (w - 1)
+        const py = tapMode === 'beat' ? h * 0.55 : rng() * (h - 1)
         addImpulse(front, w, h, px, py, Math.max(2, Math.round(Math.min(w, h) * 0.035)), tapStrength)
         lastTapT = signal.t
       }

@@ -1,3 +1,4 @@
+import { DEFAULT_RANDOM_SEED, hash01 } from '../../random.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -8,6 +9,8 @@ import {
 } from '@overscan/types'
 
 export interface MatrixRainConfig {
+  /** Seed for this node's randomness (default 1); vary it to decorrelate identical nodes. */
+  randomSeed?: number
   charset?: 'katakana' | 'ascii' | 'binary' | 'hex' | string
   color?: string
   headColor?: string
@@ -36,6 +39,7 @@ export function MatrixRainGenerator(config: Partial<MatrixRainConfig> = {}): Gen
   const trailRef = config.trailLength ?? 0.3
   const fontSize = Math.max(6, Math.min(32, Math.round(config.fontSize ?? 16)))
   const glitchRef = config.glitch ?? 0.02
+  const randomSeed = config.randomSeed ?? DEFAULT_RANDOM_SEED
   let columns: Column[] = []
   let cols = 0
 
@@ -71,7 +75,8 @@ export function MatrixRainGenerator(config: Partial<MatrixRainConfig> = {}): Gen
           const t = 1 - r / Math.max(1, rows)
           const useHead = r === 0
           const char = charset[Math.floor(Math.abs(Math.sin(signal.t * 13 + c * 7 + r * 3)) * charset.length) % charset.length] ?? '#'
-          const drawChar = Math.random() < glitch ? charset[(c + r) % charset.length] ?? char : char
+          // Stateless per glyph and 1/30 s tick, so the glitch pattern is reproducible and seek-safe.
+          const drawChar = hash01(randomSeed, c, r, Math.floor(signal.t * 30)) < glitch ? charset[(c + r) % charset.length] ?? char : char
           drawGlyph(data, w, h, x, y, cellW - 1, cellH - 1, drawChar, useHead ? headColor : tint(color, t * t))
         }
       }
