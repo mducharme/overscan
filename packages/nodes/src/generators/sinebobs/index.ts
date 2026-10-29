@@ -152,12 +152,15 @@ void main() {
     uPalette0 = gl.getUniformLocation(prog, 'u_palette[0]')
   }
 
+  /** Previous frame for `trail`; the pool hands out cleared buffers, so we keep our own copy. */
+  let prev: Uint8ClampedArray | null = null
+
   return {
     type: 'generator',
     id: 'sinebobs',
     renderers: ['cpu'],
     config: config as Generator['config'],
-    init() {},
+    init() { prev = null },
     render(ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const radius = scaleThickness(
         Math.max(2, resolveAnimatableFloat(radiusRef, signal)),
@@ -197,6 +200,8 @@ void main() {
       }
 
       const { width: w, height: h, data } = out
+      if (prev?.length !== data.length) prev = new Uint8ClampedArray(data.length)
+      data.set(prev)
       const fade = 1 - trail * 0.92
       for (let i = 0; i < data.length; i += 4) {
         data[i] = Math.round((data[i] ?? 0) * trail)
@@ -212,8 +217,10 @@ void main() {
         const y = h * 0.5 + Math.sin(signal.t * freqY + phase * 1.37) * ry
         drawBob(data, w, h, x, y, rDraw, samplePalette(palette, i / Math.max(1, count - 1)), sprite)
       }
+      prev.set(data)
     },
     destroy() {
+      prev = null
       program = null
       vao = null
       uResolution = null
