@@ -1,5 +1,5 @@
 import { bindEdgeTransform, bindTexture, createFullscreenPipeline, EDGE_TRANSFORM_GLSL, type FullscreenPipeline } from '../webgl/fullscreen.js'
-import { luma, sampleInputs } from './blend-utils.js'
+import { createInputSampler } from './blend-utils.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -115,9 +115,11 @@ void main() {
         return
       }
 
+      const sampler = createInputSampler(base, overlay, maskBuf, W, H, inputMeta)
+
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
-          const { br, bg, bb, ba, or, og, ob, oa, mask } = sampleInputs(base, overlay, maskBuf, W, H, x, y, inputMeta)
+          const { br, bg, bb, ba, or, og, ob, oa, mask } = sampler.sample(x, y)
           const k = (oa / 255) * opacity * mask
           const o = (y * W + x) * 4
           out.data[o + 0] = shouldClamp ? Math.min(255, Math.round(br + or * k)) : Math.round(br + or * k)

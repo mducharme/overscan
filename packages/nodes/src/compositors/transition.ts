@@ -9,7 +9,7 @@ import {
   type RocketInterpolation,
   type Signal,
 } from '@overscan/types'
-import { sampleInputs } from './blend-utils.js'
+import { createInputSampler } from './blend-utils.js'
 
 export interface TransitionConfig {
   mode?: 'dissolve' | 'wipe-left' | 'wipe-right' | 'wipe-up' | 'wipe-down' | 'zoom-out' | 'flash' | 'iris'
@@ -246,9 +246,11 @@ void main() {
         return
       }
 
+      const sampler = createInputSampler(base, overlay, maskBuf, W, H, inputMeta)
+
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
-          const { br, bg, bb, ba, or, og, ob, oa, mask } = sampleInputs(base, overlay, maskBuf, W, H, x, y, inputMeta)
+          const { br, bg, bb, ba, or, og, ob, oa, mask } = sampler.sample(x, y)
           const uvx = x / Math.max(1, W - 1)
           const uvy = y / Math.max(1, H - 1)
           const k = transitionMix(mode, p, uvx, uvy) * mask

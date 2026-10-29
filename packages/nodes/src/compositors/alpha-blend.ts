@@ -1,5 +1,5 @@
 import { bindEdgeTransform, bindTexture, createFullscreenPipeline, EDGE_TRANSFORM_GLSL, type FullscreenPipeline } from '../webgl/fullscreen.js'
-import { hasTransforms, luma, sampleInputs } from './blend-utils.js'
+import { createInputSampler } from './blend-utils.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -115,9 +115,11 @@ void main() {
         return
       }
 
+      const sampler = createInputSampler(base, overlay, maskBuf, W, H, inputMeta)
+
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
-          const { br, bg, bb, ba, or, og, ob, oa, mask } = sampleInputs(base, overlay, maskBuf, W, H, x, y, inputMeta)
+          const { br, bg, bb, ba, or, og, ob, oa, mask } = sampler.sample(x, y)
           const srcA = (oa / 255) * opacity * mask
           const inv = 1 - srcA
           const o = (y * W + x) * 4
