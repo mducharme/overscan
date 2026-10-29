@@ -46,6 +46,7 @@ if (values['help'] || !command) {
 
   run — Options:
     --mode sixel|ansi|ascii   Terminal mode (auto-detected; WezTerm defaults to ansi)
+                             Alias: --terminal-mode
     --fps <n>                Override terminal frame rate cap
     --frames <n>             Render N frames then exit (headless / CI)
     --no-display             No terminal output (smoke tests)
@@ -108,7 +109,8 @@ switch (command) {
     const runOpts: RunOptions = {
       noDisplay: values['no-display'] ?? false,
     }
-    const rawMode = values['mode'] as string | string[] | undefined
+    // Accept export's --terminal-mode as an alias so the same flag works for both commands.
+    const rawMode = (values['mode'] ?? values['terminal-mode']) as string | string[] | undefined
     const modeStr = Array.isArray(rawMode) ? rawMode[0] : rawMode
     const modeNorm = typeof modeStr === 'string' ? modeStr.trim().toLowerCase() : undefined
     if (modeNorm === 'sixel' || modeNorm === 'ansi' || modeNorm === 'ascii') {

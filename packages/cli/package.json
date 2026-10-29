@@ -4,8 +4,8 @@
   "description": "demo CLI — run, export, init, validate",
   "type": "module",
   "bin": {
-    "overscan": "./dist/cli.js",
-    "demo": "./dist/cli.js"
+    "overscan": "./bin/overscan.js",
+    "demo": "./bin/overscan.js"
   },
   "main":  "./dist/index.js",
   "types": "./dist/index.d.ts",
