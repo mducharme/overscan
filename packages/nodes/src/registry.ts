@@ -119,3 +119,8 @@ export function buildBuiltinRegistry(sceneNodes: SceneNode[]): Map<string, DemoN
 export function isKnownBuiltinImpl(impl: string): boolean {
   return isKnownBuiltinImplFromFactories(impl, NODE_FACTORIES)
 }
+
+/** All registered built-in `impl` strings (used by `scripts/bench.mjs`). */
+export function listBuiltinImpls(): string[] {
+  return Object.keys(NODE_FACTORIES)
+}
