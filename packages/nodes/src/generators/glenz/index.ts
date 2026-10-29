@@ -209,7 +209,8 @@ void main() {
   }
 }
 
-function projectObject(w: number, h: number, scale: number, rx: number, ry: number, rz: number, fov: number, cameraZ: number, palette: number[][]) {
+/** Exported for tests. Returns triangles in draw order. */
+export function projectObject(w: number, h: number, scale: number, rx: number, ry: number, rz: number, fov: number, cameraZ: number, palette: number[][]) {
   const verts = VERTICES.map((v) => rotate3([v[0] * scale, v[1] * scale, v[2] * scale], rx, ry, rz))
   return TRIANGLES.map((tri, i) => {
     const a3 = verts[tri[0]]!, b3 = verts[tri[1]]!, c3 = verts[tri[2]]!
@@ -225,7 +226,7 @@ function projectObject(w: number, h: number, scale: number, rx: number, ry: numb
       opacity: 0.24 + lit * 0.22,
       depth,
     }
-  }).sort((a, b) => a.depth - b.depth)
+  }).sort((a, b) => b.depth - a.depth) // far to near (larger z is farther), so near faces blend over far ones
 }
 
 function projectPoint([x, y, z]: Vec3, w: number, h: number, fov: number, cameraZ: number): Vec2 {

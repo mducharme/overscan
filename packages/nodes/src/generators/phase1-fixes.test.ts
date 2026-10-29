@@ -3,6 +3,7 @@ import { BufferPoolImpl, buildSignal } from '@overscan/core'
 import type { Generator, NodeContext } from '@overscan/types'
 import { SinebobsGenerator } from './sinebobs/index.js'
 import { OscilloscopeGenerator } from './oscilloscope/index.js'
+import { projectObject } from './glenz/index.js'
 
 const W = 160
 const H = 90
@@ -43,6 +44,13 @@ describe('phase 1 fixes', () => {
     const plain = litPixels(renderFrames(OscilloscopeGenerator({ persistence: 0 }), 20))
     const persistent = litPixels(renderFrames(OscilloscopeGenerator({ persistence: 0.95 }), 20))
     expect(persistent).toBeGreaterThan(plain * 1.5)
+  })
+
+  it('glenz draws far faces first so near faces blend over them', () => {
+    const tris = projectObject(W, H, 1, 0.4, 0.7, 0.2, 120, 4.4, [[255, 0, 0], [0, 0, 255]])
+    for (let i = 1; i < tris.length; i++) {
+      expect(tris[i]!.depth).toBeLessThanOrEqual(tris[i - 1]!.depth)
+    }
   })
 
 })
