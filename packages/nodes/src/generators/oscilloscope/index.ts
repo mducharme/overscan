@@ -49,6 +49,8 @@ export function OscilloscopeGenerator(config: Partial<OscilloscopeConfig> = {}):
         tw = w; th = h
       }
       const persistence = Math.max(0, Math.min(1, resolveAnimatableFloat(persistenceRef, signal)))
+      // The pool hands out cleared buffers, so the previous frame comes from our own trail copy.
+      data.set(trail)
       fade(data, persistence)
       drawGrid(data, w, h, gridColor, gridDivisions)
       const lineWidth = scaleThickness(
@@ -71,7 +73,7 @@ export function OscilloscopeGenerator(config: Partial<OscilloscopeConfig> = {}):
         }
         prevY = y
       }
-      if (trail) trail.set(data)
+      trail.set(data)
     },
     destroy() { trail = null },
   }
