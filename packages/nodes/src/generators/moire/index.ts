@@ -6,6 +6,7 @@ import {
   type NodeContext,
   type Signal,
 } from '@overscan/types'
+import { fastSin } from '../../fast-math.js'
 
 export interface MoireConfig {
   mode?: 'grid' | 'rings' | 'radial'
@@ -245,9 +246,9 @@ function samplePattern(
 ): number {
   const qx = px * c - py * s
   const qy = px * s + py * c
-  if (mode === 'rings') return Math.sin(Math.sqrt(qx * qx + qy * qy) * freq - time)
-  if (mode === 'radial') return Math.sin(Math.atan2(qy, qx) * freq + time) * Math.sin(Math.sqrt(qx * qx + qy * qy) * freq * 0.6 - time)
-  return Math.sin(qx * freq + time) * Math.sin(qy * freq + time)
+  if (mode === 'rings') return fastSin(Math.sqrt(qx * qx + qy * qy) * freq - time)
+  if (mode === 'radial') return fastSin(Math.atan2(qy, qx) * freq + time) * fastSin(Math.sqrt(qx * qx + qy * qy) * freq * 0.6 - time)
+  return fastSin(qx * freq + time) * fastSin(qy * freq + time)
 }
 
 function samplePalette(palette: number[][], t: number): [number, number, number] {
