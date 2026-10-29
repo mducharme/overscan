@@ -37,58 +37,81 @@ export function createTerminalAudioController(): TerminalAudioController | null 
   const runtimeReady = fs.mkdir(runtimeDir, { recursive: true })
   let mpvMissingWarned = false
 
+  /** Tracks whose mpv process is still starting; `sync` records the latest wanted state meanwhile. */
+  const starting = new Map<string, Promise<void>>()
+  const wanted = new Map<string, TerminalAudioState | null>()
+  let mpvMissing = false
+
+  const warnMissing = (): void => {
+    if (!mpvMissingWarned) {
+      console.warn('[demo] mpv not found on PATH; continuing without terminal audio')
+      mpvMissingWarned = true
+    }
+  }
+
+  async function apply(track: TrackHandle, next: TerminalAudioState | null): Promise<void> {
+    if (!isUsable(track.child) || !track.client) return
+    if (!next) {
+      await sendCommand(track.client, ['set_property', 'pause', true]).catch(() => {})
+      track.last = null
+      return
+    }
+    const previous = track.last
+    if (previous && terminalAudioStateMatches(previous, next)) {
+      track.last = { ...next }
+      return
+    }
+    const sourceChanged = !previous || previous.source !== next.source
+    const drifted = !previous || Math.abs(previous.time - next.time) > DRIFT_TOLERANCE_SECONDS
+    if (sourceChanged) {
+      await sendCommand(track.client, ['loadfile', next.source, 'replace'])
+    }
+    const commands: Array<readonly unknown[]> = [
+      ['set_property', 'loop-file', next.loop ? 'inf' : 'no'],
+      ['set_property', 'speed', sanitizeNumber(next.rate, 1)],
+      ['set_property', 'pause', !next.playing],
+    ]
+    if (sourceChanged || drifted) {
+      commands.push(['set_property', 'time-pos', Math.max(0, sanitizeNumber(next.time))])
+    }
+    for (const command of commands) await sendCommand(track.client, command)
+    track.last = { ...next }
+  }
+
   return {
     async sync(key, next) {
-      await runtimeReady
-      let track: TrackHandle | null | undefined = tracks.get(key)
-      if (!next) {
-        if (!track) return
-        if (track.client) await sendCommand(track.client, ['set_property', 'pause', true]).catch(() => {})
-        track.last = null
+      if (mpvMissing) return
+      const track = tracks.get(key)
+      if (track && isUsable(track.child)) {
+        await apply(track, next)
         return
       }
-      if (!track || !isUsable(track.child)) {
-        track = await createTrackHandle(runtimeDir, key).catch(error => {
-          if (isMissingMpv(error)) {
-            if (!mpvMissingWarned) {
-              console.warn('[demo] mpv not found on PATH; continuing without terminal audio')
-              mpvMissingWarned = true
-            }
-            return null
+      if (!next) return
+      wanted.set(key, next)
+      if (starting.has(key)) return
+      // Start mpv without blocking the caller: its IPC socket can take seconds to appear, and the
+      // render loop must keep drawing meanwhile. The latest wanted state is applied once it is ready.
+      starting.set(key, (async () => {
+        try {
+          await runtimeReady
+          const created = await createTrackHandle(runtimeDir, key)
+          tracks.set(key, created)
+          await apply(created, wanted.get(key) ?? null)
+        } catch (error) {
+          if (isMissingMpv(error) || isProbablyMissingMpv(error)) {
+            mpvMissing = true
+            warnMissing()
+          } else {
+            console.warn(`[demo] terminal audio unavailable: ${error instanceof Error ? error.message : String(error)}`)
+            mpvMissing = true
           }
-          if (!mpvMissingWarned && isProbablyMissingMpv(error)) {
-            console.warn('[demo] mpv not found on PATH; continuing without terminal audio')
-            mpvMissingWarned = true
-            return null
-          }
-          throw error
-        })
-        if (!track) return
-        tracks.set(key, track)
-      }
-      if (!isUsable(track.child) || !track.client) return
-      const previous = track.last
-      if (previous && terminalAudioStateMatches(previous, next)) {
-        track.last = { ...next }
-        return
-      }
-      const sourceChanged = !previous || previous.source !== next.source
-      const drifted = !previous || Math.abs(previous.time - next.time) > DRIFT_TOLERANCE_SECONDS
-      if (sourceChanged) {
-        await sendCommand(track.client, ['loadfile', next.source, 'replace'])
-      }
-      const commands: Array<readonly unknown[]> = [
-        ['set_property', 'loop-file', next.loop ? 'inf' : 'no'],
-        ['set_property', 'speed', sanitizeNumber(next.rate, 1)],
-        ['set_property', 'pause', !next.playing],
-      ]
-      if (sourceChanged || drifted) {
-        commands.push(['set_property', 'time-pos', Math.max(0, sanitizeNumber(next.time))])
-      }
-      for (const command of commands) await sendCommand(track.client, command)
-      track.last = { ...next }
+        } finally {
+          starting.delete(key)
+        }
+      })())
     },
     async dispose() {
+      await Promise.all(starting.values())
       await Promise.all([...tracks.values()].map(async track => {
         if (track.client) {
           await sendCommand(track.client, ['quit']).catch(() => {})

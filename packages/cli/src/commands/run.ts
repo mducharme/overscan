@@ -223,6 +223,8 @@ export async function run(scenePath: string, opts: RunOptions = {}): Promise<voi
     stdinCleanup = () => {
       process.stdin.removeListener('keypress', onKeypress)
       if (process.stdin.isTTY) process.stdin.setRawMode(false)
+      // Keypress handling put stdin in flowing mode; pause it or its handle keeps the process alive.
+      process.stdin.pause()
     }
   }
 

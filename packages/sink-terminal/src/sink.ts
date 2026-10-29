@@ -2,6 +2,7 @@ import type { Sink, FrameBuffer, Signal, TerminalMode, TerminalSinkOptions } fro
 import { detectMode } from './detect.js'
 import { terminalResolution } from './resolution.js'
 import { buildTerminalFrameBody, terminalFrameLeader } from './terminal-frame.js'
+import { TerminalFrameEncoder } from './frame-encoder.js'
 
 const DEFAULT_FPS: Record<TerminalMode, number> = {
   sixel: 30,
@@ -22,6 +23,7 @@ export class TerminalSink implements Sink {
   private lastStatusFps = 0
   private onResizeCb: (() => void) | undefined = undefined
   private hooksInstalled = false
+  private readonly encoder = new TerminalFrameEncoder()
 
   private readonly boundExit = (): void => {
     this.restoreTerminalVisuals()
@@ -33,11 +35,11 @@ export class TerminalSink implements Sink {
   }
 
   private readonly boundSigWinch = (): void => {
-    this.onResizeCb?.()
+    this.handleResize()
   }
 
   private readonly boundStdoutResize = (): void => {
-    this.onResizeCb?.()
+    this.handleResize()
   }
 
   constructor(opts: TerminalSinkOptions = {}) {
@@ -60,9 +62,8 @@ export class TerminalSink implements Sink {
     if (this.noDisplay || !this.fullscreen || this.hooksInstalled) return
 
     this.hooksInstalled = true
-    process.stdout.write('\x1b[?25l')
-    process.stdout.write('\x1b[2J')
-    process.stdout.write('\x1b[H')
+    // Alternate screen: playback never touches the user's scrollback, and leaving it restores their screen.
+    process.stdout.write('\x1b[?1049h\x1b[?25l\x1b[2J\x1b[H')
 
     process.on('exit', this.boundExit)
     process.on('SIGINT', this.boundSig)
@@ -77,9 +78,15 @@ export class TerminalSink implements Sink {
 
   private restoreTerminalVisuals(): void {
     if (this.noDisplay || !this.fullscreen) return
-    process.stdout.write('\x1b[?25h')
-    process.stdout.write('\x1b[2J')
-    process.stdout.write('\x1b[H')
+    // Reset colours, show the cursor, and leave the alternate screen.
+    process.stdout.write('\x1b[0m\x1b[?25h\x1b[?1049l')
+  }
+
+  /** A resize invalidates what the terminal shows: clear it and redraw the next frame in full. */
+  private handleResize(): void {
+    this.encoder.reset()
+    if (!this.noDisplay && this.fullscreen && this.hooksInstalled) process.stdout.write('\x1b[0m\x1b[2J')
+    this.onResizeCb?.()
   }
 
   private removeResizeHooks(): void {
@@ -102,7 +109,10 @@ export class TerminalSink implements Sink {
 
     if (this.noDisplay) return
 
-    const output = buildTerminalFrameBody(this.mode, frame)
+    // ANSI and ASCII are sent as diffs against the previous frame; sixel images are sent whole.
+    const output = this.mode === 'sixel'
+      ? terminalFrameLeader(this.mode) + buildTerminalFrameBody(this.mode, frame)
+      : this.encoder.encode(this.mode, frame)
 
     if (process.env['DEBUG_TERMINAL'] === '1') {
       console.error(
@@ -110,7 +120,7 @@ export class TerminalSink implements Sink {
       )
     }
 
-    await writeStdout(terminalFrameLeader(this.mode) + output)
+    if (output.length > 0) await writeStdout(output)
     if (process.env['DEBUG_TERMINAL'] === '1') {
       const row = process.stdout.rows || 24
       const info =
