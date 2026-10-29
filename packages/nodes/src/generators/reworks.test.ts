@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { BufferPoolImpl, buildSignal } from '@overscan/core'
 import type { Generator, NodeContext } from '@overscan/types'
 import { CopperbarsGenerator } from './copperbars/index.js'
+import { projectObject } from './glenz/index.js'
 
 const W = 320
 const H = 180
@@ -29,5 +30,12 @@ describe('phase 3 reworks', () => {
     expect(column[peak]!).toBeGreaterThan(column[peak - 6]!)
     expect(column[0]).toBe(0)
     expect(column[H - 1]).toBe(0)
+  })
+
+  it('glenz has 24 faces, with back faces drawn before front faces', () => {
+    const tris = projectObject(W, H, 1, 0.4, 0.7, 0.2, 120, 4.4, [[255, 255, 255], [0, 0, 255], [255, 0, 0], [0, 255, 0]])
+    expect(tris.length).toBe(24)
+    expect(tris.some(t => t.front)).toBe(true)
+    expect(tris.some(t => !t.front)).toBe(true)
   })
 })
