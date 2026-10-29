@@ -23,6 +23,11 @@ export interface ScrollerConfig {
   asciiFont?: boolean
   verticalPosition?: AnimatableFloat
   letterSpacing?: AnimatableFloat
+  /**
+   * 'sine' (default): every pixel column is offset by a standing wave, so letters bend as they pass.
+   * 'dycp': each character moves as a block on its own sine height (Different Y Character Position).
+   */
+  mode?: 'sine' | 'dycp'
 }
 
 export function ScrollerGenerator(config: Partial<ScrollerConfig> = {}): Generator {
@@ -38,6 +43,8 @@ export function ScrollerGenerator(config: Partial<ScrollerConfig> = {}): Generat
   const backgroundHex = config.backgroundColor ?? 'transparent'
   const verticalPositionRef = config.verticalPosition ?? 0.5
   const letterSpacingRef = config.letterSpacing ?? 0
+  const mode = config.mode ?? 'sine'
+  let strip: { key: string; width: number; height: number; data: Uint8ClampedArray } | null = null
 
   return {
     type:       'generator',
@@ -68,17 +75,43 @@ export function ScrollerGenerator(config: Partial<ScrollerConfig> = {}): Generat
       if (background) fillBackground(data, background)
       const baseY = Math.round((h - font.glyphHeight * scale) * vertical)
 
-      for (let i = -1; i < text.length + 2; i++) {
-        const ch = text[i] ?? ' '
-        const advance = font.glyphWidth * scale + font.spacingX * scale + letterSpacing
-        const x = Math.round(w - scroll + i * advance)
-        const y = Math.round(baseY + Math.sin(i * fq + signal.t * ws) * amp)
-        drawBitmapTextBlock(data, w, h, ch, x, y, {
-          font,
-          scale,
-          color,
-          letterSpacing,
-        })
+      const advance = font.glyphWidth * scale + font.spacingX * scale + letterSpacing
+      const left = Math.round(w - scroll)
+      if (mode === 'dycp') {
+        for (let i = -1; i < text.length + 2; i++) {
+          const ch = text[i] ?? ' '
+          const x = left + i * advance
+          const y = Math.round(baseY + Math.sin(i * fq + signal.t * ws) * amp)
+          drawBitmapTextBlock(data, w, h, ch, x, y, { font, scale, color, letterSpacing })
+        }
+      } else {
+        // Render the line once into a strip, then copy each column at its own wave height.
+        const key = `${text}|${scale}|${letterSpacing}|${color.join(',')}|${config.font ?? ''}`
+        if (strip?.key !== key) {
+          const height = font.glyphHeight * scale
+          const width = Math.max(1, textWidth)
+          const stripData = new Uint8ClampedArray(width * height * 4)
+          drawBitmapTextBlock(stripData, width, height, text, 0, 0, { font, scale, color, letterSpacing })
+          strip = { key, width, height, data: stripData }
+        }
+        const src = strip.data
+        // `waveFrequency` is radians per character; the wave stands still on screen while the text moves through it.
+        const perColumn = fq / Math.max(1, advance)
+        for (let x = Math.max(0, left); x < Math.min(w, left + strip.width); x++) {
+          const sx = x - left
+          const offset = Math.round(Math.sin(x * perColumn + signal.t * ws) * amp)
+          for (let row = 0; row < strip.height; row++) {
+            const si = (row * strip.width + sx) * 4
+            if (src[si + 3] === 0) continue
+            const y = baseY + row + offset
+            if (y < 0 || y >= h) continue
+            const o = (y * w + x) * 4
+            data[o] = src[si]!
+            data[o + 1] = src[si + 1]!
+            data[o + 2] = src[si + 2]!
+            data[o + 3] = 255
+          }
+        }
       }
 
       if (asciiFont) {
