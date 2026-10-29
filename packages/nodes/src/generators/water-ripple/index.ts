@@ -10,6 +10,8 @@ import {
 } from '@overscan/types'
 
 export interface WaterRippleConfig {
+  /** Image refracted by the waves. Without one, a pool-tile pattern built from `palette` is used. */
+  textureUrl?: string
   /** Seed for this node's randomness (default 1); vary it to decorrelate identical nodes. */
   randomSeed?: number
   damping?: AnimatableFloat
@@ -35,6 +37,8 @@ export function WaterRippleGenerator(config: Partial<WaterRippleConfig> = {}): G
   const tapStrengthRef = config.tapStrength ?? 1
   const palette = config.palette ?? DEFAULT_PALETTE
   const refractionRef = config.refraction ?? 0.3
+  const textureUrl = config.textureUrl
+  let tiles: { w: number; h: number; data: Uint8ClampedArray } | null = null
   let front: Float32Array | null = null
   let back: Float32Array | null = null
   const randomSeed = config.randomSeed ?? DEFAULT_RANDOM_SEED
@@ -58,7 +62,7 @@ export function WaterRippleGenerator(config: Partial<WaterRippleConfig> = {}): G
       rh = 0
       lastTapT = -999
     },
-    render(_ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
+    render(ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const { width: w, height: h, data } = out
       if (!front || !back || rw !== w || rh !== h) {
         front = new Float32Array(w * h)
@@ -102,18 +106,27 @@ export function WaterRippleGenerator(config: Partial<WaterRippleConfig> = {}): G
         back = tmp
       })
 
+      // Classic water: the surface slope bends the view of what lies beneath, so each pixel samples
+      // the background offset by the height gradient, lightened slightly on slopes facing the light.
+      const image = textureUrl ? ctx.assets?.getImage(textureUrl) : undefined
+      if (!image && (tiles?.w !== w || tiles.h !== h)) tiles = { w, h, data: poolTiles(w, h, palette) }
+      const bg = image ?? tiles!
+      const bw = image ? image.width : w
+      const bh = image ? image.height : h
+      const shift = refraction * 40 * (Math.min(w, h) / 360)
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
           const i = y * w + x
-          const h0 = front[i] ?? 0
-          const hx = (front[Math.min(w * h - 1, i + 1)] ?? h0) - (front[Math.max(0, i - 1)] ?? h0)
-          const hy = (front[Math.min(w * h - 1, i + w)] ?? h0) - (front[Math.max(0, i - w)] ?? h0)
-          const displaced = h0 * 0.5 + (hx + hy) * refraction
-          const c = samplePalette(palette, displaced * 0.5 + 0.5)
+          const hx = (x + 1 < w ? front[i + 1]! : 0) - (x > 0 ? front[i - 1]! : 0)
+          const hy = (y + 1 < h ? front[i + w]! : 0) - (y > 0 ? front[i - w]! : 0)
+          const sx = Math.min(bw - 1, Math.max(0, Math.round(((x + hx * shift) * bw) / w)))
+          const sy = Math.min(bh - 1, Math.max(0, Math.round(((y + hy * shift) * bh) / h)))
+          const si = (sy * bw + sx) * 4
+          const light = 1 + Math.max(-0.4, Math.min(0.6, -(hx + hy) * refraction * 1.5))
           const o = i * 4
-          data[o] = c[0]
-          data[o + 1] = c[1]
-          data[o + 2] = c[2]
+          data[o] = Math.min(255, (bg.data[si] ?? 0) * light)
+          data[o + 1] = Math.min(255, (bg.data[si + 1] ?? 0) * light)
+          data[o + 2] = Math.min(255, (bg.data[si + 2] ?? 0) * light)
           data[o + 3] = 255
         }
       }
@@ -147,6 +160,27 @@ function addImpulse(buf: Float32Array, w: number, h: number, cx: number, cy: num
       buf[i] = (buf[i] ?? 0) + (1 - d / radius) * strength
     }
   }
+}
+
+/** Default background: a pool floor of square tiles, shaded down through the palette's first colours. */
+function poolTiles(w: number, h: number, palette: number[][]): Uint8ClampedArray {
+  const data = new Uint8ClampedArray(w * h * 4)
+  const tile = Math.max(6, Math.round(Math.min(w, h) / 12))
+  const grout = Math.max(1, Math.round(tile / 10))
+  for (let y = 0; y < h; y++) {
+    const base = samplePalette(palette, 0.25 + (y / Math.max(1, h - 1)) * 0.45)
+    const line = samplePalette(palette, 0.9)
+    for (let x = 0; x < w; x++) {
+      const onGrout = x % tile < grout || y % tile < grout
+      const c = onGrout ? line : base
+      const o = (y * w + x) * 4
+      data[o] = c[0]
+      data[o + 1] = c[1]
+      data[o + 2] = c[2]
+      data[o + 3] = 255
+    }
+  }
+  return data
 }
 
 function samplePalette(palette: number[][], t: number): [number, number, number] {
