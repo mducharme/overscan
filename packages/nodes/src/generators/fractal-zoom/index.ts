@@ -217,6 +217,7 @@ function renderCpu(
       const cx = fractalType === 'mandelbrot' ? centerX + px / zoom : juliaC[0]
       const cy = fractalType === 'mandelbrot' ? centerY + py / zoom : juliaC[1]
       let i = 0
+      if (fractalType === 'mandelbrot' && inMainCardioidOrBulb(cx, cy)) i = maxIter
       for (; i < maxIter; i++) {
         const xx = zx * zx - zy * zy + cx
         const yy = 2 * zx * zy + cy
@@ -234,6 +235,15 @@ function renderCpu(
       }
     }
   }
+}
+
+/** Interior of the main cardioid or period-2 bulb: these points never escape. */
+function inMainCardioidOrBulb(cx: number, cy: number): boolean {
+  const qx = cx - 0.25
+  const q = qx * qx + cy * cy
+  if (q * (q + qx) <= 0.25 * cy * cy) return true
+  const bx = cx + 1
+  return bx * bx + cy * cy <= 0.0625
 }
 
 function samplePalette(palette: number[][], t: number): [number, number, number] {

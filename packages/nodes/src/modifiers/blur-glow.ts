@@ -21,6 +21,7 @@ export function BlurGlowModifier(config: Partial<BlurGlowConfig> = {}): Modifier
   const mode = config.mode ?? 'blur'
   const glowRef = config.strength ?? config.glowStrength ?? 0.5
   let pipeline: FullscreenPipeline | null = null
+  let tmp = new Uint8ClampedArray(0)
 
   function ensureGpu(ctx: NodeContext): void {
     const gl = ctx.gl
@@ -89,37 +90,11 @@ void main() {
       }
       const { width: w, height: h, data: src } = input
       const { data: dst } = out
-      const tmp = new Uint8ClampedArray(w * h * 4)
+      if (tmp.length !== w * h * 4) tmp = new Uint8ClampedArray(w * h * 4)
 
       const rad = Math.min(rIn, 8)
-      const pass = (srcBuf: Uint8ClampedArray, dstBuf: Uint8ClampedArray, horiz: boolean): void => {
-        const samples = rad * 2 + 1
-        for (let y = 0; y < h; y++) {
-          for (let x = 0; x < w; x++) {
-            let r = 0
-            let g = 0
-            let b = 0
-            let a = 0
-            for (let k = -rad; k <= rad; k++) {
-              const xx = horiz ? Math.min(w - 1, Math.max(0, x + k)) : x
-              const yy = horiz ? y : Math.min(h - 1, Math.max(0, y + k))
-              const i = (yy * w + xx) * 4
-              r += srcBuf[i] ?? 0
-              g += srcBuf[i + 1] ?? 0
-              b += srcBuf[i + 2] ?? 0
-              a += srcBuf[i + 3] ?? 0
-            }
-            const o = (y * w + x) * 4
-            dstBuf[o] = r / samples
-            dstBuf[o + 1] = g / samples
-            dstBuf[o + 2] = b / samples
-            dstBuf[o + 3] = a / samples
-          }
-        }
-      }
-
-      pass(src, tmp, true)
-      pass(tmp, dst, false)
+      boxBlurPass(src, tmp, w, h, rad, 4, w * 4, w, h)
+      boxBlurPass(tmp, dst, w, h, rad, w * 4, 4, h, w)
 
       if (mode === 'glow') {
         for (let i = 0; i < dst.length; i += 4) {
@@ -137,5 +112,53 @@ void main() {
         }
       }
     },
+  }
+}
+
+/**
+ * One separable box-blur pass with edge clamping, as a sliding window (O(1) per pixel).
+ * Sums are integers, so the result is identical to summing all 2·rad+1 taps.
+ * `step` walks along the blur axis (length `len`); `lineStride` moves between the `lines` lines.
+ */
+function boxBlurPass(
+  src: Uint8ClampedArray,
+  dst: Uint8ClampedArray,
+  w: number,
+  h: number,
+  rad: number,
+  step: number,
+  lineStride: number,
+  len: number,
+  lines: number,
+): void {
+  if (w * h === 0) return
+  const samples = rad * 2 + 1
+  const last = len - 1
+  for (let line = 0; line < lines; line++) {
+    const base = line * lineStride
+    let r = 0
+    let g = 0
+    let b = 0
+    let a = 0
+    for (let k = -rad; k <= rad; k++) {
+      const i = base + Math.min(last, Math.max(0, k)) * step
+      r += src[i]!
+      g += src[i + 1]!
+      b += src[i + 2]!
+      a += src[i + 3]!
+    }
+    for (let p = 0; p < len; p++) {
+      const o = base + p * step
+      dst[o] = r / samples
+      dst[o + 1] = g / samples
+      dst[o + 2] = b / samples
+      dst[o + 3] = a / samples
+      const add = base + Math.min(last, p + rad + 1) * step
+      const sub = base + Math.max(0, p - rad) * step
+      r += src[add]! - src[sub]!
+      g += src[add + 1]! - src[sub + 1]!
+      b += src[add + 2]! - src[sub + 2]!
+      a += src[add + 3]! - src[sub + 3]!
+    }
   }
 }

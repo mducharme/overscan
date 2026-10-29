@@ -192,9 +192,12 @@ void main() {
         let maxY = h
         const xNorm = (x / Math.max(1, w - 1) - 0.5) * 1.4
         const angle = cameraAngle + xNorm * 0.8
+        const rayX = Math.cos(angle)
+        const rayY = Math.sin(angle)
+        const travel = time * 22
         for (let d = 1; d <= drawDistance; d++) {
-          const px = Math.cos(angle) * (d + time * 22)
-          const py = Math.sin(angle) * (d + time * 22)
+          const px = rayX * (d + travel)
+          const py = rayY * (d + travel)
           const terr = sampleTerrain(heightmap, px, py) * 180 * scale
           const proj = horizonY - ((terr - cameraHeight) / d) * 55
           if (proj < maxY) {
@@ -238,22 +241,40 @@ function hashNoise(x: number, y: number): number {
   return n - Math.floor(n)
 }
 
-function noise(x: number, y: number): number {
+/** Last lattice cell's corner hashes; consecutive ray samples mostly stay in the same cell. */
+interface NoiseCell {
+  ix: number
+  iy: number
+  a: number
+  b: number
+  c: number
+  d: number
+}
+
+const terrainCells: NoiseCell[] = [0, 1, 2].map(() => ({ ix: NaN, iy: NaN, a: 0, b: 0, c: 0, d: 0 }))
+
+function noise(x: number, y: number, cell: NoiseCell): number {
   const ix = Math.floor(x)
   const iy = Math.floor(y)
   const fx = x - ix
   const fy = y - iy
   const ux = fx * fx * (3 - 2 * fx)
   const uy = fy * fy * (3 - 2 * fy)
-  const a = hashNoise(ix, iy)
-  const b = hashNoise(ix + 1, iy)
-  const c = hashNoise(ix, iy + 1)
-  const d = hashNoise(ix + 1, iy + 1)
-  return lerp(lerp(a, b, ux), lerp(c, d, ux), uy)
+  if (cell.ix !== ix || cell.iy !== iy) {
+    cell.ix = ix
+    cell.iy = iy
+    cell.a = hashNoise(ix, iy)
+    cell.b = hashNoise(ix + 1, iy)
+    cell.c = hashNoise(ix, iy + 1)
+    cell.d = hashNoise(ix + 1, iy + 1)
+  }
+  return lerp(lerp(cell.a, cell.b, ux), lerp(cell.c, cell.d, ux), uy)
 }
 
 function terrain(x: number, y: number): number {
-  return noise(x * 0.045, y * 0.045) * 0.65 + noise(x * 0.11, y * 0.11) * 0.25 + noise(x * 0.23, y * 0.23) * 0.1
+  return noise(x * 0.045, y * 0.045, terrainCells[0]!) * 0.65
+    + noise(x * 0.11, y * 0.11, terrainCells[1]!) * 0.25
+    + noise(x * 0.23, y * 0.23, terrainCells[2]!) * 0.1
 }
 
 function sampleTerrain(image: LoadedImageAsset | undefined, x: number, y: number): number {

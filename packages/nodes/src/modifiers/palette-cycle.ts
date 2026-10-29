@@ -105,7 +105,10 @@ void main() {
           const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
           if (lum >= lo && lum <= hi) {
             const remapped = (lum - lo) / Math.max(0.0001, hi - lo)
-            const cycled = ((remapped + offset) % 1 + 1) % 1
+            // Same value as ((s % 1 + 1) % 1) for s >= 0, without float modulo (slow in V8).
+            const s = remapped + offset
+            const wrapped = s - Math.floor(s) + 1
+            const cycled = wrapped >= 2 ? 0 : wrapped - 1
             const c = samplePalette(palette, cycled)
             dst[i] = c[0]
             dst[i + 1] = c[1]

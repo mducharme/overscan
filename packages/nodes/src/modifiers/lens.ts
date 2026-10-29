@@ -92,12 +92,17 @@ void main() {
 
       const { width: w, height: h, data: src } = input
       const dst = out.data
+      const shift = chroma * 0.003
+      const lens = lensScratch
       for (let y = 0; y < h; y++) {
+        const uvy = y / Math.max(1, h - 1)
         for (let x = 0; x < w; x++) {
           const uvx = x / Math.max(1, w - 1)
-          const uvy = y / Math.max(1, h - 1)
-          const [sx, sy, dx, dy] = lensSample(uvx, uvy, centerX, centerY, strength, radius, zoom)
-          const shift = chroma * 0.003
+          lensSample(uvx, uvy, centerX, centerY, strength, radius, zoom, lens)
+          const sx = lens[0]
+          const sy = lens[1]
+          const dx = lens[2]
+          const dy = lens[3]
           const ri = samplePixel(src, w, h, sx + dx * shift, sy + dy * shift)
           const gi = samplePixel(src, w, h, sx, sy)
           const bi = samplePixel(src, w, h, sx - dx * shift, sy - dy * shift)
@@ -112,6 +117,9 @@ void main() {
   }
 }
 
+const lensScratch: [number, number, number, number] = [0, 0, 0, 0]
+
+/** Writes [sourceU, sourceV, dirX, dirY] into `out`. */
 function lensSample(
   uvx: number,
   uvy: number,
@@ -120,22 +128,25 @@ function lensSample(
   strength: number,
   radius: number,
   zoom: number,
-): [number, number, number, number] {
+  out: [number, number, number, number],
+): void {
   const deltaX = uvx - centerX
   const deltaY = uvy - centerY
-  const dist = Math.hypot(deltaX, deltaY)
+  const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
   const dirX = dist > 1e-6 ? deltaX / dist : 1
   const dirY = dist > 1e-6 ? deltaY / dist : 0
-  if (dist > radius) return [uvx, uvy, dirX, dirY]
+  out[2] = dirX
+  out[3] = dirY
+  if (dist > radius) {
+    out[0] = uvx
+    out[1] = uvy
+    return
+  }
   const t = 1 - dist / Math.max(radius, 1e-6)
   const curve = t * t * (3 - 2 * t)
   const scale = Math.max(1e-6, 1 + (zoom - 1) * curve * strength)
-  return [
-    Math.max(0, Math.min(1, centerX + deltaX / scale)),
-    Math.max(0, Math.min(1, centerY + deltaY / scale)),
-    dirX,
-    dirY,
-  ]
+  out[0] = Math.max(0, Math.min(1, centerX + deltaX / scale))
+  out[1] = Math.max(0, Math.min(1, centerY + deltaY / scale))
 }
 
 function samplePixel(data: Uint8ClampedArray, w: number, h: number, uvx: number, uvy: number): number {

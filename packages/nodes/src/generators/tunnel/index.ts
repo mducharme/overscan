@@ -151,16 +151,18 @@ void main() {
       }
 
       const { width: w, height: h, data } = out
+      const colNx = new Float64Array(w)
+      for (let x = 0; x < w; x++) colNx[x] = ((x / Math.max(1, w - 1)) - 0.5) * 2 + offsetX
       for (let y = 0; y < h; y++) {
+        const ny = ((y / Math.max(1, h - 1)) - 0.5) * 2 + offsetY
         for (let x = 0; x < w; x++) {
-          const nx = ((x / Math.max(1, w - 1)) - 0.5) * 2 + offsetX
-          const ny = ((y / Math.max(1, h - 1)) - 0.5) * 2 + offsetY
+          const nx = colNx[x]!
           const z = Math.max(0.06, Math.sqrt(nx * nx + ny * ny) / zoom)
           const angle = Math.atan2(ny, nx) / (Math.PI * 2) + 0.5 + time * 0.35 + z * twist
           const depth = 1 / z + time * 1.2
           const c = texture
             ? sampleImage(texture, angle * 12, depth * 3)
-            : sampleTunnelPattern(angle * 12, depth * 3)
+            : sampleTunnelPattern(angle * 12, depth * 3, patternScratch)
           const fogAmt = Math.max(0, Math.min(1, Math.exp(-z * (0.6 + Math.max(0, fog) * 3.4))))
           const o = (y * w + x) * 4
           data[o] = Math.round(c[0] * fogAmt)
@@ -196,15 +198,19 @@ function sampleImage(
   return [image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]
 }
 
-function sampleTunnelPattern(u: number, v: number): [number, number, number] {
+const TUNNEL_COLOR_A = [8, 166, 242] as const
+const TUNNEL_COLOR_B = [255, 36, 170] as const
+/** Reused by `sampleTunnelPattern`; read it before the next call. */
+const patternScratch: [number, number, number] = [0, 0, 0]
+
+function sampleTunnelPattern(u: number, v: number, out: [number, number, number]): [number, number, number] {
   const fu = u - Math.floor(u)
   const fv = v - Math.floor(v)
   const cell = ((Math.floor(u) + Math.floor(v)) & 1) === 0 ? 0 : 1
-  const base = cell === 0 ? [8, 166, 242] : [255, 36, 170]
+  const base = cell === 0 ? TUNNEL_COLOR_A : TUNNEL_COLOR_B
   const line = Math.max(0, 1 - Math.min(Math.abs(fu - 0.5), Math.abs(fv - 0.5)) / 0.08)
-  return [
-    Math.min(255, (base[0] ?? 0) + line * 90),
-    Math.min(255, (base[1] ?? 0) + line * 90),
-    Math.min(255, (base[2] ?? 0) + line * 90),
-  ]
+  out[0] = Math.min(255, base[0] + line * 90)
+  out[1] = Math.min(255, base[1] + line * 90)
+  out[2] = Math.min(255, base[2] + line * 90)
+  return out
 }

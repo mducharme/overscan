@@ -301,6 +301,62 @@ interface ResolvedLasersConfig {
   palette: [number, number, number][]
 }
 
+/** Per-frame beam geometry; identical math to the per-pixel version, hoisted out of the pixel loop. */
+interface LaserBeam {
+  originX: number
+  originY: number
+  dirX: number
+  dirY: number
+  beamLength: number
+  fadeDenom: number
+  colorScale: number
+  color: [number, number, number]
+}
+
+interface LaserEmitter {
+  originX: number
+  originY: number
+  color: [number, number, number]
+  beams: LaserBeam[]
+}
+
+function buildLaserEmitters(w: number, h: number, minDim: number, time: number, cfg: ResolvedLasersConfig): LaserEmitter[] {
+  const emitters: LaserEmitter[] = []
+  for (let emitterIndex = 0; emitterIndex < cfg.emitterCount; emitterIndex++) {
+    const emitterPhase = cfg.emitterCount === 1 ? 0.5 : emitterIndex / Math.max(1, cfg.emitterCount - 1)
+    const originX = w * (0.15 + emitterPhase * 0.7 + Math.sin(time * 0.43 + emitterIndex * 1.7) * 0.04 * cfg.drift)
+    const originY = h * (0.9 - Math.cos(time * 0.31 + emitterIndex) * 0.05 * cfg.drift)
+    const fanBase = -Math.PI * 0.5 + Math.sin(time * cfg.rotationSpeed + emitterIndex * 1.3) * 0.55
+    const beams: LaserBeam[] = []
+    for (let beamIndex = 0; beamIndex < cfg.beamCount; beamIndex++) {
+      const beamPhase = cfg.beamCount === 1 ? 0.5 : beamIndex / Math.max(1, cfg.beamCount - 1)
+      const sweep = (beamPhase - 0.5) * cfg.spread
+      const wave = Math.sin(time * cfg.sweepSpeed * 2.4 + emitterIndex * 0.9 + beamIndex * 0.37) * cfg.spread * 0.22
+      const shimmer = Math.sin(time * 5.2 + beamIndex * 0.73 + emitterIndex * 1.11) * cfg.jitter
+      const angle = fanBase + sweep + wave + shimmer
+      const pulse = 0.55 + 0.45 * Math.sin(time * 3.6 + beamIndex * 0.42 + emitterIndex * 0.8)
+      const beamLength = minDim * cfg.length * (0.72 + pulse * 0.33)
+      beams.push({
+        originX,
+        originY,
+        dirX: Math.cos(angle),
+        dirY: Math.sin(angle),
+        beamLength,
+        fadeDenom: Math.max(beamLength, 1),
+        colorScale: Math.min(1.6, 0.45 + pulse * 0.55),
+        color: cfg.palette[(beamIndex + emitterIndex) % cfg.palette.length] ?? cfg.palette[0]!,
+      })
+    }
+    emitters.push({
+      originX,
+      originY,
+      color: cfg.palette[emitterIndex % cfg.palette.length] ?? cfg.palette[0]!,
+      beams,
+    })
+  }
+  return emitters
+}
+
 function renderCpu(
   data: Uint8ClampedArray,
   w: number,
@@ -313,11 +369,13 @@ function renderCpu(
   const sw = Math.max(1, Math.floor(w / chunky))
   const sh = Math.max(1, Math.floor(h / chunky))
   const minDim = Math.min(w, h)
+  const emitters = buildLaserEmitters(w, h, minDim, time, cfg)
+  const color: [number, number, number] = [0, 0, 0]
   for (let sy = 0; sy < sh; sy++) {
     for (let sx = 0; sx < sw; sx++) {
       const px = (sx + 0.5) * chunky
       const py = (sy + 0.5) * chunky
-      const color = sampleLaserPoint(px, py, w, h, minDim, time, cfg)
+      sampleLaserPoint(px, py, emitters, cfg, color)
       for (let yy = 0; yy < chunky; yy++) {
         for (let xx = 0; xx < chunky; xx++) {
           const x = sx * chunky + xx
@@ -337,52 +395,42 @@ function renderCpu(
 function sampleLaserPoint(
   px: number,
   py: number,
-  w: number,
-  h: number,
-  minDim: number,
-  time: number,
+  emitters: LaserEmitter[],
   cfg: ResolvedLasersConfig,
-): [number, number, number] {
+  out: [number, number, number],
+): void {
   let r = cfg.background[0]
   let g = cfg.background[1]
   let b = cfg.background[2]
-  for (let emitterIndex = 0; emitterIndex < cfg.emitterCount; emitterIndex++) {
-    const emitterPhase = cfg.emitterCount === 1 ? 0.5 : emitterIndex / Math.max(1, cfg.emitterCount - 1)
-    const originX = w * (0.15 + emitterPhase * 0.7 + Math.sin(time * 0.43 + emitterIndex * 1.7) * 0.04 * cfg.drift)
-    const originY = h * (0.9 - Math.cos(time * 0.31 + emitterIndex) * 0.05 * cfg.drift)
-    const fanBase = -Math.PI * 0.5 + Math.sin(time * cfg.rotationSpeed + emitterIndex * 1.3) * 0.55
-    for (let beamIndex = 0; beamIndex < cfg.beamCount; beamIndex++) {
-      const beamPhase = cfg.beamCount === 1 ? 0.5 : beamIndex / Math.max(1, cfg.beamCount - 1)
-      const sweep = (beamPhase - 0.5) * cfg.spread
-      const wave = Math.sin(time * cfg.sweepSpeed * 2.4 + emitterIndex * 0.9 + beamIndex * 0.37) * cfg.spread * 0.22
-      const shimmer = Math.sin(time * 5.2 + beamIndex * 0.73 + emitterIndex * 1.11) * cfg.jitter
-      const angle = fanBase + sweep + wave + shimmer
-      const pulse = 0.55 + 0.45 * Math.sin(time * 3.6 + beamIndex * 0.42 + emitterIndex * 0.8)
-      const beamLength = minDim * cfg.length * (0.72 + pulse * 0.33)
-      const dirX = Math.cos(angle)
-      const dirY = Math.sin(angle)
-      const relX = px - originX
-      const relY = py - originY
-      const along = relX * dirX + relY * dirY
-      if (along < 0 || along > beamLength) continue
-      const off = Math.abs(relX * dirY - relY * dirX)
-      const fade = Math.pow(Math.max(0, 1 - along / Math.max(beamLength, 1)), 0.22)
-      const glow = Math.max(0, 1 - off / Math.max(cfg.glowWidth, 0.001)) * fade * cfg.intensity * 0.08
-      const core = Math.max(0, 1 - off / Math.max(cfg.beamWidth, 0.001)) * fade * cfg.intensity * 0.42
-      const alpha = (glow + core) * Math.min(1.6, 0.45 + pulse * 0.55)
-      const color = cfg.palette[(beamIndex + emitterIndex) % cfg.palette.length] ?? cfg.palette[0]!
-      r += color[0] * alpha
-      g += color[1] * alpha
-      b += color[2] * alpha
+  const glowDenom = Math.max(cfg.glowWidth, 0.001)
+  const beamDenom = Math.max(cfg.beamWidth, 0.001)
+  const emitterGlowDenom = Math.max(cfg.glowWidth * 0.45, 1)
+  for (const emitter of emitters) {
+    for (const beam of emitter.beams) {
+      const relX = px - beam.originX
+      const relY = py - beam.originY
+      const along = relX * beam.dirX + relY * beam.dirY
+      if (along < 0 || along > beam.beamLength) continue
+      const off = Math.abs(relX * beam.dirY - relY * beam.dirX)
+      // Both falloffs are zero outside the glow radius, so the pow() below would contribute nothing.
+      if (off >= glowDenom && off >= beamDenom) continue
+      const fade = Math.pow(Math.max(0, 1 - along / beam.fadeDenom), 0.22)
+      const glow = Math.max(0, 1 - off / glowDenom) * fade * cfg.intensity * 0.08
+      const core = Math.max(0, 1 - off / beamDenom) * fade * cfg.intensity * 0.42
+      const alpha = (glow + core) * beam.colorScale
+      r += beam.color[0] * alpha
+      g += beam.color[1] * alpha
+      b += beam.color[2] * alpha
     }
-    const emitterColor = cfg.palette[emitterIndex % cfg.palette.length] ?? cfg.palette[0]!
-    const emitterDist = Math.hypot(px - originX, py - originY)
-    const emitterGlow = Math.pow(Math.max(0, 1 - emitterDist / Math.max(cfg.glowWidth * 0.45, 1)), 2) * cfg.intensity * 0.18
-    r += emitterColor[0] * emitterGlow
-    g += emitterColor[1] * emitterGlow
-    b += emitterColor[2] * emitterGlow
+    const emitterDist = Math.hypot(px - emitter.originX, py - emitter.originY)
+    const emitterGlow = Math.pow(Math.max(0, 1 - emitterDist / emitterGlowDenom), 2) * cfg.intensity * 0.18
+    r += emitter.color[0] * emitterGlow
+    g += emitter.color[1] * emitterGlow
+    b += emitter.color[2] * emitterGlow
   }
-  return [clamp255(r), clamp255(g), clamp255(b)]
+  out[0] = clamp255(r)
+  out[1] = clamp255(g)
+  out[2] = clamp255(b)
 }
 
 function fillBackground(data: Uint8ClampedArray, color: [number, number, number]): void {

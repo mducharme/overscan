@@ -184,18 +184,26 @@ void main() {
       }
 
       const { width: w, height: h, data } = out
+      // Ball centers only depend on time: compute once per frame, not per pixel.
+      const ballCount = balls.length
+      const ballX = new Float64Array(ballCount)
+      const ballY = new Float64Array(ballCount)
+      const ballR2 = new Float64Array(ballCount)
+      for (let i = 0; i < ballCount; i++) {
+        const ball = balls[i]!
+        ballX[i] = 0.5 + Math.sin(time * freqX + ball.phaseX) * 0.28
+        ballY[i] = 0.5 + Math.sin(time * freqY + ball.phaseY) * 0.24
+        ballR2[i] = ball.radius * ball.radius
+      }
       for (let y = 0; y < h; y++) {
+        const uvy = y / Math.max(1, h - 1)
         for (let x = 0; x < w; x++) {
           const uvx = x / Math.max(1, w - 1)
-          const uvy = y / Math.max(1, h - 1)
           let field = 0
-          for (let i = 0; i < balls.length; i++) {
-            const ball = balls[i]!
-            const bx = 0.5 + Math.sin(time * freqX + ball.phaseX) * 0.28
-            const by = 0.5 + Math.sin(time * freqY + ball.phaseY) * 0.24
-            const dx = uvx - bx
-            const dy = uvy - by
-            field += (ball.radius * ball.radius) / Math.max(dx * dx + dy * dy, 0.0008)
+          for (let i = 0; i < ballCount; i++) {
+            const dx = uvx - ballX[i]!
+            const dy = uvy - ballY[i]!
+            field += ballR2[i]! / Math.max(dx * dx + dy * dy, 0.0008)
           }
           const edge = smoothstep(threshold * 8 - 0.15 - glow * 0.3, threshold * 8 + 0.25, field)
           const c = samplePalette(palette, edge)

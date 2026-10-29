@@ -194,13 +194,18 @@ void main() {
       }
 
       const { width: w, height: h, data } = out
+      const c1 = Math.cos(angle1)
+      const s1 = Math.sin(angle1)
+      const c2 = Math.cos(angle2)
+      const s2 = Math.sin(angle2)
       for (let y = 0; y < h; y++) {
+        const uvy = y / Math.max(1, h - 1)
+        const py = (uvy - 0.5) * 2
         for (let x = 0; x < w; x++) {
           const uvx = x / Math.max(1, w - 1)
-          const uvy = y / Math.max(1, h - 1)
-          const p = { x: (uvx - 0.5) * 2, y: (uvy - 0.5) * 2 }
-          const a = samplePattern(p.x, p.y, freq1, angle1, time1, mode)
-          const b = samplePattern(p.x, p.y, freq2, angle2, time2, mode)
+          const px = (uvx - 0.5) * 2
+          const a = samplePattern(px, py, freq1, c1, s1, time1, mode)
+          const b = samplePattern(px, py, freq2, c2, s2, time2, mode)
           const v = 0.5 + 0.5 * Math.max(-1, Math.min(1, a * b * contrast))
           const c = samplePalette(palette, v)
           const o = (y * w + x) * 4
@@ -233,12 +238,11 @@ function samplePattern(
   px: number,
   py: number,
   freq: number,
-  angle: number,
+  c: number,
+  s: number,
   time: number,
   mode: NonNullable<MoireConfig['mode']>,
 ): number {
-  const c = Math.cos(angle)
-  const s = Math.sin(angle)
   const qx = px * c - py * s
   const qy = px * s + py * c
   if (mode === 'rings') return Math.sin(Math.sqrt(qx * qx + qy * qy) * freq - time)
