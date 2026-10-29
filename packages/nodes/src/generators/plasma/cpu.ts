@@ -1,3 +1,4 @@
+import { aspectScale } from '../../viewport-scale.js'
 import type { NodeContext, FrameBuffer, Signal } from '@overscan/types'
 import type { PlasmaConfig } from './types.js'
 
@@ -74,6 +75,7 @@ export class PlasmaCPU {
     const hm = Math.max(1, height - 1)
 
     const sc = Math.max(scale, 0.001)
+    const aspect = aspectScale(width, height)
     if (this.colPx.length !== width) {
       this.colPx = new Float64Array(width)
       this.colSin = new Float64Array(width)
@@ -81,14 +83,14 @@ export class PlasmaCPU {
     const colPx = this.colPx
     const colSin = this.colSin
     for (let x = 0; x < width; x++) {
-      const px = ((x + 0.5) / wm - 0.5) * 3.5 * sc
+      const px = ((x + 0.5) / wm - 0.5) * aspect.x * 3.5 * sc
       colPx[x] = px
       colSin[x] = Math.sin(px * 3 + time * 1.7)
     }
 
     for (let y = 0; y < height; y++) {
       const vBottom = 1 - (y + 0.5) / hm
-      const py = (vBottom - 0.5) * 3.5 * sc
+      const py = (vBottom - 0.5) * aspect.y * 3.5 * sc
       const sinY = Math.sin(py * 4 - time * 1.3)
       for (let x = 0; x < width; x++) {
         const sum = plasmaFieldSum(colPx[x]!, py, colSin[x]!, sinY, time, complexity)

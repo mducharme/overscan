@@ -29,3 +29,16 @@ export function scaleFovMultiplier(fov: number, w: number, h: number): number {
 export function scaleFontSize(refFontSize: number, w: number, h: number): number {
   return (refFontSize * viewportMinDim(w, h)) / VIEWPORT_REF_MIN
 }
+
+/**
+ * Per-axis factors that make normalized coordinates square: the short side keeps its range and the
+ * long side extends, so circles stay round and rotations stay rigid at any aspect ratio.
+ * Multiply centered coordinates (or differences of normalized coordinates) by these.
+ */
+export function aspectScale(w: number, h: number): { x: number; y: number } {
+  const min = viewportMinDim(w, h)
+  return { x: Math.max(1, w) / min, y: Math.max(1, h) / min }
+}
+
+/** GLSL twin of `aspectScale`; interpolate into a fragment shader that has `u_resolution`. */
+export const ASPECT_SCALE_GLSL = 'vec2 aspectScale(vec2 res) { return res / min(res.x, res.y); }'

@@ -1,3 +1,4 @@
+import { ASPECT_SCALE_GLSL, aspectScale } from '../../viewport-scale.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -104,9 +105,10 @@ float pattern(vec2 p, float freq, float angle, float time, float mode) {
   float r = atan(q.y, q.x);
   return sin(r * freq + time) * sin(length(q) * freq * 0.6 - time);
 }
+${ASPECT_SCALE_GLSL}
 void main() {
   vec2 uv = gl_FragCoord.xy / u_resolution;
-  vec2 p = (uv - 0.5) * 2.0;
+  vec2 p = (uv - 0.5) * 2.0 * aspectScale(u_resolution);
   float a = pattern(p, u_freq1, u_angle1, u_time1, u_mode);
   float b = pattern(p, u_freq2, u_angle2, u_time2, u_mode);
   float v = 0.5 + 0.5 * clamp(a * b * u_contrast, -1.0, 1.0);
@@ -195,16 +197,17 @@ void main() {
       }
 
       const { width: w, height: h, data } = out
+      const aspect = aspectScale(w, h)
       const c1 = Math.cos(angle1)
       const s1 = Math.sin(angle1)
       const c2 = Math.cos(angle2)
       const s2 = Math.sin(angle2)
       for (let y = 0; y < h; y++) {
         const uvy = y / Math.max(1, h - 1)
-        const py = (uvy - 0.5) * 2
+        const py = (uvy - 0.5) * 2 * aspect.y
         for (let x = 0; x < w; x++) {
           const uvx = x / Math.max(1, w - 1)
-          const px = (uvx - 0.5) * 2
+          const px = (uvx - 0.5) * 2 * aspect.x
           const a = samplePattern(px, py, freq1, c1, s1, time1, mode)
           const b = samplePattern(px, py, freq2, c2, s2, time2, mode)
           const v = 0.5 + 0.5 * Math.max(-1, Math.min(1, a * b * contrast))

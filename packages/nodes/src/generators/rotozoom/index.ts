@@ -1,3 +1,4 @@
+import { ASPECT_SCALE_GLSL, aspectScale } from '../../viewport-scale.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -72,9 +73,10 @@ vec3 pattern(vec2 uv) {
   float grid = smoothstep(0.05, 0.0, min(abs(p.x - 0.5), abs(p.y - 0.5)));
   return c + grid * vec3(0.3, 0.55, 0.8);
 }
+${ASPECT_SCALE_GLSL}
 void main() {
   vec2 uv = gl_FragCoord.xy / u_resolution;
-  vec2 p = uv - u_center;
+  vec2 p = (uv - u_center) * aspectScale(u_resolution);
   float c = cos(u_angle);
   float s = sin(u_angle);
   vec2 rot = vec2(p.x * c - p.y * s, p.x * s + p.y * c);
@@ -149,12 +151,13 @@ void main() {
       const { width: w, height: h, data } = out
       const c = Math.cos(angle)
       const s = Math.sin(angle)
+      const aspect = aspectScale(w, h)
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
           const uvx = x / Math.max(1, w - 1)
           const uvy = y / Math.max(1, h - 1)
-          const px = uvx - centerX
-          const py = uvy - centerY
+          const px = (uvx - centerX) * aspect.x
+          const py = (uvy - centerY) * aspect.y
           const rx = px * c - py * s
           const ry = px * s + py * c
           const tu = (rx / Math.max(zoom, 0.001) + 0.5) * tileX

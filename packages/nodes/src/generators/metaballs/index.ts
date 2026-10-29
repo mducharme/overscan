@@ -1,3 +1,4 @@
+import { ASPECT_SCALE_GLSL, aspectScale } from '../../viewport-scale.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -92,8 +93,10 @@ vec3 paletteSample(float t) {
   float nextIdx = min(count - 1.0, idx + 1.0);
   return mix(u_palette[int(idx)], u_palette[int(nextIdx)], fract(scaled));
 }
+${ASPECT_SCALE_GLSL}
 void main() {
   vec2 uv = gl_FragCoord.xy / u_resolution;
+  vec2 aspect = aspectScale(u_resolution);
   float field = 0.0;
   float count = max(1.0, u_count);
   for (float i = 0.0; i < 16.0; i += 1.0) {
@@ -103,7 +106,7 @@ void main() {
       0.5 + sin(u_time * u_freq.y + i * 1.97) * 0.24
     );
     float radius = 0.12 + mod(i, 3.0) * 0.03;
-    vec2 d = uv - pos;
+    vec2 d = (uv - pos) * aspect;
     field += (radius * radius) / max(dot(d, d), 0.0008);
   }
   float edge = smoothstep(u_threshold - 0.15 - u_glow * 0.3, u_threshold + 0.25, field);
@@ -186,6 +189,7 @@ void main() {
       const { width: w, height: h, data } = out
       // Ball centers only depend on time: compute once per frame, not per pixel.
       const ballCount = balls.length
+      const aspect = aspectScale(w, h)
       const ballX = new Float64Array(ballCount)
       const ballY = new Float64Array(ballCount)
       const ballR2 = new Float64Array(ballCount)
@@ -201,8 +205,8 @@ void main() {
           const uvx = x / Math.max(1, w - 1)
           let field = 0
           for (let i = 0; i < ballCount; i++) {
-            const dx = uvx - ballX[i]!
-            const dy = uvy - ballY[i]!
+            const dx = (uvx - ballX[i]!) * aspect.x
+            const dy = (uvy - ballY[i]!) * aspect.y
             field += ballR2[i]! / Math.max(dx * dx + dy * dy, 0.0008)
           }
           const edge = smoothstep(threshold * 8 - 0.15 - glow * 0.3, threshold * 8 + 0.25, field)

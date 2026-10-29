@@ -1,3 +1,4 @@
+import { ASPECT_SCALE_GLSL, aspectScale } from '../../viewport-scale.js'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -73,8 +74,9 @@ vec3 pattern(vec2 uv) {
   float line = smoothstep(0.08, 0.0, min(abs(p.x - 0.5), abs(p.y - 0.5)));
   return c + line * 0.35;
 }
+${ASPECT_SCALE_GLSL}
 void main() {
-  vec2 uv = (gl_FragCoord.xy / u_resolution - 0.5) * 2.0;
+  vec2 uv = (gl_FragCoord.xy / u_resolution - 0.5) * 2.0 * aspectScale(u_resolution);
   uv += u_offset;
   float z = max(0.06, length(uv) / max(u_zoom, 0.05));
   float angle = atan(uv.y, uv.x) / 6.28318530718 + 0.5 + u_time * 0.02 + z * u_twist;
@@ -151,10 +153,11 @@ void main() {
       }
 
       const { width: w, height: h, data } = out
+      const aspect = aspectScale(w, h)
       const colNx = new Float64Array(w)
-      for (let x = 0; x < w; x++) colNx[x] = ((x / Math.max(1, w - 1)) - 0.5) * 2 + offsetX
+      for (let x = 0; x < w; x++) colNx[x] = ((x / Math.max(1, w - 1)) - 0.5) * 2 * aspect.x + offsetX
       for (let y = 0; y < h; y++) {
-        const ny = ((y / Math.max(1, h - 1)) - 0.5) * 2 + offsetY
+        const ny = ((y / Math.max(1, h - 1)) - 0.5) * 2 * aspect.y + offsetY
         for (let x = 0; x < w; x++) {
           const nx = colNx[x]!
           const z = Math.max(0.06, Math.sqrt(nx * nx + ny * ny) / zoom)

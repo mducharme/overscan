@@ -1,3 +1,4 @@
+import { ASPECT_SCALE_GLSL } from '../../viewport-scale.js'
 import {
   resolveAnimatableFloat,
   type FrameBuffer,
@@ -63,9 +64,10 @@ vec3 samplePalette(float t) {
   float frac = fract(scaled);
   return mix(u_palette[int(idx)], u_palette[int(nextIdx)], frac);
 }
+${ASPECT_SCALE_GLSL}
 void main() {
   vec2 uv = gl_FragCoord.xy / u_resolution;
-  vec2 p = (uv - 0.5) * (3.5 * max(u_scale, 0.001));
+  vec2 p = (uv - 0.5) * aspectScale(u_resolution) * (3.5 * max(u_scale, 0.001));
   float v = 0.0;
   float c = clamp(u_complexity, 2.0, 8.0);
   v += sin(p.x * 3.0 + u_time * 1.7);
