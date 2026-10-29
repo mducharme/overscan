@@ -3,6 +3,7 @@ import { BufferPoolImpl, buildSignal } from '@overscan/core'
 import type { Generator, NodeContext } from '@overscan/types'
 import { SinebobsGenerator } from './sinebobs/index.js'
 import { OscilloscopeGenerator } from './oscilloscope/index.js'
+import { DotMatrixGenerator } from './dot-matrix/index.js'
 import { projectObject } from './glenz/index.js'
 
 const W = 160
@@ -53,4 +54,10 @@ describe('phase 1 fixes', () => {
     }
   })
 
+  it('dot-matrix text shape spells the given text', () => {
+    const render = (text: string): Uint8ClampedArray =>
+      renderFrames(DotMatrixGenerator({ shape: 'text', text, count: 400, rotationX: 0, rotationY: 0, rotationZ: 0 }), 1)
+    expect(render('AAAA')).not.toEqual(render('BBBB'))
+    expect(litPixels(render('I'))).toBeLessThan(litPixels(render('W')))
+  })
 })

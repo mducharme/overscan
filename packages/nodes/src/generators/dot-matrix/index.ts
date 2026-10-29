@@ -1,3 +1,4 @@
+import { drawBitmapTextBlock, measureBitmapText } from '@overscan/text'
 import {
   resolveAnimatableFloat,
   type AnimatableFloat,
@@ -123,21 +124,32 @@ function makeShape(shape: string, count: number, text: string): Point3[] {
   }
 }
 
+/**
+ * One dot per lit pixel of the text in the shared bitmap font, centered and kept at the font's aspect.
+ * When `count` exceeds the lit pixels the text is extruded into extra z layers; every slot is filled
+ * so morph targets stay index-aligned.
+ */
 function makeTextShape(text: string, count: number): Point3[] {
-  const chars = Array.from(text)
-  const cols = Math.max(1, chars.length * 5)
+  const metrics = measureBitmapText(text)
+  const w = Math.max(1, metrics.width)
+  const h = Math.max(1, metrics.height)
+  const pixels = new Uint8ClampedArray(w * h * 4)
+  drawBitmapTextBlock(pixels, w, h, text, 0, 0)
+  const lit: [number, number][] = []
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (pixels[(y * w + x) * 4 + 3]! > 0) lit.push([x, y])
+    }
+  }
+  if (lit.length === 0) return Array.from({ length: count }, () => [0, 0, 0])
+  const unit = 2.2 / Math.max(1, w - 1)
+  const layers = Math.ceil(count / lit.length)
   return Array.from({ length: count }, (_, i) => {
-    const t = i / Math.max(1, count - 1)
-    const col = Math.floor(t * cols)
-    const row = Math.floor((((i * 17) % count) / count) * 7)
-    const charIndex = Math.min(chars.length - 1, Math.floor(col / 5))
-    const localX = col % 5
-    const on = ((charIndex + row + localX) % 2) === 0
-    return [
-      (col / Math.max(1, cols - 1) - 0.5) * 2.2,
-      (row / 6 - 0.5) * -1.4 + (on ? 0.04 : -0.04),
-      on ? 0.15 : -0.15,
-    ]
+    const [x, y] = lit[i % lit.length]!
+    const layer = Math.floor(i / lit.length)
+    const z = layers === 1 ? 0 : (layer / (layers - 1) - 0.5) * 0.3
+    // Screen y grows downward in the projection, so glyph rows map to +y going down.
+    return [(x - (w - 1) / 2) * unit, (y - (h - 1) / 2) * unit, z]
   })
 }
 
