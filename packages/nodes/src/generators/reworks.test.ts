@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { BufferPoolImpl, buildSignal } from '@overscan/core'
 import type { Generator, NodeContext } from '@overscan/types'
 import { CopperbarsGenerator } from './copperbars/index.js'
+import { MatrixRainGenerator } from './matrix-rain/index.js'
 import { ScrollerGenerator } from './scroller/index.js'
 import { projectObject } from './glenz/index.js'
 
@@ -31,6 +32,21 @@ describe('phase 3 reworks', () => {
     expect(column[peak]!).toBeGreaterThan(column[peak - 6]!)
     expect(column[0]).toBe(0)
     expect(column[H - 1]).toBe(0)
+  })
+
+  it('matrix-rain spreads its columns across the whole width', () => {
+    const data = renderOne(MatrixRainGenerator({ density: 0.5, trailLength: 1 }), 2)
+    let left = 0
+    let right = 0
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (brightness(data, x, y) === 0) continue
+        if (x < W / 2) left++
+        else right++
+      }
+    }
+    expect(left).toBeGreaterThan(0)
+    expect(right).toBeGreaterThan(left * 0.4)
   })
 
   it('scroller sine mode bends within a character, unlike dycp', () => {

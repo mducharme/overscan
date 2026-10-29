@@ -1,3 +1,4 @@
+import { Tiny5x7Font } from '@overscan/text'
 import { DEFAULT_RANDOM_SEED, hash01 } from '../../random.js'
 import {
   resolveAnimatableFloat,
@@ -56,7 +57,7 @@ export function MatrixRainGenerator(config: Partial<MatrixRainConfig> = {}): Gen
       const nextCols = Math.max(1, Math.floor(w / cellW))
       if (nextCols !== cols) {
         cols = nextCols
-        columns = Array.from({ length: cols }, (_, i) => ({ phase: i * 0.37, speed: 0.6 + (i % 5) * 0.12 }))
+        columns = Array.from({ length: cols }, (_, i) => ({ phase: hash01(randomSeed, i, 4) * 10, speed: 0.6 + hash01(randomSeed, i, 5) * 0.6 }))
       }
       data.fill(0)
       const density = Math.max(0, Math.min(1, resolveAnimatableFloat(densityRef, signal)))
@@ -64,20 +65,27 @@ export function MatrixRainGenerator(config: Partial<MatrixRainConfig> = {}): Gen
       const trail = Math.max(0.05, Math.min(1, resolveAnimatableFloat(trailRef, signal)))
       const glitch = Math.max(0, Math.min(1, resolveAnimatableFloat(glitchRef, signal)))
       for (let c = 0; c < cols; c++) {
-        if ((c / Math.max(1, cols - 1)) > density) continue
+        // Hash-picked columns, so `density` thins the rain evenly instead of emptying one side.
+        if (hash01(randomSeed, c, 1) > density) continue
         const col = columns[c]!
         const head = ((signal.t * speed * col.speed + col.phase) * cellH * 4) % (h + cellH * 12)
+        const headRow = Math.floor(head / cellH)
         const rows = Math.ceil((h * trail) / cellH)
+        const x = c * cellW
         for (let r = 0; r < rows; r++) {
-          const y = Math.round(head - r * cellH)
+          // Glyphs sit on a fixed screen grid; the bright head moves down and reveals them.
+          const row = headRow - r
+          const y = row * cellH
           if (y < -cellH || y >= h) continue
-          const x = c * cellW
           const t = 1 - r / Math.max(1, rows)
-          const useHead = r === 0
-          const char = charset[Math.floor(Math.abs(Math.sin(signal.t * 13 + c * 7 + r * 3)) * charset.length) % charset.length] ?? '#'
+          // Each cell keeps its glyph for a while, changing at about 2 Hz with its own offset.
+          const epoch = Math.floor(signal.t * 2 + hash01(randomSeed, c, row, 2) * 7)
+          const char = charset[Math.floor(hash01(randomSeed, c, row, epoch) * charset.length)] ?? '#'
           // Stateless per glyph and 1/30 s tick, so the glitch pattern is reproducible and seek-safe.
-          const drawChar = hash01(randomSeed, c, r, Math.floor(signal.t * 30)) < glitch ? charset[(c + r) % charset.length] ?? char : char
-          drawGlyph(data, w, h, x, y, cellW - 1, cellH - 1, drawChar, useHead ? headColor : tint(color, t * t))
+          const drawChar = hash01(randomSeed, c, row, Math.floor(signal.t * 30)) < glitch
+            ? charset[Math.floor(hash01(randomSeed, c, row, Math.floor(signal.t * 30), 3) * charset.length)] ?? char
+            : char
+          drawGlyph(data, w, h, x, y, cellW - 1, cellH - 1, drawChar, r === 0 ? headColor : tint(color, t * t))
         }
       }
     },
@@ -85,6 +93,7 @@ export function MatrixRainGenerator(config: Partial<MatrixRainConfig> = {}): Gen
   }
 }
 
+/** Draws `char` scaled into a gw × gh cell: the bitmap font's glyph when it has one, else a synthetic kana-like glyph. */
 function drawGlyph(
   data: Uint8ClampedArray,
   w: number,
@@ -96,14 +105,14 @@ function drawGlyph(
   char: string,
   color: [number, number, number],
 ): void {
-  const code = char.charCodeAt(0) || 35
+  const rows = glyphFor(char)
   for (let y = 0; y < gh; y++) {
+    const row = rows[Math.min(GLYPH_H - 1, Math.floor((y * GLYPH_H) / gh))]!
     for (let x = 0; x < gw; x++) {
+      if (row[Math.min(GLYPH_W - 1, Math.floor((x * GLYPH_W) / gw))] !== '1') continue
       const dx = x0 + x
       const dy = y0 + y
       if (dx < 0 || dy < 0 || dx >= w || dy >= h) continue
-      const on = (((x * 17 + y * 31 + code) ^ (code * 13)) & 7) < 3
-      if (!on) continue
       const o = (dy * w + dx) * 4
       data[o] = Math.max(data[o] ?? 0, color[0])
       data[o + 1] = Math.max(data[o + 1] ?? 0, color[1])
@@ -111,6 +120,43 @@ function drawGlyph(
       data[o + 3] = 255
     }
   }
+}
+
+const GLYPH_W = Tiny5x7Font.glyphWidth
+const GLYPH_H = Tiny5x7Font.glyphHeight
+const glyphCache = new Map<string, string[]>()
+
+function glyphFor(char: string): string[] {
+  let rows = glyphCache.get(char)
+  if (!rows) {
+    rows = Tiny5x7Font.glyphs[char.toUpperCase()] ?? syntheticGlyph(char.codePointAt(0) ?? 35)
+    glyphCache.set(char, rows)
+  }
+  return rows
+}
+
+/** Kana-like strokes on the 5×7 grid, mirrored as in the film; picked by the character code. */
+const STROKES: [number, number, number, number][] = [
+  [0, 0, 4, 0], [0, 3, 4, 3], [1, 6, 4, 6], [2, 0, 2, 6], [4, 0, 4, 4],
+  [4, 1, 0, 6], [0, 1, 2, 3], [3, 3, 4, 6], [1, 0, 1, 3], [0, 6, 4, 6],
+]
+
+function syntheticGlyph(code: number): string[] {
+  const grid = Array.from({ length: GLYPH_H }, () => Array<string>(GLYPH_W).fill('0'))
+  let bits = Math.imul(code ^ 0x9e3779b9, 0x85ebca6b) >>> 0
+  let drawn = 0
+  for (let i = 0; i < STROKES.length && drawn < 4; i++, bits >>>= 3) {
+    if ((bits & 7) > 2 && drawn >= 2) continue
+    const [ax, ay, bx, by] = STROKES[(i + code) % STROKES.length]!
+    const steps = Math.max(Math.abs(bx - ax), Math.abs(by - ay))
+    for (let s = 0; s <= steps; s++) {
+      const x = Math.round(ax + ((bx - ax) * s) / Math.max(1, steps))
+      const y = Math.round(ay + ((by - ay) * s) / Math.max(1, steps))
+      grid[y]![GLYPH_W - 1 - x] = '1'
+    }
+    drawn++
+  }
+  return grid.map(r => r.join(''))
 }
 
 function tint(color: [number, number, number], t: number): [number, number, number] {
