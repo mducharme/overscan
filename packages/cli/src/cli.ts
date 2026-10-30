@@ -27,6 +27,7 @@ const { positionals, values } = parseArgs({
     'ascii-font-family': { type: 'string' },
     'sixel-scale': { type: 'string' },
     'no-display': { type: 'boolean' },
+    'no-open':  { type: 'boolean' },
     help:     { type: 'boolean', short: 'h' },
   },
 })
@@ -38,7 +39,7 @@ if (values.help || !command) {
   overscan <command> [options]
 
   Commands:
-    dev <scene.json|demo.json>     Open Overscan Studio in the browser
+    dev <scene.json|demo.json>     Open Overscan Studio in the browser (--no-open: just serve)
     run <scene.json|demo.json>     Terminal playback (Esc / Ctrl+C; duration or --frames)
     export <scene.json>            PNG / WebGL PNG / MP4 / GIF (see below)
     validate <scene.json|demo.json> Validate a scene or demo file
@@ -95,7 +96,7 @@ switch (command) {
     if (!filePath) { console.error('Usage: overscan dev <scene.json|demo.json>'); process.exit(1) }
     const { dev } = await import('./commands/dev.js')
     try {
-      await dev(filePath)
+      await dev(filePath, { open: values['no-open'] !== true })
     } catch (e) {
       console.error(e instanceof Error ? e.message : e)
       process.exit(1)

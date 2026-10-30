@@ -275,14 +275,19 @@ function makeStudioBridge(filePath: string): Plugin {
   }
 }
 
-export async function dev(filePath: string): Promise<void> {
+export interface DevOptions {
+  /** Open the studio in the default browser (default true). */
+  open?: boolean
+}
+
+export async function dev(filePath: string, options: DevOptions = {}): Promise<void> {
   const normalized = normalizeFilePath(filePath)
   const fileType = normalized.endsWith('.demo.json') ? 'demo' : 'scene'
   const server = await createServer({
     root: studioRoot(),
     server: {
       port: 4242,
-      open: `/?file=${encodeURIComponent(normalized)}&type=${fileType}`,
+      open: options.open === false ? false : `/?file=${encodeURIComponent(normalized)}&type=${fileType}`,
     },
     define: {
       __OVERSCAN_FILE__: JSON.stringify(normalized),

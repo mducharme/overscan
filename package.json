@@ -14,6 +14,7 @@
     "validate-examples": "node scripts/validate-examples.mjs",
     "build-examples-html": "node scripts/build-examples-html.mjs",
     "build-effects-reference": "node scripts/build-effects-reference.mjs",
+    "studio-smoke": "node scripts/studio-smoke.mjs",
     "typecheck": "turbo run typecheck",
     "clean":     "turbo run clean"
   },
