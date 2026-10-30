@@ -59,7 +59,7 @@ void main() {
     id:         'blur-glow',
     persistent: false,
     glsl:       'gpu-blur-glow',
-    config:     config as Modifier['config'],
+    config:     config,
     init(ctx: NodeContext) {
       ensureGpu(ctx)
     },

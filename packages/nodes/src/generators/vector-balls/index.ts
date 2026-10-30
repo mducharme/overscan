@@ -78,7 +78,7 @@ export function VectorBallsGenerator(config: Partial<VectorBallsConfig> = {}): G
     type: 'generator',
     id: 'vector-balls',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() {},
     render(_ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const { width: w, height: h, data } = out

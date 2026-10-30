@@ -66,7 +66,7 @@ export function createTerminalAudioController(): TerminalAudioController | null 
     if (sourceChanged) {
       await sendCommand(track.client, ['loadfile', next.source, 'replace'])
     }
-    const commands: Array<readonly unknown[]> = [
+    const commands: (readonly unknown[])[] = [
       ['set_property', 'loop-file', next.loop ? 'inf' : 'no'],
       ['set_property', 'speed', sanitizeNumber(next.rate, 1)],
       ['set_property', 'pause', !next.playing],
@@ -175,7 +175,7 @@ function waitForExit(child: ChildProcess): Promise<void> {
       resolve()
       return
     }
-    child.once('exit', () => resolve())
+    child.once('exit', () => { resolve(); })
     setTimeout(() => {
       void terminateChildProcess(child).finally(resolve)
     }, 750)
@@ -185,7 +185,7 @@ function waitForExit(child: ChildProcess): Promise<void> {
 function waitForSpawn(child: ChildProcess): Promise<void> {
   return new Promise((resolve, reject) => {
     child.once('error', reject)
-    child.once('spawn', () => resolve())
+    child.once('spawn', () => { resolve(); })
   })
 }
 
@@ -195,7 +195,7 @@ async function connectToIpc(socketPath: string, child: ChildProcess): Promise<ne
     if (!isUsable(child)) throw new Error('mpv exited before IPC became available')
     try {
       const socket = await new Promise<net.Socket>((resolve, reject) => {
-        const client = net.createConnection(socketPath, () => resolve(client))
+        const client = net.createConnection(socketPath, () => { resolve(client); })
         client.once('error', reject)
       })
       socket.setEncoding('utf8')
@@ -268,7 +268,7 @@ async function terminateChildProcess(child: ChildProcess): Promise<void> {
         stdio: 'ignore',
         windowsHide: true,
       })
-      killer.once('exit', () => resolve())
+      killer.once('exit', () => { resolve(); })
       killer.once('error', () => {
         try {
           child.kill()

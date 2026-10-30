@@ -75,7 +75,7 @@ void main() {
     id:         'feedback',
     persistent: true,
     glsl:       'gpu-feedback',
-    config:     config as Modifier['config'],
+    config:     config,
     init:       (ctx: NodeContext) => {
       prev = null
       ensureGpu(ctx)

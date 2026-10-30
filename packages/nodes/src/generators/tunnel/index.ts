@@ -123,7 +123,7 @@ void main() {
     type: 'generator',
     id: 'tunnel',
     renderers: ['gpu', 'cpu'],
-    config: config as Generator['config'],
+    config: config,
     init(ctx) {
       ensureGpu(ctx)
     },

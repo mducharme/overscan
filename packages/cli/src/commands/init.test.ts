@@ -58,7 +58,7 @@ describe('init scaffold', () => {
 
     expect(parsed['id']).toBe('test-scene')
     expect(parsed['bpm']).toBe(120)
-    const graph = parsed['graph'] as { nodes: Array<{ impl: string; type: string }> }
+    const graph = parsed['graph'] as { nodes: { impl: string; type: string }[] }
     expect(graph.nodes).toHaveLength(1)
     expect(graph.nodes[0]?.impl).toBe('plasma')
     expect(graph.nodes[0]?.type).toBe('generator')

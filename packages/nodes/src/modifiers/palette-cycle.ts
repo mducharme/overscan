@@ -66,7 +66,7 @@ void main() {
     id: 'palette-cycle',
     persistent: false,
     glsl: 'gpu-palette-cycle',
-    config: config as Modifier['config'],
+    config: config,
     init(ctx: NodeContext) { ensureGpu(ctx) },
     destroy() { pipeline = null },
     apply(ctx: NodeContext, input: FrameBuffer, out: FrameBuffer, signal: Signal): void {

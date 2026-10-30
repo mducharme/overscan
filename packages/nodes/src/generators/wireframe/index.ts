@@ -27,7 +27,7 @@ const VERTICES: Vec3[] = [
   [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
   [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1],
 ]
-const EDGES: Array<[number, number]> = [
+const EDGES: [number, number][] = [
   [0, 1], [1, 2], [2, 3], [3, 0],
   [4, 5], [5, 6], [6, 7], [7, 4],
   [0, 4], [1, 5], [2, 6], [3, 7],
@@ -130,7 +130,7 @@ void main() {
     type: 'generator',
     id: 'wireframe',
     renderers: ['gpu', 'cpu'],
-    config: config as Generator['config'],
+    config: config,
     init(ctx) { ensureGpu(ctx) },
     render(ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const lineWidth = scaleThickness(

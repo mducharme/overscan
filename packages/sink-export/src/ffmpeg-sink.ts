@@ -105,7 +105,7 @@ export class FfmpegSink implements Sink {
         }
         reject(err)
       })
-      proc.once('spawn', () => resolve())
+      proc.once('spawn', () => { resolve(); })
     })
   }
 
@@ -173,7 +173,7 @@ function buildAudioFilterArgs(audioTracks: FfmpegAudioTrack[], durationSeconds?:
 }
 
 function formatSeconds(value?: number): string {
-  const safe = Math.max(0, Number.isFinite(value) ? value as number : 0)
+  const safe = Math.max(0, Number.isFinite(value) ? value! : 0)
   return safe.toFixed(3)
 }
 

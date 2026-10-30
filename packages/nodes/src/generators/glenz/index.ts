@@ -81,7 +81,7 @@ export function GlenzGenerator(config: Partial<GlenzConfig> = {}): Generator {
     type: 'generator',
     id: 'glenz',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() {},
     render(_ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const alpha = Math.max(0.05, Math.min(1, resolveAnimatableFloat(alphaRef, signal)))

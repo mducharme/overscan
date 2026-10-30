@@ -10,13 +10,13 @@ import {
 
 export interface ColorGradeConfig {
   mode?: '1d' | '3d' | 'curves'
-  palette?: Array<[number, number, number]>
+  palette?: [number, number, number][]
   lutUrl?: string
   curves?: { r?: number[]; g?: number[]; b?: number[] }
   strength?: AnimatableFloat
 }
 
-const DEFAULT_PALETTE: Array<[number, number, number]> = [
+const DEFAULT_PALETTE: [number, number, number][] = [
   [18, 14, 40],
   [80, 54, 128],
   [255, 126, 96],
@@ -27,7 +27,7 @@ function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t
 }
 
-function gradeSample(luma: number, palette: Array<[number, number, number]>): [number, number, number] {
+function gradeSample(luma: number, palette: [number, number, number][]): [number, number, number] {
   const colors = palette.length > 1 ? palette : DEFAULT_PALETTE
   const scaled = Math.max(0, Math.min(1, luma)) * (colors.length - 1)
   const idx = Math.min(colors.length - 2, Math.floor(scaled))
@@ -84,7 +84,7 @@ void main() {
     id: 'color-grade',
     persistent: false,
     glsl: 'gpu-color-grade',
-    config: config as Modifier['config'],
+    config: config,
     init(ctx: NodeContext) {
       ensureGpu(ctx)
     },

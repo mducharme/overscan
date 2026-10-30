@@ -53,7 +53,7 @@ void main() {
     id: 'pixelate',
     persistent: false,
     glsl: 'gpu-pixelate',
-    config: config as Modifier['config'],
+    config: config,
     init(ctx: NodeContext) {
       ensureGpu(ctx)
     },

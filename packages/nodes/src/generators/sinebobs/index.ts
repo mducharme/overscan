@@ -160,7 +160,7 @@ void main() {
     type: 'generator',
     id: 'sinebobs',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() { prev = null },
     render(ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const radius = scaleThickness(

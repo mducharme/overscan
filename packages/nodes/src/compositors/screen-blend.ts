@@ -72,7 +72,7 @@ void main() {
     mode: 'screen',
     opacity: opacityRef,
     glsl: 'gpu-screen-blend',
-    config: config as Compositor['config'],
+    config: config,
     init(ctx: NodeContext) { ensureGpu(ctx) },
     destroy() { pipeline = null },
     compose(

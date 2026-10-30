@@ -1,6 +1,7 @@
 import type { BufferPool, NodeContext, Scene, Signal } from '@overscan/types'
+import type {
+  GraphExecutor} from '../graph/executor.js';
 import {
-  GraphExecutor,
   type ExecutorProfiler,
   type ExecutorRenderOptions,
 } from '../graph/executor.js'

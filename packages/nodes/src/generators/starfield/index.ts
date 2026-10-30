@@ -152,7 +152,7 @@ void main() {
     type:       'generator',
     id:         'starfield',
     renderers:  ['gpu', 'cpu'],
-    config:     config as Generator['config'],
+    config:     config,
     init:       (ctx: NodeContext) => {
       initStars()
       ensureGpu(ctx)

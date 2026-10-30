@@ -52,7 +52,7 @@ interface SceneHistoryEntry {
 const PLAYBACK_RATES = [0.25, 0.5, 1, 2] as const
 const UI_UPDATE_INTERVAL_MS = 100
 
-function normalizeAudioClip(audio: Scene['audio'] | Demo['audio']): AudioClip | null {
+function normalizeAudioClip(audio: Scene['audio']  ): AudioClip | null {
   if (!audio) return null
   if (typeof audio === 'string') return { src: audio, volume: 1 }
   return {
@@ -65,12 +65,12 @@ async function setAudioElementTime(audio: HTMLAudioElement, time: number): Promi
   const targetTime = Math.max(0, time)
   if (audio.readyState < 1) {
     await new Promise<void>(resolve => {
-      audio.addEventListener('loadedmetadata', () => resolve(), { once: true })
+      audio.addEventListener('loadedmetadata', () => { resolve(); }, { once: true })
     })
   }
   if (Math.abs(audio.currentTime - targetTime) <= 0.05) return
   await new Promise<void>(resolve => {
-    const finish = () => resolve()
+    const finish = () => { resolve(); }
     audio.addEventListener('seeked', finish, { once: true })
     try {
       audio.currentTime = targetTime
@@ -359,11 +359,11 @@ export function useStudioApp() {
       const audio = audioRefs.current.get(layer.sourcePath) ?? new Audio()
       if (!audioRefs.current.has(layer.sourcePath)) {
         audio.src = layer.sourceUrl
-        audio.dataset['sourcePath'] = layer.sourcePath
+        audio.dataset.sourcePath = layer.sourcePath
         audio.preload = 'auto'
         audio.addEventListener('error', () => {
           if (cancelled) return
-          const sourcePath = audio.dataset['sourcePath'] ?? layer.sourcePath
+          const sourcePath = audio.dataset.sourcePath ?? layer.sourcePath
           const mediaErrorCode = audio.error?.code
           const details = mediaErrorCode === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED
             ? 'unsupported or missing audio source'
@@ -376,9 +376,9 @@ export function useStudioApp() {
         })
         audioRefs.current.set(layer.sourcePath, audio)
       }
-      if (audio.dataset['sourcePath'] !== layer.sourcePath) {
+      if (audio.dataset.sourcePath !== layer.sourcePath) {
         audio.src = layer.sourceUrl
-        audio.dataset['sourcePath'] = layer.sourcePath
+        audio.dataset.sourcePath = layer.sourcePath
       }
       audio.loop = layer.loop
       audio.volume = Math.max(0, Math.min(1, layer.volume))
@@ -398,7 +398,7 @@ export function useStudioApp() {
             })
             .catch(error => {
               if (!cancelled) {
-                const sourcePath = audio.dataset['sourcePath'] ?? layer.sourcePath
+                const sourcePath = audio.dataset.sourcePath ?? layer.sourcePath
                 const message = error instanceof Error ? error.message : 'Failed to start Studio audio playback.'
                 setAudioError(`Studio audio failed for '${sourcePath}': ${message}`)
               }
@@ -417,7 +417,7 @@ export function useStudioApp() {
   useEffect(() => {
     if (!documentState) return
     let cancelled = false
-    const cleanupCallbacks: Array<() => void> = []
+    const cleanupCallbacks: (() => void)[] = []
     const executionMode = renderer === 'gl' ? 'gpu' : 'cpu'
     const glCanvas = glCanvasRef.current ?? document.createElement('canvas')
     const canvas2d = canvas2dRef.current ?? document.createElement('canvas')
@@ -654,8 +654,8 @@ export function useStudioApp() {
     }
     if (documentState.fileType === 'scene' && path === documentState.filePath) {
       void buildSceneDocument(documentState.filePath, scene, text, documentState.mtimeMs)
-        .then(next => setDocumentState(next))
-        .catch(nextError => setError(nextError instanceof Error ? nextError.message : String(nextError)))
+        .then(next => { setDocumentState(next); })
+        .catch(nextError => { setError(nextError instanceof Error ? nextError.message : String(nextError)); })
       setUnsaved(true)
       return
     }
@@ -668,7 +668,7 @@ export function useStudioApp() {
               section.id === activeSection.id
                 ? {
                     ...section,
-                    runtime: nextSectionDoc.sections[0]!.runtime,
+                    runtime: nextSectionDoc.sections[0].runtime,
                     end: section.start + scene.duration,
                   }
                 : section,
@@ -679,7 +679,7 @@ export function useStudioApp() {
             [path]: text,
           }))
         })
-        .catch(nextError => setError(nextError instanceof Error ? nextError.message : String(nextError)))
+        .catch(nextError => { setError(nextError instanceof Error ? nextError.message : String(nextError)); })
       setUnsaved(true)
     }
   }
@@ -692,7 +692,7 @@ export function useStudioApp() {
         setDocumentState(next)
         setUnsaved(true)
       })
-      .catch(nextError => setError(nextError instanceof Error ? nextError.message : String(nextError)))
+      .catch(nextError => { setError(nextError instanceof Error ? nextError.message : String(nextError)); })
   }
 
   function updateDemoAudio(audio: Demo['audio']): void {
@@ -741,7 +741,7 @@ export function useStudioApp() {
     const targetIndex = clamp(index + direction, 0, list.length - 1)
     if (index === targetIndex) return
     const [entry] = list.splice(index, 1)
-    list.splice(targetIndex, 0, entry!)
+    list.splice(targetIndex, 0, entry)
     updateDemoDocument({
       ...documentState.demo,
       modifiers: list,
@@ -800,7 +800,7 @@ export function useStudioApp() {
       const audio = audioRefs.current.get(layer.sourcePath) ?? new Audio()
       if (!audioRefs.current.has(layer.sourcePath)) {
         audio.src = layer.sourceUrl
-        audio.dataset['sourcePath'] = layer.sourcePath
+        audio.dataset.sourcePath = layer.sourcePath
         audio.preload = 'auto'
         audioRefs.current.set(layer.sourcePath, audio)
       }
@@ -815,7 +815,7 @@ export function useStudioApp() {
             setAudioError(null)
           })
           .catch(error => {
-            const sourcePath = audio.dataset['sourcePath'] ?? layer.sourcePath
+            const sourcePath = audio.dataset.sourcePath ?? layer.sourcePath
             const message = error instanceof Error ? error.message : 'Failed to resume Studio audio playback.'
             setAudioError(`Studio audio failed for '${sourcePath}': ${message}`)
           })
@@ -1076,8 +1076,8 @@ export function useStudioApp() {
     setSceneHistory(current => ({
       ...current,
       [path]: {
-        undo: current[path]!.undo.slice(0, -1),
-        redo: [...current[path]!.redo, currentText].slice(-50),
+        undo: current[path].undo.slice(0, -1),
+        redo: [...current[path].redo, currentText].slice(-50),
       },
     }))
     applySceneText(path, previous, false)
@@ -1093,8 +1093,8 @@ export function useStudioApp() {
     setSceneHistory(current => ({
       ...current,
       [path]: {
-        undo: [...current[path]!.undo, currentText].slice(-50),
-        redo: current[path]!.redo.slice(0, -1),
+        undo: [...current[path].undo, currentText].slice(-50),
+        redo: current[path].redo.slice(0, -1),
       },
     }))
     applySceneText(path, next, false)
@@ -1134,7 +1134,7 @@ export function useStudioApp() {
     if (currentIndex < 0) return
     const nextSections = [...documentState.demo.sections]
     const [section] = nextSections.splice(currentIndex, 1)
-    nextSections.splice(clamp(targetIndex, 0, nextSections.length), 0, section!)
+    nextSections.splice(clamp(targetIndex, 0, nextSections.length), 0, section)
     updateDemoDocument({
       ...documentState.demo,
       sections: nextSections,
@@ -1177,7 +1177,7 @@ export function useStudioApp() {
         setDocumentState(fresh)
         setMtimeMs(fresh.mtimeMs)
       })
-      .catch(loadError => setError(loadError instanceof Error ? loadError.message : String(loadError)))
+      .catch(loadError => { setError(loadError instanceof Error ? loadError.message : String(loadError)); })
   }
 
   function openShaderEditor(): void {
@@ -1264,7 +1264,7 @@ export function useStudioApp() {
       }
     }
     window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
+    return () => { window.removeEventListener('keydown', onKeyDown); }
   }, [documentState])
 
   return {

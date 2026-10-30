@@ -50,7 +50,7 @@ export function ScrollerGenerator(config: Partial<ScrollerConfig> = {}): Generat
     type:       'generator',
     id:         'scroller',
     renderers:  ['cpu'],
-    config:     config as Generator['config'],
+    config:     config,
     init:       () => {},
     destroy:    () => {},
     render(_ctx: NodeContext, out: FrameBuffer, signal: Signal) {

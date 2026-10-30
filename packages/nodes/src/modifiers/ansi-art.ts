@@ -25,7 +25,7 @@ export function AnsiArtModifier(config: Partial<AnsiArtConfig> = {}): Modifier {
     type: 'modifier',
     id: 'ansi-art',
     persistent: false,
-    config: config as Modifier['config'],
+    config: config,
     init() {},
     destroy() {},
     apply(ctx: NodeContext, input: FrameBuffer, out: FrameBuffer): void {
@@ -207,7 +207,7 @@ function renderBrailleCell(
   color: [number, number, number],
 ): void {
   const dots = Math.round(level * 8)
-  const order: Array<[number, number]> = [
+  const order: [number, number][] = [
     [0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [0, 3], [1, 3],
   ]
   for (let i = 0; i < dots; i++) {

@@ -15,7 +15,7 @@ export function buildBuiltinRegistryFromFactories(
         `Unknown node impl '${node.impl}' on node '${node.id}'. Known: ${knownImpls.join(', ')}`,
       )
     }
-    registry.set(node.id, factory(node.config as Record<string, unknown>))
+    registry.set(node.id, factory(node.config))
   }
   return registry
 }

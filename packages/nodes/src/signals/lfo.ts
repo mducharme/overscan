@@ -34,7 +34,7 @@ function resolveHz(rate: unknown, signal: Signal): number {
       return 1 / (b * barSec)
     }
   }
-  const v = resolveAnimatableFloat(rate as AnimatableFloat, signal)
+  const v = resolveAnimatableFloat(rate, signal)
   return Math.max(1e-6, v)
 }
 
@@ -58,7 +58,7 @@ function wave(shape: LfoShape, phase: number): number {
 }
 
 export function LFOSource(config: Partial<LFOConfig> = {}): SignalSource {
-  const shape = (config.shape ?? 'sine') as LfoShape
+  const shape = (config.shape ?? 'sine')
   const phase0 = (config.phase ?? 0) * Math.PI * 2
   const bipolar = config.bipolar !== false
   const ampRef = config.amplitude ?? 1
@@ -73,7 +73,7 @@ export function LFOSource(config: Partial<LFOConfig> = {}): SignalSource {
     type:     'signal',
     id:       'lfo',
     outputs:  ['value', 'phase'],
-    config:   config as SignalSource['config'],
+    config:   config,
     init:     () => {},
     destroy:  () => {},
     tick(signal: Signal) {

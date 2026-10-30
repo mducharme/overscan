@@ -70,7 +70,7 @@ export interface DocumentAudioSpan {
 
 const ABSOLUTE_PATH_RE = /^(?:[a-zA-Z]:[\\/]|\\\\|\/)/
 
-function normalizeAudioClip(audio: Scene['audio'] | Demo['audio']): AudioClip | null {
+function normalizeAudioClip(audio: Scene['audio']  ): AudioClip | null {
   if (!audio) return null
   if (typeof audio === 'string') return { src: audio, volume: 1 }
   return {

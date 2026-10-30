@@ -22,7 +22,7 @@ export function EmbossModifier(config: Partial<EmbossConfig> = {}): Modifier {
     type: 'modifier',
     id: 'emboss',
     persistent: false,
-    config: config as Modifier['config'],
+    config: config,
     init() {},
     destroy() {},
     apply(ctx: NodeContext, input: FrameBuffer, out: FrameBuffer, signal: Signal): void {

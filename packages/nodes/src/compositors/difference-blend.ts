@@ -75,7 +75,7 @@ void main() {
     mode: 'difference',
     opacity: opacityRef,
     glsl: 'gpu-difference-blend',
-    config: config as Compositor['config'],
+    config: config,
     init(ctx: NodeContext) { ensureGpu(ctx) },
     destroy() { pipeline = null },
     compose(

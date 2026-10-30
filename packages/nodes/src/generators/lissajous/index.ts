@@ -39,7 +39,7 @@ export function LissajousGenerator(config: Partial<LissajousConfig> = {}): Gener
     type: 'generator',
     id: 'lissajous',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() {
       trail = null
       tw = 0

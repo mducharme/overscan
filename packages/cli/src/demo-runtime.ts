@@ -5,10 +5,10 @@ import {
   createAssetManager,
   GraphExecutor,
   renderSceneFrame,
-  RocketTimeline,
-  SceneLoader,
+  RocketTimeline
 } from '@overscan/core'
-import type { BufferPoolImpl } from '@overscan/core'
+import type { BufferPoolImpl ,
+  SceneLoader} from '@overscan/core'
 import {
   buildDemoRuntimeSections,
   renderDemoBuffer as renderSharedDemoBuffer,

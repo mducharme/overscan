@@ -110,7 +110,7 @@ export function StudioToolbar({
         <Segmented<PreviewRenderer>
           size="small"
           value={renderer}
-          onChange={value => onRendererChange(value)}
+          onChange={value => { onRendererChange(value); }}
           options={[
             { label: 'ASCII', value: 'ascii' },
             { label: 'ANSI', value: 'ansi' },

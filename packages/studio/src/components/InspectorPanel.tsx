@@ -3,7 +3,7 @@ import type { Scene, SceneEdge, SceneNode } from '@overscan/types'
 import { getConfigFieldHint } from '../graph/node-catalog'
 import { fromHexColor, isAnimatableValue, parseConfigValue, toHexColor } from '../lib/preview'
 
-type PaletteValue = Array<[number, number, number]>
+type PaletteValue = [number, number, number][]
 
 function isPaletteValue(value: unknown): value is PaletteValue {
   return Array.isArray(value) && value.every(entry =>
@@ -51,7 +51,7 @@ export function InspectorPanel({
     height?: number
   } | null
   shaderDraft: string
-  signalOptions: Array<{ key: string; nodeId: string; output: string; value: number }>
+  signalOptions: { key: string; nodeId: string; output: string; value: number }[]
   readOnly: boolean
   onClear(): void
   onSceneChange(scene: Scene): void
@@ -82,7 +82,7 @@ export function InspectorPanel({
         <Switch
           checked={Boolean(value)}
           disabled={readOnly}
-          onChange={checked => onNodeConfigChange(selectedNode.id, key, checked)}
+          onChange={checked => { onNodeConfigChange(selectedNode.id, key, checked); }}
         />
       )
     }
@@ -95,7 +95,7 @@ export function InspectorPanel({
             value={typeof value === 'number' ? value : currentNumber}
             disabled={readOnly || (typeof value === 'object' && value !== null && !Array.isArray(value))}
             step={0.05}
-            onChange={next => onNodeConfigChange(selectedNode.id, key, next ?? 0)}
+            onChange={next => { onNodeConfigChange(selectedNode.id, key, next ?? 0); }}
           />
           {hint === 'animatable' && (
             <Select
@@ -131,14 +131,14 @@ export function InspectorPanel({
         <ColorPicker
           value={color}
           disabled={readOnly}
-          onChange={next => onNodeConfigChange(selectedNode.id, key, fromHexColor(next.toHexString()))}
+          onChange={next => { onNodeConfigChange(selectedNode.id, key, fromHexColor(next.toHexString())); }}
         />
       )
     }
     if (hint === 'glsl') {
       return (
         <Space orientation="vertical" style={{ width: '100%' }}>
-          <Input.TextArea rows={8} value={String(value ?? '')} disabled={readOnly} onChange={event => onNodeConfigChange(selectedNode.id, key, event.target.value)} />
+          <Input.TextArea rows={8} value={String(value ?? '')} disabled={readOnly} onChange={event => { onNodeConfigChange(selectedNode.id, key, event.target.value); }} />
           <Button size="small" onClick={onOpenShaderEditor}>Open shader editor</Button>
         </Space>
       )
@@ -163,16 +163,16 @@ export function InspectorPanel({
                 <ColorPicker
                   value={toHexColor(entry) ?? '#ffffff'}
                   disabled={readOnly}
-                  onChange={next => updatePalette(key, value.map((item, itemIndex) =>
+                  onChange={next => { updatePalette(key, value.map((item, itemIndex) =>
                     itemIndex === index ? fromHexColor(next.toHexString()) : item,
-                  ) as PaletteValue)}
+                  ) as PaletteValue); }}
                 />
                 <Input
                   value={toHexColor(entry) ?? '#ffffff'}
                   disabled={readOnly}
-                  onChange={event => updatePalette(key, value.map((item, itemIndex) =>
+                  onChange={event => { updatePalette(key, value.map((item, itemIndex) =>
                     itemIndex === index ? fromHexColor(event.target.value) : item,
-                  ) as PaletteValue)}
+                  ) as PaletteValue); }}
                 />
                 <Space.Compact>
                   <Button
@@ -181,7 +181,7 @@ export function InspectorPanel({
                     onClick={() => {
                       const next = [...value]
                       ;[next[index - 1], next[index]] = [next[index], next[index - 1]]
-                      updatePalette(key, next as PaletteValue)
+                      updatePalette(key, next)
                     }}
                   >
                     Up
@@ -192,7 +192,7 @@ export function InspectorPanel({
                     onClick={() => {
                       const next = [...value]
                       ;[next[index], next[index + 1]] = [next[index + 1], next[index]]
-                      updatePalette(key, next as PaletteValue)
+                      updatePalette(key, next)
                     }}
                   >
                     Down
@@ -201,7 +201,7 @@ export function InspectorPanel({
                     size="small"
                     danger
                     disabled={readOnly || value.length <= 1}
-                    onClick={() => updatePalette(key, value.filter((_, itemIndex) => itemIndex !== index) as PaletteValue)}
+                    onClick={() => { updatePalette(key, value.filter((_, itemIndex) => itemIndex !== index) as PaletteValue); }}
                   >
                     Remove
                   </Button>
@@ -213,7 +213,7 @@ export function InspectorPanel({
             <Button
               size="small"
               disabled={readOnly}
-              onClick={() => updatePalette(key, [...value, [255, 255, 255]])}
+              onClick={() => { updatePalette(key, [...value, [255, 255, 255]]); }}
             >
               Add color
             </Button>
@@ -234,7 +234,7 @@ export function InspectorPanel({
           rows={4}
           value={JSON.stringify(value)}
           disabled={readOnly}
-          onChange={event => onNodeConfigChange(selectedNode.id, key, parseConfigValue(value, event.target.value))}
+          onChange={event => { onNodeConfigChange(selectedNode.id, key, parseConfigValue(value, event.target.value)); }}
         />
       )
     }
@@ -242,7 +242,7 @@ export function InspectorPanel({
       <Input
         value={typeof value === 'string' ? value : JSON.stringify(value)}
         disabled={readOnly}
-        onChange={event => onNodeConfigChange(selectedNode.id, key, parseConfigValue(value, event.target.value))}
+        onChange={event => { onNodeConfigChange(selectedNode.id, key, parseConfigValue(value, event.target.value)); }}
       />
     )
   }
@@ -261,26 +261,26 @@ export function InspectorPanel({
         return (
         <Form layout="vertical">
           <Form.Item label="Title">
-            <Input value={scene.title} disabled={readOnly} onChange={event => onSceneFieldChange('title', event.target.value)} />
+            <Input value={scene.title} disabled={readOnly} onChange={event => { onSceneFieldChange('title', event.target.value); }} />
           </Form.Item>
           <Form.Item label="Duration">
-            <InputNumber style={{ width: '100%' }} value={scene.duration} disabled={readOnly} step={0.1} onChange={value => onSceneFieldChange('duration', value ?? scene.duration)} />
+            <InputNumber style={{ width: '100%' }} value={scene.duration} disabled={readOnly} step={0.1} onChange={value => { onSceneFieldChange('duration', value ?? scene.duration); }} />
           </Form.Item>
           <Form.Item label="BPM">
-            <InputNumber style={{ width: '100%' }} value={scene.bpm} disabled={readOnly} onChange={value => onSceneFieldChange('bpm', value ?? scene.bpm)} />
+            <InputNumber style={{ width: '100%' }} value={scene.bpm} disabled={readOnly} onChange={value => { onSceneFieldChange('bpm', value ?? scene.bpm); }} />
           </Form.Item>
           <Form.Item label="FPS">
-            <InputNumber style={{ width: '100%' }} value={scene.fps} disabled={readOnly} onChange={value => onSceneFieldChange('fps', value ?? scene.fps)} />
+            <InputNumber style={{ width: '100%' }} value={scene.fps} disabled={readOnly} onChange={value => { onSceneFieldChange('fps', value ?? scene.fps); }} />
           </Form.Item>
           <Form.Item label="Rows Per Beat">
-            <InputNumber style={{ width: '100%' }} value={scene.rowsPerBeat} disabled={readOnly} onChange={value => onSceneFieldChange('rowsPerBeat', value ?? scene.rowsPerBeat)} />
+            <InputNumber style={{ width: '100%' }} value={scene.rowsPerBeat} disabled={readOnly} onChange={value => { onSceneFieldChange('rowsPerBeat', value ?? scene.rowsPerBeat); }} />
           </Form.Item>
           <Form.Item label="Audio">
             <Space.Compact block>
               <Input
                 value={sceneAudio.src}
                 disabled={readOnly}
-                onChange={event => onSceneFieldChange('audio', event.target.value ? { ...sceneAudio, src: event.target.value } : undefined)}
+                onChange={event => { onSceneFieldChange('audio', event.target.value ? { ...sceneAudio, src: event.target.value } : undefined); }}
               />
               <InputNumber
                 min={0}
@@ -288,14 +288,14 @@ export function InspectorPanel({
                 step={0.05}
                 value={sceneAudio.volume}
                 disabled={readOnly}
-                onChange={value => onSceneFieldChange('audio', sceneAudio.src ? { ...sceneAudio, volume: value ?? 1 } : undefined)}
+                onChange={value => { onSceneFieldChange('audio', sceneAudio.src ? { ...sceneAudio, volume: value ?? 1 } : undefined); }}
               />
             </Space.Compact>
           </Form.Item>
           <Form.Item label="Resolution">
             <Space.Compact block>
-              <InputNumber style={{ width: '50%' }} value={scene.resolution.width} disabled={readOnly} onChange={value => onSceneFieldChange('resolution', { ...scene.resolution, width: value ?? scene.resolution.width })} />
-              <InputNumber style={{ width: '50%' }} value={scene.resolution.height} disabled={readOnly} onChange={value => onSceneFieldChange('resolution', { ...scene.resolution, height: value ?? scene.resolution.height })} />
+              <InputNumber style={{ width: '50%' }} value={scene.resolution.width} disabled={readOnly} onChange={value => { onSceneFieldChange('resolution', { ...scene.resolution, width: value ?? scene.resolution.width }); }} />
+              <InputNumber style={{ width: '50%' }} value={scene.resolution.height} disabled={readOnly} onChange={value => { onSceneFieldChange('resolution', { ...scene.resolution, height: value ?? scene.resolution.height }); }} />
             </Space.Compact>
           </Form.Item>
         </Form>
@@ -312,7 +312,7 @@ export function InspectorPanel({
                 size="small"
                 value={selectedEdge.z}
                 placeholder="auto"
-                onChange={value => onUpdateEdge({ z: value ?? undefined })}
+                onChange={value => { onUpdateEdge({ z: value ?? undefined }); }}
               />
             ) },
             { key: 'kind', label: 'Kind', children: edgeInspectorData?.kind ?? (selectedEdge.to.input === 'mask' ? 'Mask' : selectedEdge.from.output === 'value' ? 'Signal' : 'Buffer') },
@@ -351,7 +351,7 @@ export function InspectorPanel({
           <Space orientation="vertical" size="small" style={{ width: '100%' }}>
             <Space align="start" style={{ width: '100%', justifyContent: 'space-between' }}>
               <div>
-                <Input size="small" value={selectedNode.id} onChange={event => onNodeRename(event.target.value)} />
+                <Input size="small" value={selectedNode.id} onChange={event => { onNodeRename(event.target.value); }} />
                 <Typography.Text type="secondary">{selectedNode.impl} · {selectedNode.type}</Typography.Text>
               </div>
               <Space>
@@ -388,13 +388,13 @@ export function InspectorPanel({
                         style={{ width: '50%' }}
                         value={selectedNode.resolution?.width}
                         placeholder="default width"
-                        onChange={value => onNodeResolutionChange(selectedNode.id, value && selectedNode.resolution?.height ? { width: value, height: selectedNode.resolution.height } : null)}
+                        onChange={value => { onNodeResolutionChange(selectedNode.id, value && selectedNode.resolution?.height ? { width: value, height: selectedNode.resolution.height } : null); }}
                       />
                       <InputNumber
                         style={{ width: '50%' }}
                         value={selectedNode.resolution?.height}
                         placeholder="default height"
-                        onChange={value => onNodeResolutionChange(selectedNode.id, value && selectedNode.resolution?.width ? { width: selectedNode.resolution.width, height: value } : null)}
+                        onChange={value => { onNodeResolutionChange(selectedNode.id, value && selectedNode.resolution?.width ? { width: selectedNode.resolution.width, height: value } : null); }}
                       />
                     </Space.Compact>
                   ),
@@ -410,10 +410,10 @@ export function InspectorPanel({
                         step={0.1}
                         value={selectedNode.startTime}
                         placeholder="start (s)"
-                        onChange={value => onNodeTimingChange(selectedNode.id, {
+                        onChange={value => { onNodeTimingChange(selectedNode.id, {
                           startTime: value ?? undefined,
                           endTime: selectedNode.endTime,
-                        })}
+                        }); }}
                       />
                       <InputNumber
                         style={{ width: '50%' }}
@@ -421,10 +421,10 @@ export function InspectorPanel({
                         step={0.1}
                         value={selectedNode.endTime}
                         placeholder="end (s)"
-                        onChange={value => onNodeTimingChange(selectedNode.id, {
+                        onChange={value => { onNodeTimingChange(selectedNode.id, {
                           startTime: selectedNode.startTime,
                           endTime: value ?? undefined,
-                        })}
+                        }); }}
                       />
                     </Space.Compact>
                   ),
@@ -440,7 +440,7 @@ export function InspectorPanel({
                           label: 'GLSL editor',
                           children: (
                             <Space orientation="vertical" style={{ width: '100%' }}>
-                              <Input.TextArea rows={10} value={shaderDraft} onChange={event => onShaderDraftChange(event.target.value)} />
+                              <Input.TextArea rows={10} value={shaderDraft} onChange={event => { onShaderDraftChange(event.target.value); }} />
                               <Space>
                                 <Button size="small" onClick={onOpenShaderEditor}>Load from node</Button>
                                 <Button type="primary" size="small" onClick={onSaveShaderDraft}>Save shader</Button>

@@ -120,7 +120,7 @@ void main() {
     type: 'generator',
     id: 'rotozoom',
     renderers: ['gpu', 'cpu'],
-    config: config as Generator['config'],
+    config: config,
     init(ctx) {
       ensureGpu(ctx)
     },

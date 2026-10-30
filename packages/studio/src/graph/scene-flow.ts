@@ -110,7 +110,7 @@ export function sceneToFlow(
   nodeThumbnails: Record<string, { src: string }> = {},
   rendererBadges: Record<string, string> = {},
 ): {
-  nodes: Array<Node<StudioFlowNodeData>>
+  nodes: Node<StudioFlowNodeData>[]
   edges: Edge[]
 } {
   const depthCache = new Map<string, number>()

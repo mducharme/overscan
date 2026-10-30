@@ -152,7 +152,7 @@ void main() {
     type: 'generator',
     id: 'metaballs',
     renderers: ['gpu', 'cpu'],
-    config: config as Generator['config'],
+    config: config,
     init(ctx) { ensureGpu(ctx) },
     render(ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const speed = resolveAnimatableFloat(speedRef, signal)

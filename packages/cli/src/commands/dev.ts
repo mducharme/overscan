@@ -109,7 +109,7 @@ function makeStudioBridge(filePath: string): Plugin {
     await new Promise<void>((resolve, reject) => {
       const stream = createReadStream(targetPath, { start, end })
       stream.once('error', reject)
-      stream.once('end', () => resolve())
+      stream.once('end', () => { resolve(); })
       stream.pipe(res as never)
     })
   }
@@ -197,7 +197,7 @@ function makeStudioBridge(filePath: string): Plugin {
             res.end(JSON.stringify({ error: 'Missing path query parameter' }))
             return
           }
-          await sendAsset(req as { headers: Record<string, string | string[] | undefined> }, res, normalizeFilePath(rawPath))
+          await sendAsset(req, res, normalizeFilePath(rawPath))
         } catch (error) {
           res.statusCode = 500
           res.end(JSON.stringify({
@@ -221,7 +221,7 @@ function makeStudioBridge(filePath: string): Plugin {
             res.end(JSON.stringify({ error: 'Missing path query parameter' }))
             return
           }
-          await sendAsset(req as { headers: Record<string, string | string[] | undefined> }, res, normalizeFilePath(rawPath))
+          await sendAsset(req, res, normalizeFilePath(rawPath))
         } catch (error) {
           res.statusCode = 500
           res.end(JSON.stringify({

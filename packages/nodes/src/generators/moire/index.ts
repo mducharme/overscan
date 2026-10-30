@@ -156,7 +156,7 @@ void main() {
     type: 'generator',
     id: 'moire',
     renderers: ['gpu', 'cpu'],
-    config: config as Generator['config'],
+    config: config,
     init(ctx: NodeContext) {
       ensureGpu(ctx)
     },

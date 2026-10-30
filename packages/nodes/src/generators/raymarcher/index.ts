@@ -193,7 +193,7 @@ void main() {
     type: 'generator',
     id: 'raymarcher',
     renderers: ['gpu', 'cpu'],
-    config: config as Generator['config'],
+    config: config,
     init(ctx) {
       try {
         syncSceneCode(ctx)
@@ -392,7 +392,7 @@ ${normalized}`,
 }
 
 type Vec2 = [number, number]
-type Vec3 = { x: number; y: number; z: number }
+interface Vec3 { x: number; y: number; z: number }
 
 interface SceneEvalApi {
   vec2(x: number, y: number): Vec2

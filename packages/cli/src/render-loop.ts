@@ -1,12 +1,13 @@
 import { setTimeout as delay } from 'node:timers/promises'
 import type { BufferPool, ClockOptions, NodeContext, Scene, Sink } from '@overscan/types'
-import {
-  createNodeTimeSource,
+import type {
   ExecutorProfiler,
   GraphExecutor,
+  RocketTimeline} from '@overscan/core';
+import {
+  createNodeTimeSource,
   PlaybackClock,
-  renderSceneFrame,
-  RocketTimeline,
+  renderSceneFrame
 } from '@overscan/core'
 
 export interface RenderLoopOptions {

@@ -63,7 +63,7 @@ void main() {
     id: 'chromatic-aberration',
     persistent: false,
     glsl: 'gpu-chromatic-aberration',
-    config: config as Modifier['config'],
+    config: config,
     init(ctx: NodeContext) {
       ensureGpu(ctx)
     },

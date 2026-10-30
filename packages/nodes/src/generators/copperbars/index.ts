@@ -58,7 +58,7 @@ export function CopperbarsGenerator(config: Partial<CopperbarsConfig> = {}): Gen
     type: 'generator',
     id: 'copperbars',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() {},
     render(_ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const { width: w, height: h, data } = out

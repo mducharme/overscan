@@ -63,7 +63,7 @@ export function ShadebobsGenerator(config: Partial<ShadebobsConfig> = {}): Gener
     type: 'generator',
     id: 'shadebobs',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() {
       field = null
       clock.reset()

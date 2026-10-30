@@ -75,7 +75,7 @@ void main() {
     mode:         'alpha',
     opacity:      opacityRef,
     glsl:         'gpu-alpha-blend',
-    config:       config as Compositor['config'],
+    config:       config,
     init(ctx: NodeContext) {
       ensureGpu(ctx)
     },

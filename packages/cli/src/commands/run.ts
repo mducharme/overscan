@@ -13,7 +13,7 @@ import {
   SceneLoader,
 } from '@overscan/core'
 import { describeTerminalSession, TerminalSink } from '@overscan/sink-terminal'
-import { GraphExecutor } from '@overscan/core'
+import type { GraphExecutor } from '@overscan/core'
 import { renderLoop, type RenderLoopControl } from '../render-loop.js'
 import { createTerminalAudioController, type TerminalAudioController, type TerminalAudioState } from '../terminal-audio.js'
 import { buildRegistry } from '../node-registry.js'

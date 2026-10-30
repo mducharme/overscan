@@ -31,7 +31,7 @@ export function NoiseSource(config: Partial<NoiseConfig> = {}): SignalSource {
     type:     'signal',
     id:       'noise',
     outputs:  ['value', 'bipolar'],
-    config:   config as SignalSource['config'],
+    config:   config,
     init:     () => {},
     destroy:  () => {},
     tick(signal: Signal) {

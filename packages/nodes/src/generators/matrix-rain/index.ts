@@ -48,7 +48,7 @@ export function MatrixRainGenerator(config: Partial<MatrixRainConfig> = {}): Gen
     type: 'generator',
     id: 'matrix-rain',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() { columns = []; cols = 0 },
     render(_ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const { width: w, height: h, data } = out

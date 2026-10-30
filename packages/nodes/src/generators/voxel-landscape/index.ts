@@ -34,7 +34,7 @@ export function VoxelLandscapeGenerator(config: Partial<VoxelLandscapeConfig> = 
     type: 'generator',
     id: 'voxel-landscape',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() {},
     render(ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const horizon = resolveAnimatableFloat(horizonRef, signal)

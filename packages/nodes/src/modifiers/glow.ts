@@ -20,6 +20,6 @@ export function GlowModifier(config: Partial<GlowConfig> = {}): Modifier {
   return {
     ...node,
     id: 'glow',
-    config: config as Modifier['config'],
+    config: config,
   }
 }

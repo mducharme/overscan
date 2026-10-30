@@ -76,7 +76,7 @@ void main() {
     id:         'crt',
     persistent: false,
     glsl:       'gpu-crt',
-    config:     config as Modifier['config'],
+    config:     config,
     init(ctx: NodeContext) {
       ensureGpu(ctx)
     },

@@ -55,7 +55,7 @@ export function AudioAnalyserSource(config: Partial<AudioAnalyserConfig> = {}): 
     type:     'signal',
     id:       'audio',
     outputs:  ['rms', 'spectral', 'beat', 'zcr', 'chroma-0', 'chroma-1', 'chroma-2', 'chroma-3', 'chroma-4', 'chroma-5', 'chroma-6', 'chroma-7', 'chroma-8', 'chroma-9', 'chroma-10', 'chroma-11', 'mfcc-0', 'mfcc-1', 'mfcc-2', 'mfcc-3', 'mfcc-4', 'mfcc-5', 'mfcc-6', 'mfcc-7', 'mfcc-8', 'mfcc-9', 'mfcc-10', 'mfcc-11', 'mfcc-12'],
-    config:   config as SignalSource['config'],
+    config:   config,
     init:     () => {
       const path = config.src
       if (!path || !existsSync(path)) {

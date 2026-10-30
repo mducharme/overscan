@@ -38,7 +38,7 @@ export function TextGenerator(config: Partial<TextConfig> = {}): Generator {
     type: 'generator',
     id: 'text',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init: () => {},
     destroy: () => {},
     render(_ctx: NodeContext, out: FrameBuffer, signal: Signal) {

@@ -28,7 +28,7 @@ export function AudioAnalyserSource(config: Partial<AudioAnalyserConfig> = {}): 
     type:    'signal',
     id:      'audio',
     outputs: OUTPUTS,
-    config:  config as SignalSource['config'],
+    config:  config,
     init:    () => {},
     destroy: () => {},
     tick(signal: Signal): Record<string, number> {

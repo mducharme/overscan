@@ -45,7 +45,7 @@ export function GameOfLifeGenerator(config: Partial<GameOfLifeConfig> = {}): Gen
     type: 'generator',
     id: 'game-of-life',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() {
       cells = null; next = null; ages = null; cw = 0; ch = 0
       clock.reset()
@@ -61,9 +61,9 @@ export function GameOfLifeGenerator(config: Partial<GameOfLifeConfig> = {}): Gen
         seedCells(cells, gw, gh, seed, seedDensity, createRng(randomSeed))
         clock.reset()
       }
-      let state = cells!
-      let nextState = next!
-      const ageState = ages!
+      let state = cells
+      let nextState = next
+      const ageState = ages
       clock.advance(signal.t, () => {
         seedCells(state, gw, gh, seed, seedDensity, createRng(randomSeed))
         ageState.fill(0)

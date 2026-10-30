@@ -75,7 +75,7 @@ void main() {
     mode:         'additive',
     opacity:      opacityRef,
     glsl:         'gpu-additive-blend',
-    config:       config as Compositor['config'],
+    config:       config,
     init(ctx: NodeContext) {
       ensureGpu(ctx)
     },

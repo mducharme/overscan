@@ -38,9 +38,7 @@ export interface DemoRuntimeDocument {
   resolution: { width: number; height: number }
 }
 
-export interface RuntimeRegistryFactory {
-  (nodes: SceneNode[]): Map<string, DemoNode>
-}
+export type RuntimeRegistryFactory = (nodes: SceneNode[]) => Map<string, DemoNode>
 
 export interface CreateSceneRuntimeOptions {
   sinkId: string

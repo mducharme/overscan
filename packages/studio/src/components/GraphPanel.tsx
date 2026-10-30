@@ -129,8 +129,8 @@ export function GraphPanel({
   useEffect(() => {
     if (!graphError) return
     setFlashInvalid(true)
-    const timer = window.setTimeout(() => setFlashInvalid(false), 320)
-    return () => window.clearTimeout(timer)
+    const timer = window.setTimeout(() => { setFlashInvalid(false); }, 320)
+    return () => { window.clearTimeout(timer); }
   }, [graphError])
 
   return (
@@ -140,8 +140,8 @@ export function GraphPanel({
       extra={(
         <Space>
           <Typography.Text type="secondary">{scene?.graph.nodes.length ?? 0} nodes</Typography.Text>
-          <Button size="small" disabled={!scene} onClick={() => setSettingsOpen(true)}>Settings</Button>
-          <Button size="small" disabled={readOnly || !scene} onClick={() => setPaletteOpen(true)}>Add node</Button>
+          <Button size="small" disabled={!scene} onClick={() => { setSettingsOpen(true); }}>Settings</Button>
+          <Button size="small" disabled={readOnly || !scene} onClick={() => { setPaletteOpen(true); }}>Add node</Button>
           <Tooltip title="Fit graph">
             <Button size="small" onClick={() => void flowRef.current?.fitView({ padding: 0.2, duration: 250 })}>Fit</Button>
           </Tooltip>
@@ -149,7 +149,7 @@ export function GraphPanel({
             <Button size="small" disabled={!scene} onClick={onAutoLayout}>Auto</Button>
           </Tooltip>
           <Tooltip title="Lock node dragging">
-            <Button size="small" type={layoutLocked ? 'primary' : 'default'} onClick={() => setLayoutLocked(current => !current)}>
+            <Button size="small" type={layoutLocked ? 'primary' : 'default'} onClick={() => { setLayoutLocked(current => !current); }}>
               Lock
             </Button>
           </Tooltip>
@@ -217,7 +217,7 @@ export function GraphPanel({
         <Input
           placeholder="Search nodes..."
           value={search}
-          onChange={event => setSearch(event.target.value)}
+          onChange={event => { setSearch(event.target.value); }}
           style={{ marginBottom: 12 }}
         />
         <div className="nodePickerGrid">
@@ -233,7 +233,7 @@ export function GraphPanel({
                     key={item.impl}
                     type="button"
                     className={`nodePickerOption ${selectedImpl === item.impl ? 'nodePickerOptionSelected' : ''}`}
-                    onClick={() => setSelectedImpl(item.impl)}
+                    onClick={() => { setSelectedImpl(item.impl); }}
                   >
                     <div className="nodePickerHeader">
                       <Typography.Text strong>{item.label}</Typography.Text>
@@ -254,7 +254,7 @@ export function GraphPanel({
         title="Scene Graph Settings"
         open={settingsOpen}
         footer={null}
-        onCancel={() => setSettingsOpen(false)}
+        onCancel={() => { setSettingsOpen(false); }}
       >
         {!scene ? (
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No scene loaded" />

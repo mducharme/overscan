@@ -58,7 +58,7 @@ void main() {
     id:         'palette-flash',
     persistent: false,
     glsl:       'gpu-palette-flash',
-    config:     config as Modifier['config'],
+    config:     config,
     init(ctx: NodeContext) {
       ensureGpu(ctx)
     },

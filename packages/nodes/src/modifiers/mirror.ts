@@ -54,7 +54,7 @@ void main() {
     id: 'mirror',
     persistent: false,
     glsl: 'gpu-mirror',
-    config: config as Modifier['config'],
+    config: config,
     init(ctx: NodeContext) { ensureGpu(ctx) },
     destroy() { pipeline = null },
     apply(ctx: NodeContext, input: FrameBuffer, out: FrameBuffer, signal: Signal): void {

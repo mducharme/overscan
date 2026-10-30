@@ -33,7 +33,7 @@ const { positionals, values } = parseArgs({
 
 const command = positionals[0]
 
-if (values['help'] || !command) {
+if (values.help || !command) {
   console.log(`
   overscan <command> [options]
 
@@ -110,20 +110,20 @@ switch (command) {
       noDisplay: values['no-display'] ?? false,
     }
     // Accept export's --terminal-mode as an alias so the same flag works for both commands.
-    const rawMode = (values['mode'] ?? values['terminal-mode']) as string | string[] | undefined
+    const rawMode = (values.mode ?? values['terminal-mode']) as string | string[] | undefined
     const modeStr = Array.isArray(rawMode) ? rawMode[0] : rawMode
     const modeNorm = typeof modeStr === 'string' ? modeStr.trim().toLowerCase() : undefined
     if (modeNorm === 'sixel' || modeNorm === 'ansi' || modeNorm === 'ascii') {
-      runOpts.mode = modeNorm as TerminalMode
+      runOpts.mode = modeNorm
     } else if (rawMode !== undefined) {
       console.warn(`overscan: ignoring unknown --mode ${String(rawMode)} (use sixel, ansi, or ascii)`)
     }
-    if (values['fps'] !== undefined) runOpts.fpsCap = parseInt(String(values['fps']), 10)
-    if (values['frames'] !== undefined) runOpts.maxFrames = parseInt(String(values['frames']), 10)
-    if (values['seek'] !== undefined) runOpts.seek = parseFloat(String(values['seek']))
-    if (values['rate'] !== undefined) runOpts.rate = parseFloat(String(values['rate']))
-    if (values['profile'] !== undefined) {
-      const pe = parseInt(String(values['profile']), 10)
+    if (values.fps !== undefined) runOpts.fpsCap = parseInt(String(values.fps), 10)
+    if (values.frames !== undefined) runOpts.maxFrames = parseInt(String(values.frames), 10)
+    if (values.seek !== undefined) runOpts.seek = parseFloat(String(values.seek))
+    if (values.rate !== undefined) runOpts.rate = parseFloat(String(values.rate))
+    if (values.profile !== undefined) {
+      const pe = parseInt(String(values.profile), 10)
       runOpts.profileEvery = Number.isFinite(pe) && pe > 0 ? pe : 30
     }
     try {
@@ -140,10 +140,10 @@ switch (command) {
       console.error('Usage: overscan export <scene.json> (--png <dir> | --png-gl <dir> | --mp4 <file> | --gif <file>)')
       process.exit(1)
     }
-    const pngRaw    = values['png'] as string | string[] | undefined
+    const pngRaw    = values.png as string | string[] | undefined
     const pngGlRaw  = values['png-gl'] as string | string[] | undefined
-    const mp4Raw    = values['mp4'] as string | string[] | undefined
-    const gifRaw    = values['gif'] as string | string[] | undefined
+    const mp4Raw    = values.mp4 as string | string[] | undefined
+    const gifRaw    = values.gif as string | string[] | undefined
     const png    = Array.isArray(pngRaw) ? pngRaw[0] : pngRaw
     const pngGl  = Array.isArray(pngGlRaw) ? pngGlRaw[0] : pngGlRaw
     const mp4    = Array.isArray(mp4Raw) ? mp4Raw[0] : mp4Raw
@@ -158,9 +158,9 @@ switch (command) {
       console.error('overscan export: specify exactly one of --png, --png-gl, --mp4, --gif')
       process.exit(1)
     }
-    const output = (kind === 'mp4' ? mp4 : kind === 'gif' ? gif : kind === 'png' ? png : pngGl) as string
+    const output = (kind === 'mp4' ? mp4 : kind === 'gif' ? gif : kind === 'png' ? png : pngGl)!
 
-    const useTerminal = values['terminal'] === true
+    const useTerminal = values.terminal === true
     if (useTerminal) {
       const colsStr = values['terminal-cols']
       const rowsStr = values['terminal-rows']
@@ -216,8 +216,8 @@ switch (command) {
       await exportScene(scenePath, {
         kind,
         output,
-        ...(values['frames'] !== undefined
-          ? { maxFrames: parseInt(String(values['frames']), 10) }
+        ...(values.frames !== undefined
+          ? { maxFrames: parseInt(String(values.frames), 10) }
           : {}),
         ...(terminal !== undefined ? { terminal } : {}),
       })

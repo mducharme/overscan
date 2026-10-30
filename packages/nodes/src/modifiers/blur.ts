@@ -17,6 +17,6 @@ export function BlurModifier(config: Partial<BlurConfig> = {}): Modifier {
   return {
     ...node,
     id: 'blur',
-    config: config as Modifier['config'],
+    config: config,
   }
 }

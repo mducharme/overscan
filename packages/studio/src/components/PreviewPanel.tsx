@@ -43,7 +43,7 @@ export function PreviewPanel({
       onViewportChange(next.width, next.height)
     })
     observer.observe(element)
-    return () => observer.disconnect()
+    return () => { observer.disconnect(); }
   }, [onViewportChange])
 
   const terminalStyle = useMemo(() => {
@@ -132,7 +132,7 @@ export function PreviewPanel({
         <Space wrap>
           <Tag>Rate {playbackRate}x</Tag>
           <Tag>Pixel ratio 1x</Tag>
-          <Button size="small" onClick={() => onSeek(0)}>Start</Button>
+          <Button size="small" onClick={() => { onSeek(0); }}>Start</Button>
           <Button size="small" onClick={toggleFullscreen}>Fullscreen</Button>
           <Button size="small" disabled={renderer !== '2d' && renderer !== 'gl'} onClick={screenshot}>Screenshot</Button>
         </Space>

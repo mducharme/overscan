@@ -45,7 +45,7 @@ export function TwisterGenerator(config: Partial<TwisterConfig> = {}): Generator
     type: 'generator',
     id: 'twister',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() {},
     render(_ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const twistSpeed = resolveAnimatableFloat(twistSpeedRef, signal)

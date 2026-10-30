@@ -52,7 +52,7 @@ export function WaterRippleGenerator(config: Partial<WaterRippleConfig> = {}): G
     type: 'generator',
     id: 'water-ripple',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() {
       rng = createRng(randomSeed)
       clock.reset()

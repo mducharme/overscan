@@ -35,7 +35,7 @@ export function CheckerboardFloorGenerator(config: Partial<CheckerboardFloorConf
     type: 'generator',
     id: 'checkerboard-floor',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() {},
     render(_ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const horizon = Math.max(0.05, Math.min(0.95, resolveAnimatableFloat(horizonRef, signal)))

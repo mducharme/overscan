@@ -71,7 +71,7 @@ void main() {
     mode: 'multiply',
     opacity: opacityRef,
     glsl: 'gpu-multiply-blend',
-    config: config as Compositor['config'],
+    config: config,
     init(ctx: NodeContext) { ensureGpu(ctx) },
     destroy() { pipeline = null },
     compose(

@@ -181,13 +181,13 @@ export default function App(): JSX.Element {
               onRewind={rewind}
               onTogglePlayback={togglePlayback}
               onSeek={seekToTimecode}
-              onStepBack={() => stepFrames(-1)}
-              onStepForward={() => stepFrames(1)}
+              onStepBack={() => { stepFrames(-1); }}
+              onStepForward={() => { stepFrames(1); }}
               onPlaybackRateChange={setPlaybackRate}
               onRendererChange={store.setRenderer}
               onToggleLoop={toggleLooping}
-              onToggleProfile={() => store.setProfileOverlay(!store.profileOverlay)}
-              onBpmChange={value => updateSceneMetadata('bpm', value)}
+              onToggleProfile={() => { store.setProfileOverlay(!store.profileOverlay); }}
+              onBpmChange={value => { updateSceneMetadata('bpm', value); }}
             />
           </header>
 

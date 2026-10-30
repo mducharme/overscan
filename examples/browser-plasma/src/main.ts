@@ -47,7 +47,7 @@ async function makeSceneRuntime(scene: Scene, scenePath: string): Promise<SceneR
   await assets.preloadScene(scene)
   const executor = new GraphExecutor()
   executor.load(scene.graph, buildBuiltinRegistry(scene.graph.nodes))
-  const outputNodeId = scene.graph.outputs['browser'] ?? scene.graph.nodes[0]?.id
+  const outputNodeId = scene.graph.outputs.browser ?? scene.graph.nodes[0]?.id
   if (!outputNodeId) throw new Error(`No browser output for ${scene.id}`)
   return { scene, timeline, executor, outputNodeId, assets }
 }
@@ -118,7 +118,7 @@ async function main(): Promise<void> {
     canvas: null,
     ctx2d: null,
     gl: sink.context,
-    assets: sections[0]!.runtime.assets,
+    assets: sections[0].runtime.assets,
     pool,
     width: firstScene.resolution.width,
     height: firstScene.resolution.height,
@@ -168,7 +168,7 @@ async function main(): Promise<void> {
       return
     }
 
-    const active = sections[activeIdx]!
+    const active = sections[activeIdx]
     const rendered = renderDemoBuffer({
       pool,
       ctx,

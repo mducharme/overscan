@@ -53,7 +53,7 @@ export function DotMatrixGenerator(config: Partial<DotMatrixConfig> = {}): Gener
     type: 'generator',
     id: 'dot-matrix',
     renderers: ['cpu'],
-    config: config as Generator['config'],
+    config: config,
     init() {},
     render(_ctx: NodeContext, out: FrameBuffer, signal: Signal): void {
       const { width: w, height: h, data } = out

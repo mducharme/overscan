@@ -175,7 +175,7 @@ export function TimelinePanel({
   const audioClipSegments = useMemo(() => audioTimeline.flatMap(span => {
     const sourceDuration = Math.max(0.01, waveforms[span.sourcePath]?.durationSeconds ?? (span.end - span.start))
     if (span.kind === 'demo' && demo.loop) {
-      const segments: Array<{ span: DocumentAudioSpan; start: number; end: number; tileIndex: number }> = []
+      const segments: { span: DocumentAudioSpan; start: number; end: number; tileIndex: number }[] = []
       for (let start = span.start, tileIndex = 0; start < duration; start += sourceDuration, tileIndex += 1) {
         segments.push({
           span,
@@ -264,7 +264,7 @@ export function TimelinePanel({
               max={160}
               step={4}
               value={zoom}
-              onChange={value => setZoom(Number(value))}
+              onChange={value => { setZoom(Number(value)); }}
               style={{ width: 140 }}
             />
           </Space>
@@ -278,7 +278,7 @@ export function TimelinePanel({
             className="timelineScrub"
             style={{ width: timelineWidth }}
             onClick={event => {
-              const rect = (event.currentTarget as HTMLDivElement).getBoundingClientRect()
+              const rect = (event.currentTarget).getBoundingClientRect()
               const ratio = (event.clientX - rect.left) / Math.max(1, rect.width)
               onSeek(duration * Math.max(0, Math.min(1, ratio)))
             }}
@@ -306,9 +306,9 @@ export function TimelinePanel({
                 className={`timelineRange ${activeSectionId === section.id ? 'timelineRangeActive' : ''}`}
                 style={{ left: `${left}%`, width: `${Math.max(width, 3)}%` }}
                 draggable
-                onDragStart={() => setDraggingSectionId(section.id)}
-                onDragEnd={() => setDraggingSectionId(null)}
-                onDragOver={event => event.preventDefault()}
+                onDragStart={() => { setDraggingSectionId(section.id); }}
+                onDragEnd={() => { setDraggingSectionId(null); }}
+                onDragOver={event => { event.preventDefault(); }}
                 onDrop={event => {
                   event.preventDefault()
                   if (!draggingSectionId || draggingSectionId === section.id) return
@@ -407,7 +407,7 @@ export function TimelinePanel({
             size="small"
             value={demoAudio.src}
             placeholder="soundtrack path"
-            onChange={event => onUpdateDemoAudio(event.target.value ? { ...demoAudio, src: event.target.value } : undefined)}
+            onChange={event => { onUpdateDemoAudio(event.target.value ? { ...demoAudio, src: event.target.value } : undefined); }}
           />
           <div className="timelineAudioControlRow">
             <Typography.Text type="secondary">Volume</Typography.Text>
@@ -416,12 +416,12 @@ export function TimelinePanel({
               max={1.5}
               step={0.05}
               value={demoAudio.volume ?? 1}
-              onChange={value => onUpdateDemoAudio(demoAudio.src ? { ...demoAudio, volume: Number(value) } : undefined)}
+              onChange={value => { onUpdateDemoAudio(demoAudio.src ? { ...demoAudio, volume: Number(value) } : undefined); }}
             />
           </div>
           <div className="timelineAudioControlRow">
             <Typography.Text type="secondary">Loop</Typography.Text>
-            <Switch checked={demo.loop ?? false} onChange={checked => onUpdateDemoLoop(checked)} />
+            <Switch checked={demo.loop ?? false} onChange={checked => { onUpdateDemoLoop(checked); }} />
           </div>
           {activeSceneAudio && (
             <Typography.Text type="secondary">
@@ -437,10 +437,10 @@ export function TimelinePanel({
                 size="small"
                 value={pendingModifierImpl}
                 options={modifierOptions}
-                onChange={value => setPendingModifierImpl(value)}
+                onChange={value => { setPendingModifierImpl(value); }}
                 style={{ width: 180 }}
               />
-              <Button size="small" onClick={() => onAddDemoModifier(pendingModifierImpl)}>Add modifier</Button>
+              <Button size="small" onClick={() => { onAddDemoModifier(pendingModifierImpl); }}>Add modifier</Button>
             </Space>
           </div>
           {demoModifiers.length === 0 && <Typography.Text type="secondary">No demo-wide modifiers yet.</Typography.Text>}
@@ -449,18 +449,18 @@ export function TimelinePanel({
               <Input
                 size="small"
                 value={entry.id}
-                onChange={event => onUpdateDemoModifier(entry.id, current => ({ ...current, id: event.target.value }))}
+                onChange={event => { onUpdateDemoModifier(entry.id, current => ({ ...current, id: event.target.value })); }}
               />
               <Select
                 size="small"
                 value={entry.impl}
                 options={modifierOptions}
                 style={{ width: 180 }}
-                onChange={value => onUpdateDemoModifier(entry.id, current => ({ ...current, impl: value }))}
+                onChange={value => { onUpdateDemoModifier(entry.id, current => ({ ...current, impl: value })); }}
               />
               <Switch
                 checked={entry.enabled !== false}
-                onChange={checked => onUpdateDemoModifier(entry.id, current => ({ ...current, enabled: checked }))}
+                onChange={checked => { onUpdateDemoModifier(entry.id, current => ({ ...current, enabled: checked })); }}
               />
               <Input
                 size="small"
@@ -476,9 +476,9 @@ export function TimelinePanel({
                   }
                 }}
               />
-              <Button size="small" disabled={index === 0} onClick={() => onMoveDemoModifier(entry.id, -1)}>Up</Button>
-              <Button size="small" disabled={index === demoModifiers.length - 1} onClick={() => onMoveDemoModifier(entry.id, 1)}>Down</Button>
-              <Button size="small" danger onClick={() => onRemoveDemoModifier(entry.id)}>Delete</Button>
+              <Button size="small" disabled={index === 0} onClick={() => { onMoveDemoModifier(entry.id, -1); }}>Up</Button>
+              <Button size="small" disabled={index === demoModifiers.length - 1} onClick={() => { onMoveDemoModifier(entry.id, 1); }}>Down</Button>
+              <Button size="small" danger onClick={() => { onRemoveDemoModifier(entry.id); }}>Delete</Button>
             </div>
           ))}
         </div>
@@ -490,35 +490,35 @@ export function TimelinePanel({
                 <Input
                   size="small"
                   value={source?.id ?? section.id}
-                  onChange={event => onUpdateSection(section.id, current => ({ ...current, id: event.target.value }))}
+                  onChange={event => { onUpdateSection(section.id, current => ({ ...current, id: event.target.value })); }}
                 />
-                <Button size="small" className="timelineTransitionButton" onClick={() => setEditingTransitionSectionId(section.id)}>
+                <Button size="small" className="timelineTransitionButton" onClick={() => { setEditingTransitionSectionId(section.id); }}>
                   Transition: {transitionLabel(source, section)}
                 </Button>
               </div>
               <div className="timelineSectionMeta">
                 <Typography.Text type="secondary">{formatTime(section.start)} - {formatTime(section.end)}</Typography.Text>
-                <Button size="small" onClick={() => onJumpToSection(section.id, section.start)}>Jump</Button>
+                <Button size="small" onClick={() => { onJumpToSection(section.id, section.start); }}>Jump</Button>
               </div>
               <div className="timelineSectionEditor">
                 <Input
                   size="small"
                   value={source?.scene ?? ''}
                   placeholder="scene path"
-                  onChange={event => onUpdateSection(section.id, current => ({ ...current, scene: event.target.value }))}
+                  onChange={event => { onUpdateSection(section.id, current => ({ ...current, scene: event.target.value })); }}
                 />
                 <InputNumber
                   size="small"
                   value={source?.duration}
                   min={0.1}
                   placeholder="duration"
-                  onChange={value => onUpdateSection(section.id, current => ({ ...current, duration: value ?? undefined }))}
+                  onChange={value => { onUpdateSection(section.id, current => ({ ...current, duration: value ?? undefined })); }}
                 />
               </div>
               <div className="timelineSectionActions">
                 <Tag>{draggingSectionId === section.id ? 'Dragging' : 'Drag the range above to reorder'}</Tag>
-                <Button size="small" onClick={() => onDuplicateSection(section.id)}>Duplicate</Button>
-                <Button size="small" danger onClick={() => onDeleteSection(section.id)}>Delete</Button>
+                <Button size="small" onClick={() => { onDuplicateSection(section.id); }}>Duplicate</Button>
+                <Button size="small" danger onClick={() => { onDeleteSection(section.id); }}>Delete</Button>
               </div>
             </div>
           )
@@ -527,7 +527,7 @@ export function TimelinePanel({
       <Modal
         title={editingSection ? `Transition: ${editingSection.id}` : 'Transition'}
         open={Boolean(editingSection)}
-        onCancel={() => setEditingTransitionSectionId(null)}
+        onCancel={() => { setEditingTransitionSectionId(null); }}
         footer={null}
       >
         {editingSection && (
@@ -536,9 +536,9 @@ export function TimelinePanel({
               <Typography.Text type="secondary">Type</Typography.Text>
               <Select
                 value={editingSection.transition?.type ?? 'cut'}
-                onChange={value => updateTransition(editingSection.id, current => (
+                onChange={value => { updateTransition(editingSection.id, current => (
                   value === 'cut' ? { type: 'cut' } : { ...current, type: value }
-                ))}
+                )); }}
                 options={transitionTypes.map(value => ({ label: value, value }))}
               />
             </div>
@@ -549,20 +549,20 @@ export function TimelinePanel({
                 min={0}
                 step={0.1}
                 value={editingSection.transition?.duration ?? 0}
-                onChange={value => updateTransition(editingSection.id, current => ({
+                onChange={value => { updateTransition(editingSection.id, current => ({
                   ...current,
                   duration: value ?? 0,
-                }))}
+                })); }}
               />
             </div>
             <div className="timelineTransitionField">
               <Typography.Text type="secondary">Easing</Typography.Text>
               <Select
                 value={editingSection.transition?.easing ?? 'smooth'}
-                onChange={value => updateTransition(editingSection.id, current => ({
+                onChange={value => { updateTransition(editingSection.id, current => ({
                   ...current,
                   easing: value,
-                }))}
+                })); }}
                 options={easingModes.map(value => ({ label: value, value }))}
               />
             </div>
@@ -571,10 +571,10 @@ export function TimelinePanel({
                 <Typography.Text type="secondary">Flash color</Typography.Text>
                 <ColorPicker
                   value={editingSection.transition?.flashColor ?? '#ffffff'}
-                  onChange={value => updateTransition(editingSection.id, current => ({
+                  onChange={value => { updateTransition(editingSection.id, current => ({
                     ...current,
                     flashColor: toHexColor(fromHexColor(value.toHexString())) ?? '#ffffff',
-                  }))}
+                  })); }}
                 />
               </div>
             )}

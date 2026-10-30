@@ -85,7 +85,7 @@ void main() {
     mode: 'overlay',
     opacity: opacityRef,
     glsl: 'gpu-overlay-blend',
-    config: config as Compositor['config'],
+    config: config,
     init(ctx: NodeContext) { ensureGpu(ctx) },
     destroy() { pipeline = null },
     compose(

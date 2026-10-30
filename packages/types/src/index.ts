@@ -105,7 +105,7 @@ export interface Generator {
   readonly type: 'generator'
   readonly id: string
   resolution?: { width: number; height: number }
-  renderers: Array<'gpu' | 'cpu'>
+  renderers: ('gpu' | 'cpu')[]
   config: Record<string, AnimatableFloat | unknown>
   init(ctx: NodeContext): void
   render(ctx: NodeContext, out: FrameBuffer, signal: Signal): void
@@ -334,7 +334,7 @@ export interface TerminalSinkOptions {
 export function resolveAnimatableFloat(v: AnimatableFloat | unknown, signal: Signal): number {
   if (typeof v === 'number' && Number.isFinite(v)) return v
   if (v && typeof v === 'object') {
-    if ('track' in v && typeof (v as { track: unknown }).track === 'string') {
+    if ('track' in v && typeof (v).track === 'string') {
       return signal.tracks[(v as { track: string }).track] ?? 0
     }
     if (
