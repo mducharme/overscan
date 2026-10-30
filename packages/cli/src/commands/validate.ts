@@ -1,5 +1,6 @@
 import type { Scene } from '@overscan/types'
 import { SceneLoader, validateSceneGraph } from '@overscan/core'
+import { NODE_SCHEMAS, validateNodeConfig } from '@overscan/nodes'
 import { buildRegistry } from '../node-registry.js'
 
 function validateSceneOrThrow(scene: Scene, label?: string): void {
@@ -11,8 +12,20 @@ function validateSceneOrThrow(scene: Scene, label?: string): void {
   if (Object.keys(scene.graph.outputs).length === 0) {
     throw new Error(`Scene '${scene.id}' has no graph outputs`)
   }
+  warnConfigProblems(scene)
   if (label) {
     console.log(`✓ ${label} — valid (${scene.graph.nodes.length} nodes, ${scene.graph.edges.length} edges)`)
+  }
+}
+
+/** Warns (without failing) about config options the node's schema does not know or values of the wrong type. */
+function warnConfigProblems(scene: Scene): void {
+  for (const node of scene.graph.nodes) {
+    const schema = NODE_SCHEMAS[node.impl]
+    if (!schema) continue
+    for (const problem of validateNodeConfig(schema, node.config)) {
+      console.warn(`⚠ ${scene.id}: ${node.id}.${problem.key}: ${problem.message}`)
+    }
   }
 }
 
