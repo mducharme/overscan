@@ -282,7 +282,8 @@ function renderCpu(
   for (let sy = 0; sy < sh; sy++) {
     for (let sx = 0; sx < sw; sx++) {
       const uvx = ((sx + 0.5) / sw - 0.5) * 2 * (sw / Math.max(1, sh))
-      const uvy = ((sy + 0.5) / sh - 0.5) * 2
+      // Screen rows run top to bottom, so flip to make +uvy point along the camera's up (as gl_FragCoord does).
+      const uvy = (0.5 - (sy + 0.5) / sh) * 2
       const rd = normalize3(add3(forward, add3(scale3(right, uvx), scale3(up, uvy))))
       const col = traceScene(cameraPos, rd, time, lightDir, fogColor, sceneMap)
       for (let yy = 0; yy < chunkyScale; yy++) {
@@ -366,7 +367,8 @@ function buildSceneMap(source: string): (p: [number, number, number], time: numb
     .replace(/^\s*vec2\s+/gm, 'let ')
     .replace(/^\s*vec3\s+/gm, 'let ')
     .replace(/([A-Za-z_][A-Za-z0-9_]*)\.xz\s*\*=\s*rot\(([^)]+)\);/g, '$1 = rotateXZ($1, $2);')
-    .replace(/sd(Box|Sphere|Torus)\(\s*([A-Za-z_][A-Za-z0-9_\.]*)\s*-\s*(vec3\([^)]*\))\s*,/g, 'sd$1(sub3($2, $3),')
+    // `vec3(...)` may contain one level of nested calls, e.g. vec3(0.0, 1.0 + sin(u_time), 0.0).
+    .replace(/sd(Box|Sphere|Torus)\(\s*([A-Za-z_][A-Za-z0-9_\.]*)\s*-\s*(vec3\((?:[^()]|\([^()]*\))*\))\s*,/g, 'sd$1(sub3($2, $3),')
 
   try {
     const evaluator = new Function(
@@ -375,6 +377,7 @@ function buildSceneMap(source: string): (p: [number, number, number], time: numb
       'api',
       `"use strict";
 const { vec2, vec3, sdSphere, sdBox, sdTorus, rotateXZ, sub3, min } = api;
+const { sin, cos, abs, max, sqrt, pow, floor } = Math;
 const u_time = time;
 ${normalized}`,
     ) as (p: Vec3, time: number, api: SceneEvalApi) => number

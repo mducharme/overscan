@@ -16,7 +16,7 @@
         "config": {
           "fogColor": "#081b2f",
           "cameraPos": [0, 0.1, 2.9],
-          "scenePath": "../../shaders/raymarcher-metaballs.glsl"
+          "scenePath": "../shaders/raymarcher-metaballs.glsl"
         }
       },
       {

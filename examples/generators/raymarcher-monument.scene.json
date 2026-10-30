@@ -16,7 +16,7 @@
         "config": {
           "fogColor": "#02050b",
           "cameraPos": [0, 0.25, 3.4],
-          "scenePath": "../../shaders/raymarcher-monument.glsl"
+          "scenePath": "../shaders/raymarcher-monument.glsl"
         }
       }
     ],
