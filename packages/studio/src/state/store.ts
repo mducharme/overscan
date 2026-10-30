@@ -19,6 +19,7 @@ export interface StudioState {
   playing: boolean
   rate: number
   loop: boolean
+  muted: boolean
   renderer: Renderer
   renderScale: RenderScale
   /** Last rendering failure (a node threw); cleared on seek, renderer change or reload. */
@@ -37,6 +38,7 @@ export interface StudioActions {
   seek(time: number): void
   setRate(rate: number): void
   setLoop(loop: boolean): void
+  setMuted(muted: boolean): void
   setRenderer(renderer: Renderer): void
   setRenderScale(scale: RenderScale): void
   /** Report a rendering failure: playback pauses and the UI shows the message. */
@@ -61,6 +63,7 @@ const initialState: StudioState = {
   playing: false,
   rate: 1,
   loop: true,
+  muted: false,
   renderer: 'ansi',
   renderScale: 1,
   renderError: null,
@@ -111,6 +114,7 @@ export function createStudioStore(deps: StoreDeps): StudioStore {
     },
     setRate: rate => { set({ rate: clamp(rate, MIN_RATE, MAX_RATE) }); },
     setLoop: loop => { set({ loop }); },
+    setMuted: muted => { set({ muted }); },
     setRenderer: renderer => { set({ renderer, renderError: null }); },
     setRenderScale: renderScale => { set({ renderScale }); },
     reportRenderError(message) {
