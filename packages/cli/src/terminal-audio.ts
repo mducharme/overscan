@@ -159,7 +159,7 @@ async function createTrackHandle(runtimeDir: string, key: string): Promise<Track
   })
   await waitForSpawn(child)
   const client = await connectToIpc(socketPath, child)
-  child.stderr?.on('data', () => {})
+  child.stderr.on('data', () => {})
   // mpv emits JSON events/responses; if unread, the IPC pipe buffer can fill and stall playback.
   client.on('data', () => {})
   return { child, client, socketPath, last: null }

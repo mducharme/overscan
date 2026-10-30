@@ -32,7 +32,9 @@ const SETS = {
 interface Column { phase: number; speed: number }
 
 export function MatrixRainGenerator(config: Partial<MatrixRainConfig> = {}): Generator {
-  const charset = SETS[config.charset as keyof typeof SETS] ?? (typeof config.charset === 'string' ? config.charset : SETS.katakana)
+  // `charset` is a preset name or a literal string of characters.
+  const preset = (SETS as Record<string, string | undefined>)[config.charset ?? '']
+  const charset = preset ?? (typeof config.charset === 'string' ? config.charset : SETS.katakana)
   const color = hexToRgb(config.color ?? '#00ff41')
   const headColor = hexToRgb(config.headColor ?? '#ffffff')
   const speedRef = config.speed ?? 1

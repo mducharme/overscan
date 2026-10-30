@@ -1,6 +1,7 @@
 import { frameSteps } from '../frame-time.js'
 import { bindTexture, createFullscreenPipeline, type FullscreenPipeline } from '../webgl/fullscreen.js'
 import {
+  requireGlObject,
   resolveAnimatableFloat,
   type AnimatableFloat,
   type FrameBuffer,
@@ -58,8 +59,7 @@ void main() {
 
   function ensurePrevTexture(gl: WebGL2RenderingContext, width: number, height: number): void {
     if (prevTex && tw === width && th === height) return
-    prevTex = gl.createTexture()
-    if (!prevTex) throw new Error('FeedbackModifier: createTexture failed')
+    prevTex = requireGlObject(gl.createTexture(), 'FeedbackModifier: createTexture failed')
     gl.bindTexture(gl.TEXTURE_2D, prevTex)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)

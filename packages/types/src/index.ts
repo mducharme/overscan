@@ -355,3 +355,12 @@ export function resolveAnimatableFloat(v: AnimatableFloat | unknown, signal: Sig
 export interface CompositorOptions {
   renderer: 'cpu' | 'gpu'
 }
+
+/**
+ * Returns a freshly created WebGL object, or throws `message` when creation failed. WebGL's create*
+ * calls return null (for example after a lost context), though the DOM typings declare them non-null.
+ */
+export function requireGlObject<T>(value: T | null, message: string): T {
+  if (value === null) throw new Error(message)
+  return value
+}

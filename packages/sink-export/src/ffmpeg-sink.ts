@@ -99,7 +99,7 @@ export class FfmpegSink implements Sink {
 
     await new Promise<void>((resolve, reject) => {
       proc.once('error', (err) => {
-        if (err && typeof err === 'object' && 'code' in err && (err as NodeJS.ErrnoException).code === 'ENOENT') {
+        if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
           reject(new Error('ffmpeg not found on PATH (install ffmpeg for overscan export --mp4 or --gif)'))
           return
         }

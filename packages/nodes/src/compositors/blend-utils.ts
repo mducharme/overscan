@@ -6,7 +6,7 @@ export function luma(r: number, g: number, b: number): number {
 }
 
 export function hasTransforms(inputMeta?: Readonly<Record<string, CompositorInputMeta>>): boolean {
-  return Object.values(inputMeta ?? {}).some(meta => meta?.transform !== undefined)
+  return Object.values(inputMeta ?? {}).some(meta => meta.transform !== undefined)
 }
 
 export function sampleInputs(

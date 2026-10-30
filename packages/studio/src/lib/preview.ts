@@ -50,7 +50,7 @@ export function ansiToHtml(input: string): string {
   for (const piece of pieces) {
     const match = /^\x1b\[([0-9;]*)m$/.exec(piece)
     if (match) {
-      const parts = match[1].split(';').filter(Boolean).map(Number)
+      const parts = (match[1] ?? '').split(';').filter(Boolean).map(Number)
       if (parts[0] === 0) {
         fg = ''
         bg = ''

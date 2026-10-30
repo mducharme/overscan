@@ -73,7 +73,9 @@ export class PlaybackClock implements Clock {
 export function createNodeTimeSource(): TimeSource {
   return {
     nowMs() {
-      if (typeof process !== 'undefined' && typeof process.hrtime?.bigint === 'function') {
+      // Browser `process` shims often lack hrtime, though Node's typings declare it.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (typeof process !== 'undefined' && typeof process.hrtime?.bigint === 'function') {
         return Number(process.hrtime.bigint()) / 1e6
       }
       return Date.now()

@@ -72,7 +72,7 @@ export function buildDemoModifierStack(
     id: entry.id || `demoModifier${index + 1}`,
     type: 'modifier',
     impl: entry.impl,
-    config: entry.config ?? {},
+    config: entry.config,
   }))
   const registry = buildRegistry(nodes)
   return nodes

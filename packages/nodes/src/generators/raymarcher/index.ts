@@ -1,4 +1,5 @@
 import {
+  requireGlObject,
   resolveAnimatableFloat,
   type AnimatableFloat,
   type FrameBuffer,
@@ -157,8 +158,7 @@ void main() {
 }`
     const vs = compile(gl, gl.VERTEX_SHADER, vert)
     const fs = compile(gl, gl.FRAGMENT_SHADER, frag)
-    const prog = gl.createProgram()
-    if (!prog) throw new Error('RaymarcherGenerator: createProgram failed')
+    const prog = requireGlObject(gl.createProgram(), 'RaymarcherGenerator: createProgram failed')
     gl.attachShader(prog, vs)
     gl.attachShader(prog, fs)
     gl.linkProgram(prog)
@@ -169,9 +169,8 @@ void main() {
       gl.deleteProgram(prog)
       throw new Error(`RaymarcherGenerator: ${log}`)
     }
-    const quad = gl.createBuffer()
-    const vaoObj = gl.createVertexArray()
-    if (!quad || !vaoObj) throw new Error('RaymarcherGenerator: quad init failed')
+    const quad = requireGlObject(gl.createBuffer(), 'RaymarcherGenerator: quad init failed')
+    const vaoObj = requireGlObject(gl.createVertexArray(), 'RaymarcherGenerator: quad init failed')
     gl.bindVertexArray(vaoObj)
     gl.bindBuffer(gl.ARRAY_BUFFER, quad)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW)
@@ -222,7 +221,7 @@ void main() {
           gl.uniform2f(uResolution, out.width, out.height)
           gl.uniform1f(uTime, signal.t)
           gl.uniform3f(uCameraPos, cameraPos[0], cameraPos[1], cameraPos[2])
-          gl.uniform3f(uTarget, target[0] ?? 0, target[1] ?? 0, target[2] ?? 0)
+          gl.uniform3f(uTarget, target[0], target[1], target[2])
           gl.uniform3f(uLightDir, lightDir[0], lightDir[1], lightDir[2])
           gl.uniform3f(uFogColor, fogColor[0] / 255, fogColor[1] / 255, fogColor[2] / 255)
           gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)

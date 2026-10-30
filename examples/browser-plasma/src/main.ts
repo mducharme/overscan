@@ -90,8 +90,10 @@ async function main(): Promise<void> {
     }
   })
 
-  const firstScene = sections[0]?.runtime.scene
-  if (!firstScene) throw new Error('No browser scene available')
+  const firstSection = sections[0]
+  if (!firstSection) throw new Error('No browser scene available')
+  // Typed without `undefined` so the render loop's hoisted functions see it as present.
+  const firstScene: Scene = firstSection.runtime.scene
 
   const canvas = document.getElementById('screen') as HTMLCanvasElement | null
   if (!canvas) throw new Error('#screen canvas missing')
@@ -118,7 +120,7 @@ async function main(): Promise<void> {
     canvas: null,
     ctx2d: null,
     gl: sink.context,
-    assets: sections[0].runtime.assets,
+    assets: firstSection.runtime.assets,
     pool,
     width: firstScene.resolution.width,
     height: firstScene.resolution.height,
@@ -169,6 +171,10 @@ async function main(): Promise<void> {
     }
 
     const active = sections[activeIdx]
+    if (!active) {
+      schedule()
+      return
+    }
     const rendered = renderDemoBuffer({
       pool,
       ctx,

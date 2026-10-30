@@ -1,3 +1,4 @@
+import { requireGlObject } from '@overscan/types'
 import type { BufferPool, FrameBuffer } from '@overscan/types'
 
 interface PoolEntry {
@@ -7,8 +8,7 @@ interface PoolEntry {
 }
 
 function createTexture(gl: WebGL2RenderingContext, width: number, height: number): WebGLTexture {
-  const tex = gl.createTexture()
-  if (!tex) throw new Error('WebglBufferPool: createTexture failed')
+  const tex = requireGlObject(gl.createTexture(), 'WebglBufferPool: createTexture failed')
   gl.bindTexture(gl.TEXTURE_2D, tex)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -19,8 +19,7 @@ function createTexture(gl: WebGL2RenderingContext, width: number, height: number
 }
 
 function createFramebuffer(gl: WebGL2RenderingContext, texture: WebGLTexture): WebGLFramebuffer {
-  const fbo = gl.createFramebuffer()
-  if (!fbo) throw new Error('WebglBufferPool: createFramebuffer failed')
+  const fbo = requireGlObject(gl.createFramebuffer(), 'WebglBufferPool: createFramebuffer failed')
   gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0)
   return fbo

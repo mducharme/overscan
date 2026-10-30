@@ -180,7 +180,7 @@ export function InspectorPanel({
                     disabled={readOnly || index === 0}
                     onClick={() => {
                       const next = [...value]
-                      ;[next[index - 1], next[index]] = [next[index], next[index - 1]]
+                      ;[next[index - 1], next[index]] = [next[index]!, next[index - 1]!] // index ≥ 1: the button is disabled at 0
                       updatePalette(key, next)
                     }}
                   >
@@ -191,7 +191,7 @@ export function InspectorPanel({
                     disabled={readOnly || index === value.length - 1}
                     onClick={() => {
                       const next = [...value]
-                      ;[next[index], next[index + 1]] = [next[index + 1], next[index]]
+                      ;[next[index], next[index + 1]] = [next[index + 1]!, next[index]!] // index < length − 1: disabled at the end
                       updatePalette(key, next)
                     }}
                   >

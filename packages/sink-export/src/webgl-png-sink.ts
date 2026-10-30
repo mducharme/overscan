@@ -1,3 +1,4 @@
+import { requireGlObject } from '@overscan/types'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { FrameBuffer, Signal, Sink } from '@overscan/types'
@@ -59,8 +60,7 @@ function compileShader(gl: WebGLRenderingContext, type: number, source: string):
 }
 
 function linkProgram(gl: WebGLRenderingContext, vs: WebGLShader, fs: WebGLShader): WebGLProgram {
-  const prog = gl.createProgram()
-  if (!prog) throw new Error('createProgram failed')
+  const prog = requireGlObject(gl.createProgram(), 'createProgram failed')
   gl.attachShader(prog, vs)
   gl.attachShader(prog, fs)
   gl.linkProgram(prog)
@@ -127,14 +127,12 @@ export class WebglPngSequenceSink implements Sink {
     this.uTexLoc = uTex
 
     const quad = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1])
-    const buffer = gl.createBuffer()
-    if (!buffer) throw new Error('createBuffer failed')
+    const buffer = requireGlObject(gl.createBuffer(), 'createBuffer failed')
     this.buf = buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW)
 
-    const tex = gl.createTexture()
-    if (!tex) throw new Error('createTexture failed')
+    const tex = requireGlObject(gl.createTexture(), 'createTexture failed')
     this.tex = tex
     gl.bindTexture(gl.TEXTURE_2D, tex)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)

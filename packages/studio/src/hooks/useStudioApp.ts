@@ -433,10 +433,10 @@ export function useStudioApp() {
     ]).then(results => {
       const glResult = results[0]
       const canvasResult = results[1]
-      if (canvasResult?.status === 'rejected') {
+      if (canvasResult.status === 'rejected') {
         throw canvasResult.reason
       }
-      const glInitError = glResult?.status === 'rejected'
+      const glInitError = glResult.status === 'rejected'
         ? (glResult.reason instanceof Error ? glResult.reason.message : String(glResult.reason))
         : null
       const outputRenderer = renderer === 'gl' && glInitError ? '2d' : renderer
@@ -662,13 +662,15 @@ export function useStudioApp() {
     if (activeSection && path === activeSection.scenePath) {
       void buildSceneDocument(path, scene, text)
         .then(nextSectionDoc => {
+          const nextRuntime = nextSectionDoc.sections[0]?.runtime
+          if (!nextRuntime) return
           setDocumentState({
             ...documentState,
             sections: documentState.sections.map(section =>
               section.id === activeSection.id
                 ? {
                     ...section,
-                    runtime: nextSectionDoc.sections[0].runtime,
+                    runtime: nextRuntime,
                     end: section.start + scene.duration,
                   }
                 : section,
@@ -741,7 +743,7 @@ export function useStudioApp() {
     const targetIndex = clamp(index + direction, 0, list.length - 1)
     if (index === targetIndex) return
     const [entry] = list.splice(index, 1)
-    list.splice(targetIndex, 0, entry)
+    list.splice(targetIndex, 0, entry!) // index was found above, so splice removed one entry
     updateDemoDocument({
       ...documentState.demo,
       modifiers: list,
@@ -1073,13 +1075,11 @@ export function useStudioApp() {
     const entry = sceneHistory[path]
     const previous = entry?.undo[entry.undo.length - 1]
     if (!previous) return
-    setSceneHistory(current => ({
-      ...current,
-      [path]: {
-        undo: current[path].undo.slice(0, -1),
-        redo: [...current[path].redo, currentText].slice(-50),
-      },
-    }))
+    setSceneHistory(current => {
+      const history = current[path]
+      if (!history) return current
+      return { ...current, [path]: { undo: history.undo.slice(0, -1), redo: [...history.redo, currentText].slice(-50) } }
+    })
     applySceneText(path, previous, false)
   }
 
@@ -1090,13 +1090,11 @@ export function useStudioApp() {
     const entry = sceneHistory[path]
     const next = entry?.redo[entry.redo.length - 1]
     if (!next) return
-    setSceneHistory(current => ({
-      ...current,
-      [path]: {
-        undo: [...current[path].undo, currentText].slice(-50),
-        redo: current[path].redo.slice(0, -1),
-      },
-    }))
+    setSceneHistory(current => {
+      const history = current[path]
+      if (!history) return current
+      return { ...current, [path]: { undo: [...history.undo, currentText].slice(-50), redo: history.redo.slice(0, -1) } }
+    })
     applySceneText(path, next, false)
   }
 
@@ -1134,7 +1132,7 @@ export function useStudioApp() {
     if (currentIndex < 0) return
     const nextSections = [...documentState.demo.sections]
     const [section] = nextSections.splice(currentIndex, 1)
-    nextSections.splice(clamp(targetIndex, 0, nextSections.length), 0, section)
+    nextSections.splice(clamp(targetIndex, 0, nextSections.length), 0, section!) // currentIndex was found above
     updateDemoDocument({
       ...documentState.demo,
       sections: nextSections,
@@ -1191,11 +1189,12 @@ export function useStudioApp() {
   }
 
   const signalOptions = useMemo(() => Object.entries(signalHistoryRef.current).map(([key, samples]) => {
-    const [nodeId, output] = key.split('.')
+    // Signal keys are `${nodeId}.${output}`.
+    const dot = key.indexOf('.')
     return {
       key,
-      nodeId,
-      output,
+      nodeId: dot < 0 ? key : key.slice(0, dot),
+      output: dot < 0 ? '' : key.slice(dot + 1),
       value: samples[samples.length - 1] ?? 0,
     }
   }), [previewState.fps, selectedEdgeId, selectedNodeId])

@@ -32,6 +32,8 @@ function nowMs(): number {
   if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
     return performance.now()
   }
+  // Browser `process` shims often lack hrtime, though Node's typings declare it.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (typeof process !== 'undefined' && typeof process.hrtime?.bigint === 'function') {
     return Number(process.hrtime.bigint()) / 1e6
   }
@@ -236,7 +238,7 @@ export class GraphExecutor {
           const input =
             inputs['color'] ?? inputs['in'] ?? inputs['input'] ?? Object.values(inputs)[0]
           if (input) node.apply(this.makeNodeContext(ctx, out.width, out.height), input, out, signal)
-        } else if (node.type === 'compositor') {
+        } else {
           node.compose(ctx, inputs, out, signal, inputMeta)
         }
       } catch (error) {

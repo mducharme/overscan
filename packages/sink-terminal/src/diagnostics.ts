@@ -3,8 +3,9 @@ import type { TerminalSink } from './sink.js'
 /** One-line summary for stderr after a run (mode, buffer size, TTY, common env). */
 export function describeTerminalSession(sink: TerminalSink): string {
   const r = sink.resolution
-  const ttyCols = process.stdout.columns
-  const ttyRows = process.stdout.rows
+  // columns/rows are only defined when stdout is a terminal, despite Node's typings.
+  const ttyCols = process.stdout.isTTY ? process.stdout.columns : undefined
+  const ttyRows = process.stdout.isTTY ? process.stdout.rows : undefined
   const parts = [
     `mode=${sink.currentMode}`,
     `buffer=${r.width}x${r.height}`,

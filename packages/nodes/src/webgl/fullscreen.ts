@@ -1,3 +1,4 @@
+import { requireGlObject } from '@overscan/types'
 const VERT = `#version 300 es
 in vec2 a_pos;
 out vec2 v_uv;
@@ -32,8 +33,7 @@ export function createFullscreenPipeline(
 ): FullscreenPipeline {
   const vs = compile(gl, gl.VERTEX_SHADER, VERT)
   const fs = compile(gl, gl.FRAGMENT_SHADER, fragmentSource)
-  const program = gl.createProgram()
-  if (!program) throw new Error('createProgram failed')
+  const program = requireGlObject(gl.createProgram(), 'createProgram failed')
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
   gl.linkProgram(program)
@@ -45,9 +45,8 @@ export function createFullscreenPipeline(
     throw new Error(log)
   }
 
-  const vao = gl.createVertexArray()
-  const vbo = gl.createBuffer()
-  if (!vao || !vbo) throw new Error('create quad buffers failed')
+  const vao = requireGlObject(gl.createVertexArray(), 'create quad buffers failed')
+  const vbo = requireGlObject(gl.createBuffer(), 'create quad buffers failed')
   gl.bindVertexArray(vao)
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW)

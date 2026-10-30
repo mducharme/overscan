@@ -1,3 +1,4 @@
+import { requireGlObject } from '@overscan/types'
 import type { FrameBuffer, Signal, Sink } from '@overscan/types'
 
 const VERT = `#version 300 es
@@ -31,8 +32,7 @@ function compile(gl: WebGL2RenderingContext, type: number, source: string): WebG
 }
 
 function link(gl: WebGL2RenderingContext, vs: WebGLShader, fs: WebGLShader): WebGLProgram {
-  const prog = gl.createProgram()
-  if (!prog) throw new Error('WebglDisplaySink: createProgram failed')
+  const prog = requireGlObject(gl.createProgram(), 'WebglDisplaySink: createProgram failed')
   gl.attachShader(prog, vs)
   gl.attachShader(prog, fs)
   gl.linkProgram(prog)
@@ -73,9 +73,8 @@ export class WebglDisplaySink implements Sink {
     this.program = program
     this.uTexLoc = gl.getUniformLocation(program, 'u_tex')
 
-    const vao = gl.createVertexArray()
-    const vbo = gl.createBuffer()
-    if (!vao || !vbo) throw new Error('WebglDisplaySink: vao/vbo failed')
+    const vao = requireGlObject(gl.createVertexArray(), 'WebglDisplaySink: vao/vbo failed')
+    const vbo = requireGlObject(gl.createBuffer(), 'WebglDisplaySink: vao/vbo failed')
     this.vao = vao
     gl.bindVertexArray(vao)
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
@@ -84,8 +83,7 @@ export class WebglDisplaySink implements Sink {
     gl.enableVertexAttribArray(aPos)
     gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0)
 
-    const texture = gl.createTexture()
-    if (!texture) throw new Error('WebglDisplaySink: texture failed')
+    const texture = requireGlObject(gl.createTexture(), 'WebglDisplaySink: texture failed')
     this.texture = texture
     gl.bindTexture(gl.TEXTURE_2D, texture)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)

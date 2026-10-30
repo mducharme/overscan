@@ -109,7 +109,8 @@ export function TimelinePanel({
     const pending = audioTimeline.filter(span => !waveforms[span.sourcePath])
     if (pending.length === 0) return
 
-    const AudioContextCtor = window.AudioContext ?? (window as typeof window & {
+    // Older Safari only has webkitAudioContext.
+    const AudioContextCtor = (window.AudioContext as typeof AudioContext | undefined) ?? (window as typeof window & {
       webkitAudioContext?: typeof AudioContext
     }).webkitAudioContext
     if (!AudioContextCtor) return

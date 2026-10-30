@@ -57,7 +57,6 @@ export function rasterizeTerminalFrameToRgba(
 
   const canvas = createCanvas(rw, rh)
   const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('terminal raster: failed to get 2d context')
 
   ctx.imageSmoothingEnabled = false
 
@@ -104,7 +103,6 @@ export function rasterizeTerminalFrameToRgba(
     case 'sixel': {
       const tmp = createCanvas(frame.width, frame.height)
       const tctx = tmp.getContext('2d')
-      if (!tctx) throw new Error('terminal raster sixel: temp 2d context failed')
       const id = tctx.createImageData(frame.width, frame.height)
       const need = frame.width * frame.height * 4
       id.data.set(frame.data.subarray(0, need))

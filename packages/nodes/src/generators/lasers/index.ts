@@ -1,4 +1,5 @@
 import {
+  requireGlObject,
   resolveAnimatableFloat,
   type AnimatableFloat,
   type FrameBuffer,
@@ -150,8 +151,7 @@ void main() {
 }`
     const vs = compile(gl, gl.VERTEX_SHADER, vert)
     const fs = compile(gl, gl.FRAGMENT_SHADER, frag)
-    const prog = gl.createProgram()
-    if (!prog) throw new Error('LasersGenerator: createProgram failed')
+    const prog = requireGlObject(gl.createProgram(), 'LasersGenerator: createProgram failed')
     gl.attachShader(prog, vs)
     gl.attachShader(prog, fs)
     gl.linkProgram(prog)
@@ -162,9 +162,8 @@ void main() {
       gl.deleteProgram(prog)
       throw new Error(`LasersGenerator: ${log}`)
     }
-    const quad = gl.createBuffer()
-    const vaoObj = gl.createVertexArray()
-    if (!quad || !vaoObj) throw new Error('LasersGenerator: quad init failed')
+    const quad = requireGlObject(gl.createBuffer(), 'LasersGenerator: quad init failed')
+    const vaoObj = requireGlObject(gl.createVertexArray(), 'LasersGenerator: quad init failed')
     gl.bindVertexArray(vaoObj)
     gl.bindBuffer(gl.ARRAY_BUFFER, quad)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW)

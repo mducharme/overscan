@@ -23,6 +23,8 @@ export default tseslint.config(
       '@typescript-eslint/no-non-null-assertion':  'off',
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       '@typescript-eslint/no-empty-function':      'off',
+      // Render and playback loops are written as `while (true)` with explicit breaks.
+      '@typescript-eslint/no-unnecessary-condition': ['error', { allowConstantLoopConditions: true }],
     },
   },
   {

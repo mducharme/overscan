@@ -1,5 +1,6 @@
 import { ASPECT_SCALE_GLSL } from '../../viewport-scale.js'
 import {
+  requireGlObject,
   resolveAnimatableFloat,
   type FrameBuffer,
   type Generator,
@@ -84,8 +85,7 @@ void main() {
 }`
     const vs = compile(gl, gl.VERTEX_SHADER, vert)
     const fs = compile(gl, gl.FRAGMENT_SHADER, frag)
-    const prog = gl.createProgram()
-    if (!prog) throw new Error('PlasmaGenerator: createProgram failed')
+    const prog = requireGlObject(gl.createProgram(), 'PlasmaGenerator: createProgram failed')
     gl.attachShader(prog, vs)
     gl.attachShader(prog, fs)
     gl.linkProgram(prog)
@@ -96,9 +96,8 @@ void main() {
       gl.deleteProgram(prog)
       throw new Error(`PlasmaGenerator: ${log}`)
     }
-    const quad = gl.createBuffer()
-    const vaoObj = gl.createVertexArray()
-    if (!quad || !vaoObj) throw new Error('PlasmaGenerator: quad init failed')
+    const quad = requireGlObject(gl.createBuffer(), 'PlasmaGenerator: quad init failed')
+    const vaoObj = requireGlObject(gl.createVertexArray(), 'PlasmaGenerator: quad init failed')
     gl.bindVertexArray(vaoObj)
     gl.bindBuffer(gl.ARRAY_BUFFER, quad)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW)
