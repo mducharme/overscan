@@ -2,7 +2,7 @@ import type { StudioStore } from '../state/store'
 
 /**
  * Player shortcuts, matching `overscan run`: Space play/pause, ←/→ previous/next section in a demo
- * (±5 s in a scene), ↑/↓ double/halve the rate, Home rewind, L loop, F fullscreen.
+ * (±5 s in a scene), ↑/↓ double/halve the rate, Home rewind, L loop, M mute, F fullscreen.
  * Ignored while typing in a field. Returns a function that removes the listener.
  */
 export function bindPlayerKeys(store: StudioStore, onFullscreen: () => void): () => void {
@@ -30,6 +30,7 @@ export function bindPlayerKeys(store: StudioStore, onFullscreen: () => void): ()
       case 'ArrowDown': s.setRate(s.rate / 2); break
       case 'Home': s.seek(0); break
       case 'l': case 'L': s.setLoop(!s.loop); break
+      case 'm': case 'M': s.setMuted(!s.muted); break
       case 'f': case 'F': onFullscreen(); break
       default: return
     }

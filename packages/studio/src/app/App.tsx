@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { baseName } from '../engine/paths'
 import { Notices } from './Notices'
 import { Preview, type PreviewHandle } from './Preview'
-import { ScrubBar } from './ScrubBar'
 import { useStudio, useStudioStore } from './studio-context'
+import { Timeline } from './Timeline'
 import { Transport } from './Transport'
+import { useAudio } from './useAudio'
 import { bindPlayerKeys } from './keyboard'
 
 export function App() {
@@ -13,7 +14,9 @@ export function App() {
   const document = useStudio(s => s.document)
   const previewRef = useRef<PreviewHandle>(null)
 
+  const [timelineHeight, setTimelineHeight] = useState(readTimelineHeight)
   useEffect(() => bindPlayerKeys(store, () => { previewRef.current?.fullscreen() }), [store])
+  useAudio()
 
   const title = document?.demo?.title ?? document?.scene?.title
   return (
@@ -33,9 +36,46 @@ export function App() {
         {status === 'idle' && <div className="app__placeholder">No file. Start the studio with <code>overscan dev &lt;file&gt;</code>.</div>}
         <Preview ref={previewRef} />
       </main>
-      <footer className="app__footer">
-        <ScrubBar />
-      </footer>
+      {document && (
+        <footer className="app__footer" style={{ height: timelineHeight }}>
+          <div
+            className="app__resize"
+            role="separator"
+            aria-orientation="horizontal"
+            aria-label="Resize timeline"
+            onPointerDown={event => {
+              event.currentTarget.setPointerCapture(event.pointerId)
+              const startY = event.clientY
+              const startH = timelineHeight
+              const target = event.currentTarget
+              const move = (e: PointerEvent): void => { setTimelineHeight(clampHeight(startH + startY - e.clientY)) }
+              const up = (e: PointerEvent): void => {
+                target.removeEventListener('pointermove', move)
+                target.removeEventListener('pointerup', up)
+                saveTimelineHeight(clampHeight(startH + startY - e.clientY))
+              }
+              target.addEventListener('pointermove', move)
+              target.addEventListener('pointerup', up)
+            }}
+          />
+          <Timeline />
+        </footer>
+      )}
     </div>
   )
+}
+
+const HEIGHT_KEY = 'overscan.studio.timelineHeight'
+const clampHeight = (h: number): number => Math.round(Math.min(window.innerHeight * 0.75, Math.max(96, h)))
+
+function readTimelineHeight(): number {
+  try {
+    const saved = Number(window.localStorage.getItem(HEIGHT_KEY))
+    if (saved > 0) return clampHeight(saved)
+  } catch { /* storage unavailable */ }
+  return clampHeight(window.innerHeight * 0.32)
+}
+
+function saveTimelineHeight(h: number): void {
+  try { window.localStorage.setItem(HEIGHT_KEY, String(h)) } catch { /* storage unavailable */ }
 }

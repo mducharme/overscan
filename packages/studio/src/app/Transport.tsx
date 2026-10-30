@@ -24,11 +24,12 @@ export function Transport({ onScreenshot, onFullscreen }: { onScreenshot: () => 
   const duration = useStudio(s => s.document?.player.duration ?? 0)
   const rate = useStudio(s => s.rate)
   const loop = useStudio(s => s.loop)
+  const muted = useStudio(s => s.muted)
   const renderer = useStudio(s => s.renderer)
   const renderScale = useStudio(s => s.renderScale)
   const ready = useStudio(s => s.status === 'ready')
   // Actions never change, so read them once instead of subscribing to the whole state.
-  const { togglePlay, seek, setRate, setLoop, setRenderer, setRenderScale } = useStudioStore().getState()
+  const { togglePlay, seek, setRate, setLoop, setMuted, setRenderer, setRenderScale } = useStudioStore().getState()
 
   return (
     <div className="transport">
@@ -54,6 +55,7 @@ export function Transport({ onScreenshot, onFullscreen }: { onScreenshot: () => 
           options={[{ value: 'once', label: 'Once' }, { value: 'loop', label: 'Loop' }]}
           onChange={value => { setLoop(value === 'loop') }}
         />
+        <Button variant="ghost" title="Mute audio (M)" aria-pressed={muted} onClick={() => { setMuted(!muted) }}>{muted ? 'Unmute' : 'Mute'}</Button>
       </div>
       <div className="transport__group transport__group--end">
         <ToggleGroup label="Renderer" value={renderer} options={RENDERERS} onChange={setRenderer} />

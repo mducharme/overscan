@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import { App } from './app/App'
-import { StudioContext } from './app/studio-context'
+import { BridgeContext, StudioContext } from './app/studio-context'
 import { createHttpBridge } from './engine/bridge'
 import { loadDocument } from './engine/document'
 import { decodeImageInBrowser } from './engine/image-decode'
@@ -26,7 +26,9 @@ if (initialFile) void store.getState().openDocument(initialFile)
 const root = document.getElementById('root')
 if (!root) throw new Error('#root element missing')
 createRoot(root).render(
-  <StudioContext.Provider value={store}>
-    <App />
-  </StudioContext.Provider>,
+  <BridgeContext.Provider value={bridge}>
+    <StudioContext.Provider value={store}>
+      <App />
+    </StudioContext.Provider>
+  </BridgeContext.Provider>,
 )
