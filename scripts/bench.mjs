@@ -207,6 +207,7 @@ async function benchDemoFile(path) {
     sinkId: 'export',
     buildRegistry: buildBuiltinRegistry,
     assetManager: assetManager(path),
+    sectionAssetManager: scenePath => assetManager(scenePath),
     async loadSection(raw) {
       const scenePath = loader.resolveScenePath(path, raw)
       return { scene: await loader.loadFile(scenePath), scenePath }

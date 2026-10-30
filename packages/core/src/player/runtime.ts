@@ -52,6 +52,11 @@ export interface CreateDemoRuntimeDocumentOptions {
   sinkId: string
   buildRegistry: RuntimeRegistryFactory
   assetManager: AssetManagerOptions
+  /**
+   * Asset options for one section, given its scene path. Use it to resolve a scene's relative asset
+   * paths (shaders, textures) against that scene file rather than the demo file. Defaults to `assetManager`.
+   */
+  sectionAssetManager?: (scenePath: string) => AssetManagerOptions
   loadSection: (
     scenePath: string,
     section: Demo['sections'][number],
@@ -118,13 +123,14 @@ export async function createDemoRuntimeDocument(
     demo,
     async (scenePath: string, section: Demo['sections'][number], index: number) => {
     const loaded = await options.loadSection(scenePath, section, index)
+    const resolvedScenePath = loaded.scenePath ?? scenePath
     return {
       scene: loaded.scene,
-      scenePath: loaded.scenePath ?? scenePath,
+      scenePath: resolvedScenePath,
       runtime: await createSceneRuntime(loaded.scene, {
         sinkId: options.sinkId,
         buildRegistry: options.buildRegistry,
-        assetManager: options.assetManager,
+        assetManager: options.sectionAssetManager?.(resolvedScenePath) ?? options.assetManager,
       }),
     }
     },

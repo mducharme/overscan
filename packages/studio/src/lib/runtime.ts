@@ -241,6 +241,16 @@ export async function buildDemoDocument(
         return loadTextResource(assetPath)
       },
     },
+    // Each section's relative assets (shaders, textures) resolve against its own scene file.
+    sectionAssetManager: scenePath => ({
+      resolveAssetUrl(url) {
+        if (/^[a-z]+:\/\//i.test(url) || url.startsWith('overscan://')) return url
+        return resolveFilePath(scenePath, url)
+      },
+      loadText(assetPath) {
+        return loadTextResource(assetPath)
+      },
+    }),
     async loadSection(sectionPath) {
       const scenePath = resolveFilePath(filePath, sectionPath)
       const sceneFile = await bridgeFileAdapter.read(scenePath)

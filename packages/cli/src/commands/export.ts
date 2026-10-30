@@ -19,6 +19,7 @@ import {
 import { terminalResolutionFromGrid } from '@overscan/sink-terminal'
 import { renderLoop } from '../render-loop.js'
 import { buildRegistry } from '../node-registry.js'
+import { fileAssetOptions } from '../file-assets.js'
 
 export type ExportKind = 'png' | 'png-gl' | 'mp4' | 'gif'
 
@@ -252,18 +253,9 @@ async function loadExportDemoRuntime(
   return createDemoRuntimeDocument(demo, {
     sinkId,
     buildRegistry,
-    assetManager: {
-      resolveAssetUrl(url) {
-        if (/^([a-z]+:)?\/\//i.test(url) || url.startsWith('overscan://')) return url
-        return loader.resolveScenePath(demoPath, url)
-      },
-      loadText(path) {
-        return readFile(path, 'utf8')
-      },
-      loadBinary(path) {
-        return readFile(path)
-      },
-    },
+    assetManager: fileAssetOptions(loader, demoPath),
+    // Each section's relative assets (shaders, textures) resolve against its own scene file.
+    sectionAssetManager: scenePath => fileAssetOptions(loader, scenePath),
     async loadSection(rawScenePath) {
       const scenePath = loader.resolveScenePath(demoPath, rawScenePath)
       const scene = await loader.loadFile(scenePath)

@@ -17,6 +17,7 @@ import { GraphExecutor } from '@overscan/core'
 import { renderLoop, type RenderLoopControl } from '../render-loop.js'
 import { createTerminalAudioController, type TerminalAudioController, type TerminalAudioState } from '../terminal-audio.js'
 import { buildRegistry } from '../node-registry.js'
+import { fileAssetOptions } from '../file-assets.js'
 
 export interface RunOptions {
   mode?:      TerminalMode
@@ -307,18 +308,9 @@ async function loadTerminalDemoRuntime(
   return createDemoRuntimeDocument(demo, {
     sinkId: 'terminal',
     buildRegistry,
-    assetManager: {
-      resolveAssetUrl(url) {
-        if (/^([a-z]+:)?\/\//i.test(url) || url.startsWith('overscan://')) return url
-        return loader.resolveScenePath(demoPath, url)
-      },
-      loadText(path) {
-        return readFile(path, 'utf8')
-      },
-      loadBinary(path) {
-        return readFile(path)
-      },
-    },
+    assetManager: fileAssetOptions(loader, demoPath),
+    // Each section's relative assets (shaders, textures) resolve against its own scene file.
+    sectionAssetManager: scenePath => fileAssetOptions(loader, scenePath),
     async loadSection(rawScenePath) {
       const scenePath = loader.resolveScenePath(demoPath, rawScenePath)
       const scene = await loader.loadFile(scenePath)
