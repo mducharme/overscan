@@ -18,6 +18,7 @@
       "@overscan/sink-browser": ["../../packages/sink-browser/src/index.ts"],
       "@overscan/sink-terminal": ["../../packages/sink-terminal/src/index.ts"],
       "@overscan/terminal-renderers": ["../../packages/sink-terminal/src/renderers/index.ts"],
+      "@overscan/terminal-cells": ["../../packages/sink-terminal/src/ascii-cell.ts"],
       "@overscan/sequencer": ["../../packages/sequencer/src/index.ts"]
     }
   },

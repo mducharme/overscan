@@ -32,6 +32,7 @@ export interface Player {
   sectionAt(t: number): PlayerSection | undefined
   /** Prepare every section's nodes for this context (call again after the output size changes). */
   init(ctx: NodeContext): void
+  /** Renders time `t`. Node failures throw (strict), so the UI can report them instead of drawing a placeholder. */
   render(pool: BufferPool, ctx: NodeContext, t: number, frame: number, dt: number): RenderedFrame | null
   destroy(): void
 }
@@ -57,7 +58,7 @@ export function createScenePlayer(scene: Scene, scenePath: string, runtime: Scen
       runtime.executor.init(ctx)
     },
     render(pool, ctx, t, frame, dt) {
-      return renderSceneRuntimeFrame(runtime, { pool, ctx, t, frame, dt })
+      return renderSceneRuntimeFrame(runtime, { pool, ctx, t, frame, dt, options: { strictErrors: true } })
     },
     destroy() {
       runtime.executor.destroy()
@@ -89,7 +90,7 @@ export function createDemoPlayer(document: DemoRuntimeDocument): Player {
       }
     },
     render(pool, ctx, t, frame, dt) {
-      return renderDemoRuntimeFrame(document, { pool, ctx, t, frame, dt })
+      return renderDemoRuntimeFrame(document, { pool, ctx, t, frame, dt, options: { strictErrors: true } })
     },
     destroy() {
       for (const section of document.sections) section.runtime.executor.destroy()

@@ -3,6 +3,9 @@ import type { StudioDocument } from '../engine/document'
 
 export type Renderer = 'ascii' | 'ansi' | '2d' | 'gl'
 
+/** Fraction of the document resolution the 2D/GL preview renders at (lower = faster). */
+export type RenderScale = 1 | 0.5 | 0.25
+
 export const MIN_RATE = 0.125
 export const MAX_RATE = 8
 
@@ -17,6 +20,9 @@ export interface StudioState {
   rate: number
   loop: boolean
   renderer: Renderer
+  renderScale: RenderScale
+  /** Last rendering failure (a node threw); cleared on seek, renderer change or reload. */
+  renderError: string | null
   // Selection
   selectedNodeId: string | null
   selectedSectionId: string | null
@@ -32,6 +38,9 @@ export interface StudioActions {
   setRate(rate: number): void
   setLoop(loop: boolean): void
   setRenderer(renderer: Renderer): void
+  setRenderScale(scale: RenderScale): void
+  /** Report a rendering failure: playback pauses and the UI shows the message. */
+  reportRenderError(message: string | null): void
   selectNode(nodeId: string | null): void
   selectSection(sectionId: string | null): void
   /** Advance playback by `dt` real seconds (called by the playback driver each animation frame). */
@@ -53,6 +62,8 @@ const initialState: StudioState = {
   rate: 1,
   loop: true,
   renderer: 'gl',
+  renderScale: 1,
+  renderError: null,
   selectedNodeId: null,
   selectedSectionId: null,
 }
@@ -75,7 +86,7 @@ export function createStudioStore(deps: StoreDeps): StudioStore {
           return
         }
         get().document?.player.destroy()
-        set({ status: 'ready', document, time: 0, selectedNodeId: null, selectedSectionId: null })
+        set({ status: 'ready', document, time: 0, renderError: null, selectedNodeId: null, selectedSectionId: null })
       } catch (error) {
         if (token !== loadToken) return
         set({ status: 'error', error: error instanceof Error ? error.message : String(error) })
@@ -96,11 +107,15 @@ export function createStudioStore(deps: StoreDeps): StudioStore {
 
     seek(time) {
       const duration = get().document?.player.duration ?? 0
-      set({ time: clamp(time, 0, duration) })
+      set({ time: clamp(time, 0, duration), renderError: null })
     },
     setRate: rate => { set({ rate: clamp(rate, MIN_RATE, MAX_RATE) }); },
     setLoop: loop => { set({ loop }); },
-    setRenderer: renderer => { set({ renderer }); },
+    setRenderer: renderer => { set({ renderer, renderError: null }); },
+    setRenderScale: renderScale => { set({ renderScale }); },
+    reportRenderError(message) {
+      set(message ? { renderError: message, playing: false } : { renderError: null })
+    },
     selectNode: selectedNodeId => { set({ selectedNodeId }); },
     selectSection: selectedSectionId => { set({ selectedSectionId }); },
 

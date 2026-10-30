@@ -70,3 +70,15 @@ describe('studio store', () => {
     expect(store.getState().rate).toBe(MAX_RATE)
   })
 })
+
+describe('render errors', () => {
+  it('pause playback and clear on seek', async () => {
+    const store = createStudioStore({ load: async path => fakeDocument(path, 10) })
+    await store.getState().openDocument('a')
+    store.getState().play()
+    store.getState().reportRenderError("Node 'x' failed: boom")
+    expect(store.getState()).toMatchObject({ playing: false, renderError: "Node 'x' failed: boom" })
+    store.getState().seek(2)
+    expect(store.getState().renderError).toBeNull()
+  })
+})
