@@ -24,23 +24,49 @@ const CHROME = [
   '/usr/bin/chromium-browser',
 ].find(p => p && existsSync(p))
 
-/** Each scenario serves one file; `checks` run in the page once the studio store reports ready. */
+const key = k => `window.dispatchEvent(new KeyboardEvent('keydown', { key: ${JSON.stringify(k)} }))`
+const store = 'window.__overscanStudio.getState()'
+
+/**
+ * Each scenario serves one file. Once the studio store reports ready, `steps` run in order (page JS,
+ * then a pause in ms) and each `check` must return true for the store state.
+ */
 const SCENARIOS = [
   {
     name: 'scene',
     file: 'examples/generators/plasma.scene.json',
+    steps: [
+      [`${store}.play()`, 1200],
+      [`${store}.time > 0.8 || 'time did not advance: ' + ${store}.time`, 0],
+      [`${store}.pause(); ${store}.seek(2); ${key('ArrowRight')}`, 100],
+      [`${store}.time === 7 || 'ArrowRight should skip 5 s in a scene, got ' + ${store}.time`, 0],
+      [key(' '), 100],
+      [`${store}.playing === true || 'Space should resume'`, 0],
+      [key(' '), 100],
+      [`${store}.playing === false || 'Space should pause'`, 0],
+    ],
     checks: [
       ['loads', 's => s.status === "ready"'],
       ['one section', 's => s.document.player.sections.length === 1'],
+      ['no render error', 's => s.renderError === null'],
     ],
   },
   {
     name: 'demo',
     file: 'examples/showcase.demo.json',
+    steps: [
+      [`${store}.play()`, 600],
+      ...['2d', 'ansi', 'ascii', 'gl'].map(r => [`${store}.setRenderer('${r}')`, 700]),
+      [`${store}.renderError === null || 'render error: ' + ${store}.renderError`, 0],
+      [`${store}.pause(); ${store}.seek(0.5); ${key('ArrowRight')}`, 100],
+      [`${store}.time === ${store}.document.player.sections[1].start || 'ArrowRight should jump to the next section'`, 0],
+      [`${store}.play(); ${store}.seek(60)`, 800],
+    ],
     checks: [
       ['loads', 's => s.status === "ready"'],
       ['all sections', 's => s.document.player.sections.length === 16'],
       ['no asset problems', 's => s.document.assetProblems.length === 0'],
+      ['no render error', 's => s.renderError === null'],
     ],
   },
 ]
@@ -119,8 +145,13 @@ for (const scenario of SCENARIOS) {
         hooked = status !== null
         if (status === 'ready' || status === 'error' || (!hooked && i >= 16)) break
       }
-      const failed = [...problems]
+      const failed = []
       if (hooked) {
+        for (const [code, wait] of scenario.steps ?? []) {
+          const result = await evaluate(send, code).catch(e => `threw ${e.message}`)
+          if (typeof result === 'string') failed.push(`step: ${result}`)
+          if (wait) await sleep(wait)
+        }
         for (const [label, check] of scenario.checks) {
           const ok = await evaluate(send, `(${check})(window.__overscanStudio.getState())`).catch(e => `threw ${e.message}`)
           if (ok !== true) failed.push(`check '${label}' ${ok === false ? 'failed' : ok}`)
@@ -128,6 +159,7 @@ for (const scenario of SCENARIOS) {
         const error = await evaluate(send, 'window.__overscanStudio.getState().error')
         if (error) failed.push(`studio error: ${error}`)
       }
+      failed.unshift(...problems)
       const shot = await send('Page.captureScreenshot', { format: 'png' })
       writeFileSync(join(OUT, `${scenario.name}.png`), Buffer.from(shot.result.data, 'base64'))
       const note = hooked ? '' : ' (no test hook: console checks only)'
