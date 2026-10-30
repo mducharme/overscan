@@ -1,0 +1,40 @@
+{
+  "id": "showcase-twister",
+  "title": "Showcase · Twister with trails",
+  "duration": 6,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "beat",
+      "keys": [
+        { "row": 0, "value": 0.25, "interpolation": "ease-out" },
+        { "row": 4, "value": 0, "interpolation": "step" },
+        { "row": 16, "value": 0.25, "interpolation": "ease-out" },
+        { "row": 20, "value": 0, "interpolation": "step" },
+        { "row": 32, "value": 0.25, "interpolation": "ease-out" },
+        { "row": 36, "value": 0, "interpolation": "step" },
+        { "row": 48, "value": 0.25, "interpolation": "ease-out" },
+        { "row": 52, "value": 0, "interpolation": "step" },
+        { "row": 64, "value": 0.25, "interpolation": "ease-out" },
+        { "row": 68, "value": 0, "interpolation": "step" },
+        { "row": 80, "value": 0.25, "interpolation": "ease-out" },
+        { "row": 84, "value": 0, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "twister", "type": "generator", "impl": "twister", "config": { "twistSpeed": 2.4, "verticalFrequency": 1.8, "width": 0.3, "sway": 0.18, "shading": 0.85, "backgroundColor": "#050812", "palette": [[255, 78, 150], [255, 208, 72], [90, 246, 168], [82, 164, 255]] } },
+      { "id": "trails", "type": "modifier", "impl": "feedback", "config": { "decay": 0.5, "blendMode": "alpha" } },
+      { "id": "flash", "type": "modifier", "impl": "palette-flash", "config": { "color": "#ffffff", "strength": { "track": "beat" }, "blendMode": "additive" } }
+    ],
+    "edges": [
+      { "from": { "node": "twister", "output": "color" }, "to": { "node": "trails", "input": "in" } },
+      { "from": { "node": "trails", "output": "color" }, "to": { "node": "flash", "input": "in" } }
+    ],
+    "outputs": { "terminal": "flash", "browser": "flash", "export": "flash" }
+  }
+}

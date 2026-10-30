@@ -1,0 +1,19 @@
+{
+  "id": "showcase-water",
+  "title": "Showcase · Water",
+  "duration": 6,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "water", "type": "generator", "impl": "water-ripple", "config": { "damping": 0.985, "tapMode": "random", "tapRate": 6, "tapStrength": 1.1, "refraction": 0.5 } }
+    ],
+    "edges": [
+
+    ],
+    "outputs": { "terminal": "water", "browser": "water", "export": "water" }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "showcase-dots",
+  "title": "Showcase · Dots into text",
+  "duration": 6,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "spin",
+      "keys": [
+        { "row": 0, "value": 1.5708, "interpolation": "step" },
+        { "row": 64, "value": 1.5708, "interpolation": "linear" },
+        { "row": 80, "value": 1.2566, "interpolation": "linear" },
+        { "row": 96, "value": 1.0472, "interpolation": "linear" }
+      ]
+    },
+    {
+      "name": "morph",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "ease-in-out" },
+        { "row": 16, "value": 0, "interpolation": "ease-in-out" },
+        { "row": 64, "value": 1, "interpolation": "smooth" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "dots", "type": "generator", "impl": "dot-matrix", "config": { "shape": "sphere", "morphTarget": "text", "text": "OVERSCAN", "morphProgress": { "track": "morph" }, "count": 1600, "rotationX": 0, "rotationY": { "track": "spin" }, "rotationZ": 0, "pointSize": 2, "fov": 520 } },
+      { "id": "glow", "type": "modifier", "impl": "glow", "config": { "radius": 3, "strength": 0.6 } }
+    ],
+    "edges": [
+      { "from": { "node": "dots", "output": "color" }, "to": { "node": "glow", "input": "in" } }
+    ],
+    "outputs": { "terminal": "glow", "browser": "glow", "export": "glow" }
+  }
+}

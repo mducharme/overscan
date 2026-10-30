@@ -1,0 +1,19 @@
+{
+  "id": "showcase-voxel",
+  "title": "Showcase · Voxel flight",
+  "duration": 6,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "vox", "type": "generator", "impl": "voxel-landscape", "config": { "speed": 2.2 } }
+    ],
+    "edges": [
+
+    ],
+    "outputs": { "terminal": "vox", "browser": "vox", "export": "vox" }
+  }
+}

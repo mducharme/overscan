@@ -1,0 +1,22 @@
+{
+  "id": "showcase-metaballs",
+  "title": "Showcase · Mirrored metaballs",
+  "duration": 6,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "meta", "type": "generator", "impl": "metaballs", "config": { "count": 7, "speed": 1.4, "glow": 0.7, "threshold": 0.4, "palette": [[20, 0, 50], [90, 20, 170], [210, 50, 200], [255, 110, 150], [255, 190, 90]] } },
+      { "id": "mirror", "type": "modifier", "impl": "mirror", "config": { "mode": "horizontal" } },
+      { "id": "glow", "type": "modifier", "impl": "glow", "config": { "radius": 4, "strength": 0.5 } }
+    ],
+    "edges": [
+      { "from": { "node": "meta", "output": "color" }, "to": { "node": "mirror", "input": "in" } },
+      { "from": { "node": "mirror", "output": "color" }, "to": { "node": "glow", "input": "in" } }
+    ],
+    "outputs": { "terminal": "glow", "browser": "glow", "export": "glow" }
+  }
+}

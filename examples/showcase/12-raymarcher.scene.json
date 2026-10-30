@@ -1,0 +1,20 @@
+{
+  "id": "showcase-raymarcher",
+  "title": "Showcase · Raymarched monument",
+  "duration": 6,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "rm", "type": "generator", "impl": "raymarcher", "config": { "fogColor": "#02050b", "cameraPos": [0, 0.25, 3.4], "scenePath": "../shaders/raymarcher-monument.glsl" } },
+      { "id": "grade", "type": "modifier", "impl": "glow", "config": { "radius": 3, "strength": 0.7 } }
+    ],
+    "edges": [
+      { "from": { "node": "rm", "output": "color" }, "to": { "node": "grade", "input": "in" } }
+    ],
+    "outputs": { "terminal": "grade", "browser": "grade", "export": "grade" }
+  }
+}

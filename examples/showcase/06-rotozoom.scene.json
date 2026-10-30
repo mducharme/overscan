@@ -1,0 +1,30 @@
+{
+  "id": "showcase-rotozoom",
+  "title": "Showcase · Rotozoom resolving",
+  "duration": 6,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "pixels",
+      "keys": [
+        { "row": 0, "value": 18, "interpolation": "ease-out" },
+        { "row": 40, "value": 1, "interpolation": "step" },
+        { "row": 72, "value": 1, "interpolation": "ease-in" },
+        { "row": 96, "value": 14, "interpolation": "smooth" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "roto", "type": "generator", "impl": "rotozoom", "config": { "rotationSpeed": 1.2, "zoomSpeed": 1.4, "zoomRange": [0.35, 1.6] } },
+      { "id": "pixels", "type": "modifier", "impl": "pixelate", "config": { "size": { "track": "pixels" } } }
+    ],
+    "edges": [
+      { "from": { "node": "roto", "output": "color" }, "to": { "node": "pixels", "input": "in" } }
+    ],
+    "outputs": { "terminal": "pixels", "browser": "pixels", "export": "pixels" }
+  }
+}

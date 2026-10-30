@@ -1,0 +1,54 @@
+{
+  "id": "showcase-copper",
+  "title": "Showcase · Copper and sine scroller",
+  "duration": 6,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "beat",
+      "keys": [
+        { "row": 0, "value": 0.35, "interpolation": "ease-out" },
+        { "row": 4, "value": 0, "interpolation": "step" },
+        { "row": 8, "value": 0.35, "interpolation": "ease-out" },
+        { "row": 12, "value": 0, "interpolation": "step" },
+        { "row": 16, "value": 0.35, "interpolation": "ease-out" },
+        { "row": 20, "value": 0, "interpolation": "step" },
+        { "row": 24, "value": 0.35, "interpolation": "ease-out" },
+        { "row": 28, "value": 0, "interpolation": "step" },
+        { "row": 32, "value": 0.35, "interpolation": "ease-out" },
+        { "row": 36, "value": 0, "interpolation": "step" },
+        { "row": 40, "value": 0.35, "interpolation": "ease-out" },
+        { "row": 44, "value": 0, "interpolation": "step" },
+        { "row": 48, "value": 0.35, "interpolation": "ease-out" },
+        { "row": 52, "value": 0, "interpolation": "step" },
+        { "row": 56, "value": 0.35, "interpolation": "ease-out" },
+        { "row": 60, "value": 0, "interpolation": "step" },
+        { "row": 64, "value": 0.35, "interpolation": "ease-out" },
+        { "row": 68, "value": 0, "interpolation": "step" },
+        { "row": 72, "value": 0.35, "interpolation": "ease-out" },
+        { "row": 76, "value": 0, "interpolation": "step" },
+        { "row": 80, "value": 0.35, "interpolation": "ease-out" },
+        { "row": 84, "value": 0, "interpolation": "step" },
+        { "row": 88, "value": 0.35, "interpolation": "ease-out" },
+        { "row": 92, "value": 0, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "bars", "type": "generator", "impl": "copperbars", "config": { "count": 12, "speed": 1.4, "barHeight": 9, "amplitude": 0.42 } },
+      { "id": "scroll", "type": "generator", "impl": "scroller", "config": { "text": "  OVERSCAN PRESENTS SIXTEEN EFFECTS IN NINETY SECONDS  ", "fontSize": 34, "speed": 60, "initialScroll": 260, "waveAmplitude": 24, "waveFrequency": 0.5, "waveSpeed": 3, "color": "#ffffff" } },
+      { "id": "blend", "type": "compositor", "impl": "alpha-blend", "config": { "opacity": 1 } },
+      { "id": "flash", "type": "modifier", "impl": "palette-flash", "config": { "color": "#ffffff", "strength": { "track": "beat" }, "blendMode": "additive" } }
+    ],
+    "edges": [
+      { "from": { "node": "bars", "output": "color" }, "to": { "node": "blend", "input": "base" } },
+      { "from": { "node": "scroll", "output": "color" }, "to": { "node": "blend", "input": "overlay" } },
+      { "from": { "node": "blend", "output": "color" }, "to": { "node": "flash", "input": "in" } }
+    ],
+    "outputs": { "terminal": "flash", "browser": "flash", "export": "flash" }
+  }
+}

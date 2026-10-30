@@ -1,0 +1,22 @@
+{
+  "id": "showcase-balls",
+  "title": "Showcase · Vector balls",
+  "duration": 6,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "floor", "type": "generator", "impl": "checkerboard-floor", "config": { "color1": "#3a1d6e", "color2": "#0b0620", "skyColor": "#020108", "fogColor": "#0b0620", "horizon": 0.55, "scrollSpeed": 0.9, "rotationSpeed": 0.15 } },
+      { "id": "balls", "type": "generator", "impl": "vector-balls", "config": { "count": 26, "shapes": ["cube", "octahedron", "sphere", "helix"], "morphPeriod": 1.5, "radius": 16, "amplitude": 0.3, "palette": [[220, 230, 255], [255, 190, 120], [140, 220, 255]] } },
+      { "id": "blend", "type": "compositor", "impl": "alpha-blend", "config": { "opacity": 1 } }
+    ],
+    "edges": [
+      { "from": { "node": "floor", "output": "color" }, "to": { "node": "blend", "input": "base" } },
+      { "from": { "node": "balls", "output": "color" }, "to": { "node": "blend", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "blend", "browser": "blend", "export": "blend" }
+  }
+}
