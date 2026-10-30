@@ -55,7 +55,7 @@ export const GENERATOR_SCHEMAS_2: NodeSchema[] = [
       camera: { type: 'json', default: { pos: [0, 0, 3], target: [0, 0, 0] }, description: 'Camera as { pos, target }; target sets the look-at point and pos is used when cameraPos is absent.' },
       lightDir: { type: 'vec3', default: [1, 1, -1], description: 'Direction of the light (normalised automatically).' },
       fogColor: { type: 'color', default: '#000000', description: 'Colour rays fade to with distance and on a miss.' },
-      chunkyScale: { type: 'integer', default: 4, min: 1, max: 8, description: 'Pixel block size for the CPU fallback renderer.' },
+      chunkyScale: { type: 'integer', default: 4, min: 1, max: 8, description: 'Pixel block size for the CPU renderer, in 640×360 reference pixels (smaller outputs use smaller blocks).' },
       disableGpu: { type: 'boolean', default: false, description: 'Forces the CPU renderer even when WebGL is available.' },
     },
   },

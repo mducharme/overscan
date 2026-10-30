@@ -1,3 +1,4 @@
+import { VIEWPORT_REF_MIN, viewportMinDim } from '../../viewport-scale.js'
 import {
   requireGlObject,
   resolveAnimatableFloat,
@@ -231,7 +232,9 @@ void main() {
           console.warn(error)
         }
       }
-      renderCpu(out, signal.t, cameraPos, target, lightDir, fogColor, chunkyScale, sceneMap)
+      // chunkyScale is in 640×360 reference pixels: small outputs (terminals) trace every pixel instead of blocks.
+      const chunky = Math.max(1, Math.round((chunkyScale * viewportMinDim(out.width, out.height)) / VIEWPORT_REF_MIN))
+      renderCpu(out, signal.t, cameraPos, target, lightDir, fogColor, chunky, sceneMap)
       if (ctx.gl && out.texture) {
         const gl = ctx.gl
         gl.bindTexture(gl.TEXTURE_2D, out.texture)
