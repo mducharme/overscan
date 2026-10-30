@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { Alert, App as AntApp, ConfigProvider, Spin, theme } from 'antd'
 import { useMemo } from 'react'
 import { GraphPanel } from './components/GraphPanel'
@@ -164,7 +165,7 @@ export default function App(): JSX.Element {
               canUndo={canUndo}
               canRedo={canRedo}
               canDuplicate={Boolean(store.selectedNodeId)}
-              canDelete={Boolean(store.selectedNodeId || store.selectedEdgeId)}
+              canDelete={Boolean(store.selectedNodeId) || Boolean(store.selectedEdgeId)}
               playing={store.playing}
               currentTime={store.currentTime}
               duration={documentState?.duration ?? 0}
@@ -308,17 +309,17 @@ export default function App(): JSX.Element {
                 type="warning"
                 showIcon
                 action={<a onClick={reloadExternalChanges}>Reload</a>}
-                message="External file changes detected."
+                title="External file changes detected."
               />
             )}
             {previewState.lastError && !loading && (
-              <Alert className="studioGlobalAlert" type="error" showIcon message={previewState.lastError} />
+              <Alert className="studioGlobalAlert" type="error" showIcon title={previewState.lastError} />
             )}
             {audioError && !loading && (
-              <Alert className="studioGlobalAlert" type="warning" showIcon message={audioError} />
+              <Alert className="studioGlobalAlert" type="warning" showIcon title={audioError} />
             )}
             {error && !loading && (
-              <Alert className="studioGlobalAlert" type="error" showIcon message={error} />
+              <Alert className="studioGlobalAlert" type="error" showIcon title={error} />
             )}
             {loading && (
               <div className="studioOverlay">

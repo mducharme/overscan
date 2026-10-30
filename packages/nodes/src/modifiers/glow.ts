@@ -1,11 +1,11 @@
 import { BlurGlowModifier, type BlurGlowConfig } from './blur-glow.js'
-import type { AnimatableFloat, Modifier } from '@overscan/types'
+import type { LooseString, AnimatableFloat, Modifier } from '@overscan/types'
 
 export interface GlowConfig {
   radius?: AnimatableFloat
   strength?: AnimatableFloat
   threshold?: AnimatableFloat
-  color?: string | 'auto'
+  color?: LooseString<'auto'>
   passes?: number
 }
 

@@ -29,6 +29,7 @@ class MiniTerminal {
   }
 
   feed(bytes: string): void {
+    // eslint-disable-next-line no-control-regex -- matches ANSI escape sequences
     const re = /\x1b\[([?\d;]*)([A-Za-z])|([^\x1b])/gu
     for (const m of bytes.matchAll(re)) {
       if (m[3] !== undefined) {

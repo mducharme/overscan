@@ -11,7 +11,7 @@ type Image2Sixel = (
   backgroundSelect?: 0 | 1 | 2,
 ) => string
 
-const image2sixel: Image2Sixel = require('sixel').image2sixel
+const image2sixel = (require('sixel') as { image2sixel: Image2Sixel }).image2sixel
 
 /** True sixel stream (quantized palette + band encoding) via jerch/sixel. */
 export function renderSixel(frame: FrameBuffer): string {

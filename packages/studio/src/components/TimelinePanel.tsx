@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { Button, Card, ColorPicker, Input, InputNumber, Modal, Select, Slider, Space, Switch, Tag, Typography } from 'antd'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AudioClip, Demo, DemoModifier, DemoSection, DemoTransition, RocketInterpolation } from '@overscan/types'
@@ -243,7 +244,7 @@ export function TimelinePanel({
     }))
   }
 
-  function transitionLabel(section: DemoSection | undefined, runtimeSection: DemoRuntimeSection<SceneRuntime>): string {
+  function transitionLabel(section: DemoSection | undefined): string {
     const transition = section?.transition
     if (!transition || transition.type === 'cut') return 'Cut'
     const durationLabel = typeof transition.duration === 'number' ? ` ${transition.duration.toFixed(1)}s` : ''
@@ -265,7 +266,7 @@ export function TimelinePanel({
               max={160}
               step={4}
               value={zoom}
-              onChange={value => { setZoom(Number(value)); }}
+              onChange={value => { setZoom(value); }}
               style={{ width: 140 }}
             />
           </Space>
@@ -346,7 +347,7 @@ export function TimelinePanel({
                     setEditingTransitionSectionId(section.id)
                   }}
                 >
-                  {transitionLabel(source, section)}
+                  {transitionLabel(source)}
                 </button>
               </div>
             )
@@ -417,7 +418,7 @@ export function TimelinePanel({
               max={1.5}
               step={0.05}
               value={demoAudio.volume ?? 1}
-              onChange={value => { onUpdateDemoAudio(demoAudio.src ? { ...demoAudio, volume: Number(value) } : undefined); }}
+              onChange={value => { onUpdateDemoAudio(demoAudio.src ? { ...demoAudio, volume: value } : undefined); }}
             />
           </div>
           <div className="timelineAudioControlRow">
@@ -426,7 +427,7 @@ export function TimelinePanel({
           </div>
           {activeSceneAudio && (
             <Typography.Text type="secondary">
-              Active scene overlay: {activeSceneAudio.src} · vol {Number(activeSceneAudio.volume ?? 1).toFixed(2)}
+              Active scene overlay: {activeSceneAudio.src} · vol {(activeSceneAudio.volume ?? 1).toFixed(2)}
             </Typography.Text>
           )}
         </div>
@@ -494,7 +495,7 @@ export function TimelinePanel({
                   onChange={event => { onUpdateSection(section.id, current => ({ ...current, id: event.target.value })); }}
                 />
                 <Button size="small" className="timelineTransitionButton" onClick={() => { setEditingTransitionSectionId(section.id); }}>
-                  Transition: {transitionLabel(source, section)}
+                  Transition: {transitionLabel(source)}
                 </Button>
               </div>
               <div className="timelineSectionMeta">

@@ -350,7 +350,7 @@ async function syncDemoAudio(
 function buildSceneAudioState(
   loader: SceneLoader,
   scenePath: string,
-  scene: import('@overscan/types').Scene,
+  scene: Scene,
   time: number,
   playing: boolean,
   rate: number,

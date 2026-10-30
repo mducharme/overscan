@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { GraphExecutor, validateSceneGraph } from './executor.js'
 import { BufferPoolImpl } from '../buffer/pool.js'
 import { buildSignal } from '../signal/builder.js'
-import type { DemoNode, Generator, NodeContext, FrameBuffer, Signal } from '@overscan/types'
+import type { DemoNode, Generator, NodeContext } from '@overscan/types'
 
 function makeCtx(pool: BufferPoolImpl): NodeContext {
   return {

@@ -1,5 +1,6 @@
 import { drawBitmapTextBlock, measureBitmapText } from '@overscan/text'
 import {
+  type LooseString,
   resolveAnimatableFloat,
   type AnimatableFloat,
   type FrameBuffer,
@@ -10,7 +11,7 @@ import {
 import { scaleFovMultiplier, scaleThickness } from '../../viewport-scale.js'
 
 export interface DotMatrixConfig {
-  shape?: 'sphere' | 'torus' | 'helix' | 'cube' | 'text' | string
+  shape?: LooseString<'sphere' | 'torus' | 'helix' | 'cube' | 'text'>
   text?: string
   font?: string
   count?: number
@@ -19,7 +20,7 @@ export interface DotMatrixConfig {
   rotationZ?: AnimatableFloat
   fov?: AnimatableFloat
   pointSize?: AnimatableFloat
-  color?: string | 'depth'
+  color?: LooseString<'depth'>
   palette?: number[][]
   morphTarget?: string
   morphProgress?: AnimatableFloat

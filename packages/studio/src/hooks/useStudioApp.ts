@@ -3,7 +3,6 @@ import type { AudioClip, BufferPool, Demo, DemoModifier, DemoSection, FrameBuffe
 import {
   BufferPoolBrowser,
   createBrowserTimeSource,
-  parseDemoJson,
   parseSceneJson,
   PlaybackClock,
   WebglBufferPool,
@@ -87,7 +86,9 @@ function syncPlayingAudioElement(audio: HTMLAudioElement, time: number): void {
   if (Math.abs(audio.currentTime - targetTime) <= 0.2) return
   try {
     audio.currentTime = targetTime
-  } catch {}
+  } catch {
+    // Seeking can throw before metadata loads; the next sync retries.
+  }
 }
 
 function nodeLayoutStorageKey(filePath: string): string {
@@ -242,7 +243,7 @@ export function useStudioApp() {
         clockRef.current.setRate(playbackRate)
         setCurrentTime(0)
       })
-      .catch(loadError => {
+      .catch((loadError: unknown) => {
         if (cancelled) return
         setError(loadError instanceof Error ? loadError.message : String(loadError))
       })
@@ -396,7 +397,7 @@ export function useStudioApp() {
             .then(() => {
               if (!cancelled) setAudioError(null)
             })
-            .catch(error => {
+            .catch((error: unknown) => {
               if (!cancelled) {
                 const sourcePath = audio.dataset.sourcePath ?? layer.sourcePath
                 const message = error instanceof Error ? error.message : 'Failed to start Studio audio playback.'
@@ -582,7 +583,7 @@ export function useStudioApp() {
         })
       }
       void frameStep()
-    }).catch(renderError => {
+    }).catch((renderError: unknown) => {
       previewRef.current = {
         ...previewRef.current,
         lastError: renderError instanceof Error ? renderError.message : String(renderError),
@@ -627,7 +628,7 @@ export function useStudioApp() {
   }
 
   function currentDemoText(): string | null {
-    if (!documentState || documentState.fileType !== 'demo' || !documentState.demo) return null
+    if (documentState?.fileType !== 'demo' || !documentState.demo) return null
     return documentState.text
   }
 
@@ -655,11 +656,11 @@ export function useStudioApp() {
     if (documentState.fileType === 'scene' && path === documentState.filePath) {
       void buildSceneDocument(documentState.filePath, scene, text, documentState.mtimeMs)
         .then(next => { setDocumentState(next); })
-        .catch(nextError => { setError(nextError instanceof Error ? nextError.message : String(nextError)); })
+        .catch((nextError: unknown) => { setError(nextError instanceof Error ? nextError.message : String(nextError)); })
       setUnsaved(true)
       return
     }
-    if (activeSection && path === activeSection.scenePath) {
+    if (activeSection?.scenePath === path) {
       void buildSceneDocument(path, scene, text)
         .then(nextSectionDoc => {
           const nextRuntime = nextSectionDoc.sections[0]?.runtime
@@ -681,20 +682,20 @@ export function useStudioApp() {
             [path]: text,
           }))
         })
-        .catch(nextError => { setError(nextError instanceof Error ? nextError.message : String(nextError)); })
+        .catch((nextError: unknown) => { setError(nextError instanceof Error ? nextError.message : String(nextError)); })
       setUnsaved(true)
     }
   }
 
   function updateDemoDocument(nextDemo: Demo): void {
-    if (!documentState || documentState.fileType !== 'demo') return
+    if (documentState?.fileType !== 'demo') return
     const text = `${JSON.stringify(nextDemo, null, 2)}\n`
     void buildDemoDocument(documentState.filePath, nextDemo, text, documentState.mtimeMs)
       .then(next => {
         setDocumentState(next)
         setUnsaved(true)
       })
-      .catch(nextError => { setError(nextError instanceof Error ? nextError.message : String(nextError)); })
+      .catch((nextError: unknown) => { setError(nextError instanceof Error ? nextError.message : String(nextError)); })
   }
 
   function updateDemoAudio(audio: Demo['audio']): void {
@@ -816,7 +817,7 @@ export function useStudioApp() {
           .then(() => {
             setAudioError(null)
           })
-          .catch(error => {
+          .catch((error: unknown) => {
             const sourcePath = audio.dataset.sourcePath ?? layer.sourcePath
             const message = error instanceof Error ? error.message : 'Failed to resume Studio audio playback.'
             setAudioError(`Studio audio failed for '${sourcePath}': ${message}`)
@@ -1043,7 +1044,7 @@ export function useStudioApp() {
       if (updatedScene.graph.outputs[key] === selectedNodeId) {
         const fallback = updatedScene.graph.nodes[0]?.id
         if (fallback) updatedScene.graph.outputs[key] = fallback
-        else delete updatedScene.graph.outputs[key]
+        else updatedScene.graph.outputs = Object.fromEntries(Object.entries(updatedScene.graph.outputs).filter(([sink]) => sink !== key))
       }
     })
     updateScene(updatedScene)
@@ -1058,7 +1059,7 @@ export function useStudioApp() {
     const sourceCatalogItem = getNodeCatalogItem(sourceNode.impl)
     if (!sourceCatalogItem) return
     const duplicate = createDefaultNode(sourceCatalogItem, updatedScene.graph.nodes.map(node => node.id))
-    duplicate.config = JSON.parse(JSON.stringify(sourceNode.config))
+    duplicate.config = structuredClone(sourceNode.config)
     updatedScene.graph.nodes.push(duplicate)
     updateScene(updatedScene)
     const currentPosition = nodePositions[selectedNodeId]
@@ -1175,7 +1176,7 @@ export function useStudioApp() {
         setDocumentState(fresh)
         setMtimeMs(fresh.mtimeMs)
       })
-      .catch(loadError => { setError(loadError instanceof Error ? loadError.message : String(loadError)); })
+      .catch((loadError: unknown) => { setError(loadError instanceof Error ? loadError.message : String(loadError)); })
   }
 
   function openShaderEditor(): void {

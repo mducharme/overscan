@@ -1,6 +1,7 @@
 import { Tiny5x7Font } from '@overscan/text'
 import { DEFAULT_RANDOM_SEED, hash01 } from '../../random.js'
 import {
+  type LooseString,
   resolveAnimatableFloat,
   type AnimatableFloat,
   type FrameBuffer,
@@ -12,7 +13,7 @@ import {
 export interface MatrixRainConfig {
   /** Seed for this node's randomness (default 1); vary it to decorrelate identical nodes. */
   randomSeed?: number
-  charset?: 'katakana' | 'ascii' | 'binary' | 'hex' | string
+  charset?: LooseString<'katakana' | 'ascii' | 'binary' | 'hex'>
   color?: string
   headColor?: string
   speed?: AnimatableFloat

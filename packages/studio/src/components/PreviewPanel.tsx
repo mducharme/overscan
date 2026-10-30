@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { Alert, Button, Card, InputNumber, Space, Tag, Typography } from 'antd'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { PreviewRenderer } from '../store/studio'
@@ -115,7 +116,7 @@ export function PreviewPanel({
               size="small"
               value={resolution?.width}
               min={16}
-              onChange={value => resolution && value && onResolutionChange({ width: value, height: resolution.height })}
+              onChange={value => { if (resolution && value) onResolutionChange({ width: value, height: resolution.height }) }}
             />
             <Button size="small" disabled>w</Button>
           </Space.Compact>
@@ -124,7 +125,7 @@ export function PreviewPanel({
               size="small"
               value={resolution?.height}
               min={16}
-              onChange={value => resolution && value && onResolutionChange({ width: resolution.width, height: value })}
+              onChange={value => { if (resolution && value) onResolutionChange({ width: resolution.width, height: value }) }}
             />
             <Button size="small" disabled>h</Button>
           </Space.Compact>
@@ -138,7 +139,7 @@ export function PreviewPanel({
         </Space>
       </div>
       {previewState.lastError && (
-        <Alert className="previewAlert" type="error" showIcon message={previewState.lastError} />
+        <Alert className="previewAlert" type="error" showIcon title={previewState.lastError} />
       )}
     </Card>
   )

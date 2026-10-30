@@ -25,6 +25,8 @@ export default tseslint.config(
       '@typescript-eslint/no-empty-function':      'off',
       // Render and playback loops are written as `while (true)` with explicit breaks.
       '@typescript-eslint/no-unnecessary-condition': ['error', { allowConstantLoopConditions: true }],
+      // Sinks implement Promise-returning interfaces with async methods so a throw becomes a rejection.
+      '@typescript-eslint/require-await': 'off',
     },
   },
   {

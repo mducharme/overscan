@@ -367,9 +367,11 @@ function buildSceneMap(source: string): (p: [number, number, number], time: numb
     .replace(/^\s*vec3\s+/gm, 'let ')
     .replace(/([A-Za-z_][A-Za-z0-9_]*)\.xz\s*\*=\s*rot\(([^)]+)\);/g, '$1 = rotateXZ($1, $2);')
     // `vec3(...)` may contain one level of nested calls, e.g. vec3(0.0, 1.0 + sin(u_time), 0.0).
-    .replace(/sd(Box|Sphere|Torus)\(\s*([A-Za-z_][A-Za-z0-9_\.]*)\s*-\s*(vec3\((?:[^()]|\([^()]*\))*\))\s*,/g, 'sd$1(sub3($2, $3),')
+    .replace(/sd(Box|Sphere|Torus)\(\s*([A-Za-z_][A-Za-z0-9_.]*)\s*-\s*(vec3\((?:[^()]|\([^()]*\))*\))\s*,/g, 'sd$1(sub3($2, $3),')
 
   try {
+    // Scene code is translated from the scene's own GLSL subset and evaluated as JS on purpose.
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
     const evaluator = new Function(
       'p',
       'time',

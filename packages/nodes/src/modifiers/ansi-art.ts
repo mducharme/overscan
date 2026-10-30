@@ -1,5 +1,5 @@
 import { resolveBitmapFont } from '@overscan/text'
-import type { FrameBuffer, Modifier, NodeContext, Signal } from '@overscan/types'
+import type { FrameBuffer, Modifier, NodeContext } from '@overscan/types'
 
 export interface AnsiArtConfig {
   charset?: 'block' | 'ascii' | 'braille' | 'custom'
@@ -71,7 +71,7 @@ function buildStyle(charset: NonNullable<AnsiArtConfig['charset']>, customChars?
 }
 
 function sampleCells(frame: FrameBuffer, cellsX: number, cellsY: number, cellWidth: number, cellHeight: number): CellSample[] {
-  const cells: CellSample[] = new Array(cellsX * cellsY)
+  const cells = new Array<CellSample>(cellsX * cellsY)
   for (let cy = 0; cy < cellsY; cy++) {
     for (let cx = 0; cx < cellsX; cx++) {
       let r = 0

@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { Handle, Position, type NodeProps } from 'reactflow'
 import { Tag, Typography } from 'antd'
 import type { StudioFlowNodeData, StudioPort } from '../../graph/scene-flow'

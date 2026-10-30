@@ -1,4 +1,5 @@
 import {
+  type LooseString,
   resolveAnimatableFloat,
   type AnimatableFloat,
   type FrameBuffer,
@@ -9,8 +10,8 @@ import {
 } from '@overscan/types'
 
 export interface VoxelLandscapeConfig {
-  heightmap?: string | 'noise'
-  colormap?: string | 'auto'
+  heightmap?: LooseString<'noise'>
+  colormap?: LooseString<'auto'>
   horizon?: AnimatableFloat
   scale?: AnimatableFloat
   speed?: AnimatableFloat

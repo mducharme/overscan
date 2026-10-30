@@ -22,7 +22,7 @@ export interface RenderedFrame {
   signal: Signal
 }
 
-export interface RenderFrameOptions extends ExecutorRenderOptions {}
+export type RenderFrameOptions = ExecutorRenderOptions
 
 export function renderSceneFrame(
   player: ScenePlayer,

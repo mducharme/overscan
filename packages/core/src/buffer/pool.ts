@@ -9,7 +9,7 @@ type CreateCanvas = (width: number, height: number) => {
 
 let createCanvas: CreateCanvas | null = null
 try {
-  createCanvas = require('canvas').createCanvas as CreateCanvas
+  createCanvas = (require('canvas') as { createCanvas: CreateCanvas }).createCanvas
 } catch {
   createCanvas = null
 }
@@ -79,7 +79,8 @@ export class BufferPoolImpl implements BufferPool {
     let inUse = 0
     let free = 0
     for (const e of this.entries.values()) {
-      e.inUse ? inUse++ : free++
+      if (e.inUse) inUse++
+      else free++
     }
     return { inUse, free, total: this.entries.size }
   }

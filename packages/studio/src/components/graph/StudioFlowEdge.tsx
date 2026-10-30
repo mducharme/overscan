@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from 'reactflow'
 
 function StudioEdge({

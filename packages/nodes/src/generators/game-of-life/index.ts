@@ -1,12 +1,12 @@
 import { FixedStepClock } from '../../frame-time.js'
 import { createRng, DEFAULT_RANDOM_SEED } from '../../random.js'
-import { type FrameBuffer, type Generator, type NodeContext, type Signal } from '@overscan/types'
+import { type LooseString, type FrameBuffer, type Generator, type NodeContext, type Signal } from '@overscan/types'
 import { VIEWPORT_REF_HEIGHT, VIEWPORT_REF_WIDTH } from '../../viewport-scale.js'
 
 export interface GameOfLifeConfig {
   /** Seed for this node's randomness (default 1); vary it to decorrelate identical nodes. */
   randomSeed?: number
-  seed?: 'random' | 'glider' | 'rPentomino' | string
+  seed?: LooseString<'random' | 'glider' | 'rPentomino'>
   seedDensity?: number
   aliveColor?: string
   deadColor?: string

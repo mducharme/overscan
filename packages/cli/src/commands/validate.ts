@@ -1,7 +1,8 @@
+import type { Scene } from '@overscan/types'
 import { SceneLoader, validateSceneGraph } from '@overscan/core'
 import { buildRegistry } from '../node-registry.js'
 
-function validateSceneOrThrow(scene: import('@overscan/types').Scene, label?: string): void {
+function validateSceneOrThrow(scene: Scene, label?: string): void {
   const registry = buildRegistry(scene.graph.nodes)
   validateSceneGraph(scene.graph, registry)
   if (scene.graph.nodes.length === 0) {

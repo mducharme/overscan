@@ -89,9 +89,9 @@ export function applyModifierStack(
 ): ReturnType<BufferPool['acquire']> {
   if (modifiers.length === 0) return buffer
   let current = buffer
-  for (let index = 0; index < modifiers.length; index += 1) {
+  for (const modifier of modifiers) {
     const next = pool.acquire(current.width, current.height)
-    modifiers[index]!.apply(ctx, current, next, signal)
+    modifier.apply(ctx, current, next, signal)
     if (current !== buffer) pool.release(current)
     current = next
   }

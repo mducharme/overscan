@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { Alert, Button, Card, Empty, Input, Modal, Select, Space, Tag, Tooltip, Typography } from 'antd'
 import {
   Background,
@@ -193,7 +194,7 @@ export function GraphPanel({
               <MiniMap
                 pannable
                 zoomable
-                nodeColor={node => String(node.data.color)}
+                nodeColor={node => String((node.data as { color?: unknown }).color)}
                 maskColor="rgba(0, 0, 0, 0.65)"
               />
               <Controls showInteractive={false} />
@@ -202,7 +203,7 @@ export function GraphPanel({
           </ReactFlowProvider>
         </div>
       )}
-      {graphError && <Alert className="previewAlert" type="warning" showIcon message={graphError} />}
+      {graphError && <Alert className="previewAlert" type="warning" showIcon title={graphError} />}
       <Modal
         title="Add node"
         open={paletteOpen}

@@ -18,7 +18,7 @@ describe('detectMode', () => {
   afterEach(() => {
     for (const k of Object.keys(snapshot)) {
       const v = snapshot[k]
-      if (v === undefined) delete process.env[k]
+      if (v === undefined) Reflect.deleteProperty(process.env, k)
       else process.env[k] = v
     }
   })

@@ -5,6 +5,7 @@ import { renderAnsi } from './ansi.js'
 import { renderSixel } from './sixel.js'
 
 function stripAnsi(s: string): string {
+  // eslint-disable-next-line no-control-regex -- matches ANSI escape sequences
   return s.replace(/\x1b\[[0-9;]*m/g, '')
 }
 

@@ -43,11 +43,13 @@ function escapeTerminalChar(char: string): string {
 }
 
 export function ansiToHtml(input: string): string {
+  // eslint-disable-next-line no-control-regex -- matches ANSI escape sequences
   const pieces = input.split(/(\x1b\[[0-9;]*m)/g)
   let fg = ''
   let bg = ''
   let html = ''
   for (const piece of pieces) {
+    // eslint-disable-next-line no-control-regex -- matches ANSI escape sequences
     const match = /^\x1b\[([0-9;]*)m$/.exec(piece)
     if (match) {
       const parts = (match[1] ?? '').split(';').filter(Boolean).map(Number)
@@ -179,9 +181,9 @@ export function parseConfigValue(value: unknown, raw: string): unknown {
 
 export function toHexColor(value: unknown): string | null {
   if (!Array.isArray(value) || value.length < 3) return null
-  const [r, g, b] = value
-  if (![r, g, b].every(channel => typeof channel === 'number' && Number.isFinite(channel))) return null
-  return `#${[r, g, b].map(channel => Math.max(0, Math.min(255, Math.round(channel))).toString(16).padStart(2, '0')).join('')}`
+  const rgb = (value as unknown[]).slice(0, 3)
+  if (!rgb.every((channel): channel is number => typeof channel === 'number' && Number.isFinite(channel))) return null
+  return `#${rgb.map(channel => Math.max(0, Math.min(255, Math.round(channel))).toString(16).padStart(2, '0')).join('')}`
 }
 
 export function fromHexColor(hex: string): [number, number, number] {

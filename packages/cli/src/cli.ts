@@ -2,7 +2,7 @@
 import { parseArgs } from 'node:util'
 import type { TerminalMode } from '@overscan/types'
 import type { RunOptions } from './commands/run.js'
-import type { ExportKind } from './commands/export.js'
+import type { ExportKind, TerminalExportGrid } from './commands/export.js'
 
 const { positionals, values } = parseArgs({
   allowPositionals: true,
@@ -81,7 +81,7 @@ if (values.help || !command) {
 
 function oneOf<T extends string>(label: string, choices: Record<T, string | undefined>): T | undefined {
   const defined = (Object.entries(choices) as [T, string | undefined][])
-    .filter(([, v]) => v !== undefined && String(v).length > 0)
+    .filter(([, v]) => v !== undefined && v.length > 0)
   if (defined.length > 1) {
     console.error(`overscan ${label}: specify only one of ${Object.keys(choices).join(', ')}`)
     process.exit(1)
@@ -118,12 +118,12 @@ switch (command) {
     } else if (rawMode !== undefined) {
       console.warn(`overscan: ignoring unknown --mode ${String(rawMode)} (use sixel, ansi, or ascii)`)
     }
-    if (values.fps !== undefined) runOpts.fpsCap = parseInt(String(values.fps), 10)
-    if (values.frames !== undefined) runOpts.maxFrames = parseInt(String(values.frames), 10)
-    if (values.seek !== undefined) runOpts.seek = parseFloat(String(values.seek))
-    if (values.rate !== undefined) runOpts.rate = parseFloat(String(values.rate))
+    if (values.fps !== undefined) runOpts.fpsCap = parseInt(values.fps, 10)
+    if (values.frames !== undefined) runOpts.maxFrames = parseInt(values.frames, 10)
+    if (values.seek !== undefined) runOpts.seek = parseFloat(values.seek)
+    if (values.rate !== undefined) runOpts.rate = parseFloat(values.rate)
     if (values.profile !== undefined) {
-      const pe = parseInt(String(values.profile), 10)
+      const pe = parseInt(values.profile, 10)
       runOpts.profileEvery = Number.isFinite(pe) && pe > 0 ? pe : 30
     }
     try {
@@ -170,7 +170,7 @@ switch (command) {
       }
     }
 
-    let terminal: import('./commands/export.js').TerminalExportGrid | undefined
+    let terminal: TerminalExportGrid | undefined
     if (useTerminal) {
       const cols = parseInt(String(values['terminal-cols']), 10)
       const rows = parseInt(String(values['terminal-rows']), 10)
@@ -179,15 +179,15 @@ switch (command) {
         process.exit(1)
       }
       const rawTm = values['terminal-mode']
-      const tmStr = Array.isArray(rawTm) ? rawTm[0] : rawTm
+      const tmStr = rawTm
       const tmNorm = typeof tmStr === 'string' ? tmStr.trim().toLowerCase() : 'ansi'
       let mode: TerminalMode = 'ansi'
       if (tmNorm === 'sixel' || tmNorm === 'ansi' || tmNorm === 'ascii') mode = tmNorm
       else if (rawTm !== undefined) {
-        console.warn(`overscan export: unknown --terminal-mode ${String(rawTm)}; using ansi`)
+        console.warn(`overscan export: unknown --terminal-mode ${rawTm}; using ansi`)
       }
-      const cw = values['cell-width'] !== undefined ? parseInt(String(values['cell-width']), 10) : 8
-      const ch = values['cell-height'] !== undefined ? parseInt(String(values['cell-height']), 10) : 16
+      const cw = values['cell-width'] !== undefined ? parseInt(values['cell-width'], 10) : 8
+      const ch = values['cell-height'] !== undefined ? parseInt(values['cell-height'], 10) : 16
       if (!Number.isFinite(cw) || !Number.isFinite(ch) || cw < 1 || ch < 1) {
         console.error('overscan export: --cell-width and --cell-height must be positive integers')
         process.exit(1)
@@ -203,7 +203,7 @@ switch (command) {
         cellHeight: ch,
         ...((): { sixelPixelScale?: number } => {
           if (sixelScaleRaw === undefined) return {}
-          const sp = parseInt(String(sixelScaleRaw), 10)
+          const sp = parseInt(sixelScaleRaw, 10)
           return Number.isFinite(sp) && sp >= 1 ? { sixelPixelScale: sp } : {}
         })(),
         ...(typeof af === 'string' && af.length > 0 ? { asciiFontPath: af } : {}),
@@ -217,7 +217,7 @@ switch (command) {
         kind,
         output,
         ...(values.frames !== undefined
-          ? { maxFrames: parseInt(String(values.frames), 10) }
+          ? { maxFrames: parseInt(values.frames, 10) }
           : {}),
         ...(terminal !== undefined ? { terminal } : {}),
       })

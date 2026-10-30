@@ -61,7 +61,7 @@ export function createTerminalAudioController(): TerminalAudioController | null 
       track.last = { ...next }
       return
     }
-    const sourceChanged = !previous || previous.source !== next.source
+    const sourceChanged = previous?.source !== next.source
     const drifted = !previous || Math.abs(previous.time - next.time) > DRIFT_TOLERANCE_SECONDS
     if (sourceChanged) {
       await sendCommand(track.client, ['loadfile', next.source, 'replace'])
@@ -272,7 +272,9 @@ async function terminateChildProcess(child: ChildProcess): Promise<void> {
       killer.once('error', () => {
         try {
           child.kill()
-        } catch {}
+        } catch {
+          // Already exited.
+        }
         resolve()
       })
     })
@@ -280,5 +282,7 @@ async function terminateChildProcess(child: ChildProcess): Promise<void> {
   }
   try {
     child.kill('SIGKILL')
-  } catch {}
+  } catch {
+    // Already exited.
+  }
 }

@@ -106,7 +106,8 @@ export interface Generator {
   readonly id: string
   resolution?: { width: number; height: number }
   renderers: ('gpu' | 'cpu')[]
-  config: Record<string, AnimatableFloat | unknown>
+  /** Values are AnimatableFloat or any other JSON the node understands. */
+  config: Record<string, unknown>
   init(ctx: NodeContext): void
   render(ctx: NodeContext, out: FrameBuffer, signal: Signal): void
   glsl?: string
@@ -120,7 +121,8 @@ export interface Modifier {
   readonly type: 'modifier'
   readonly id: string
   readonly persistent: boolean   // true = owns permanent buffer (feedback, fire)
-  config: Record<string, AnimatableFloat | unknown>
+  /** Values are AnimatableFloat or any other JSON the node understands. */
+  config: Record<string, unknown>
   init(ctx: NodeContext): void
   apply(ctx: NodeContext, input: FrameBuffer, out: FrameBuffer, signal: Signal): void
   // Exposed as a function not a program — enables GPU pass merging
@@ -151,7 +153,8 @@ export interface Compositor {
   readonly inputs: readonly string[]
   mode: BlendMode
   opacity: AnimatableFloat
-  config: Record<string, AnimatableFloat | unknown>
+  /** Values are AnimatableFloat or any other JSON the node understands. */
+  config: Record<string, unknown>
   init(ctx: NodeContext): void
   compose(
     ctx: NodeContext,
@@ -190,7 +193,8 @@ export interface SceneNode {
   id: string
   type: 'generator' | 'modifier' | 'compositor' | 'signal'
   impl: string
-  config: Record<string, AnimatableFloat | unknown>
+  /** Values are AnimatableFloat or any other JSON the node understands. */
+  config: Record<string, unknown>
   resolution?: { width: number; height: number }
   startTime?: number
   endTime?: number
@@ -296,7 +300,8 @@ export interface DemoModifier {
   id: string
   impl: string
   enabled?: boolean
-  config: Record<string, AnimatableFloat | unknown>
+  /** Values are AnimatableFloat or any other JSON the node understands. */
+  config: Record<string, unknown>
 }
 
 export interface Demo {
@@ -331,7 +336,7 @@ export interface TerminalSinkOptions {
 }
 
 /** Resolve a literal, Rocket track ref, or signal-node output ref to a number. */
-export function resolveAnimatableFloat(v: AnimatableFloat | unknown, signal: Signal): number {
+export function resolveAnimatableFloat(v: unknown, signal: Signal): number {
   if (typeof v === 'number' && Number.isFinite(v)) return v
   if (v && typeof v === 'object') {
     if ('track' in v && typeof (v).track === 'string') {
@@ -364,3 +369,9 @@ export function requireGlObject<T>(value: T | null, message: string): T {
   if (value === null) throw new Error(message)
   return value
 }
+
+/**
+ * A string that suggests known values to editors but accepts any string: `LooseString<'a' | 'b'>`.
+ * (Plain `'a' | 'b' | string` collapses to `string` and loses the suggestions.)
+ */
+export type LooseString<T extends string> = T | (string & Record<never, never>)

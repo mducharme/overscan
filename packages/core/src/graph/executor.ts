@@ -341,7 +341,7 @@ function decorateNodeError(nodeId: string, error: unknown): Error {
 }
 
 function fillErrorPlaceholder(out: FrameBuffer, nodeId: string): void {
-  const hash = [...nodeId].reduce((sum, ch) => ((sum * 33) ^ ch.charCodeAt(0)) >>> 0, 5381)
+  const hash = Array.from(nodeId).reduce((sum, ch) => ((sum * 33) ^ ch.charCodeAt(0)) >>> 0, 5381)
   for (let y = 0; y < out.height; y++) {
     for (let x = 0; x < out.width; x++) {
       const i = (y * out.width + x) * 4

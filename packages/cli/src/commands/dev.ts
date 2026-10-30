@@ -1,7 +1,17 @@
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createReadStream } from 'node:fs'
 import { readFile, stat, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+
+type AsyncHandler = (req: IncomingMessage, res: ServerResponse) => Promise<void>
+
+/** Connect ignores the promise an async handler returns; route its rejections to `next`. */
+function handleAsync(handler: AsyncHandler) {
+  return (req: IncomingMessage, res: ServerResponse, next: (error?: unknown) => void): void => {
+    handler(req, res).catch(next)
+  }
+}
 import { createServer, type Plugin } from 'vite'
 
 function studioRoot(): string {
@@ -117,7 +127,7 @@ function makeStudioBridge(filePath: string): Plugin {
   return {
     name: 'overscan-studio-bridge',
     configureServer(server) {
-      server.middlewares.use('/__overscan__/file', async (req, res) => {
+      server.middlewares.use('/__overscan__/file', handleAsync(async (req, res) => {
         if (req.method !== 'GET') {
           res.statusCode = 405
           res.end('Method not allowed')
@@ -132,9 +142,9 @@ function makeStudioBridge(filePath: string): Plugin {
             error: error instanceof Error ? error.message : String(error),
           }))
         }
-      })
+      }))
 
-      server.middlewares.use('/__overscan__/read', async (req, res) => {
+      server.middlewares.use('/__overscan__/read', handleAsync(async (req, res) => {
         if (req.method !== 'GET') {
           res.statusCode = 405
           res.end('Method not allowed')
@@ -156,9 +166,9 @@ function makeStudioBridge(filePath: string): Plugin {
             error: error instanceof Error ? error.message : String(error),
           }))
         }
-      })
+      }))
 
-      server.middlewares.use('/__overscan__/stat', async (req, res) => {
+      server.middlewares.use('/__overscan__/stat', handleAsync(async (req, res) => {
         if (req.method !== 'GET') {
           res.statusCode = 405
           res.end('Method not allowed')
@@ -180,9 +190,9 @@ function makeStudioBridge(filePath: string): Plugin {
             error: error instanceof Error ? error.message : String(error),
           }))
         }
-      })
+      }))
 
-      server.middlewares.use('/__overscan__/media', async (req, res) => {
+      server.middlewares.use('/__overscan__/media', handleAsync(async (req, res) => {
         if (req.method !== 'GET') {
           res.statusCode = 405
           res.end('Method not allowed')
@@ -204,9 +214,9 @@ function makeStudioBridge(filePath: string): Plugin {
             error: error instanceof Error ? error.message : String(error),
           }))
         }
-      })
+      }))
 
-      server.middlewares.use('/__overscan__/asset', async (req, res) => {
+      server.middlewares.use('/__overscan__/asset', handleAsync(async (req, res) => {
         if (req.method !== 'GET') {
           res.statusCode = 405
           res.end('Method not allowed')
@@ -228,9 +238,9 @@ function makeStudioBridge(filePath: string): Plugin {
             error: error instanceof Error ? error.message : String(error),
           }))
         }
-      })
+      }))
 
-      server.middlewares.use('/__overscan__/save', async (req, res) => {
+      server.middlewares.use('/__overscan__/save', handleAsync(async (req, res) => {
         if (req.method !== 'POST') {
           res.statusCode = 405
           res.end('Method not allowed')
@@ -239,7 +249,7 @@ function makeStudioBridge(filePath: string): Plugin {
 
         try {
           const chunks: Uint8Array[] = []
-          for await (const chunk of req) {
+          for await (const chunk of req as AsyncIterable<string | Uint8Array>) {
             chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk)
           }
           const body = Buffer.concat(chunks).toString('utf8')
@@ -260,7 +270,7 @@ function makeStudioBridge(filePath: string): Plugin {
             error: error instanceof Error ? error.message : String(error),
           }))
         }
-      })
+      }))
     },
   }
 }

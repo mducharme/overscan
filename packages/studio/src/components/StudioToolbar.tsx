@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { Badge, Button, Input, InputNumber, Segmented, Select, Space, Switch, Typography } from 'antd'
 import type { PreviewRenderer } from '../store/studio'
 import { formatTime } from '../lib/preview'
@@ -102,7 +103,7 @@ export function StudioToolbar({
         />
         <Button size="small" type={loopEnabled ? 'primary' : 'default'} onClick={onToggleLoop}>Loop</Button>
         <Space.Compact size="small">
-          <InputNumber size="small" value={bpm ?? undefined} onChange={value => value && onBpmChange(value)} />
+          <InputNumber size="small" value={bpm ?? undefined} onChange={value => { if (value) onBpmChange(value) }} />
           <Button size="small" disabled>BPM</Button>
         </Space.Compact>
       </Space>

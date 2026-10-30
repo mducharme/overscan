@@ -1,12 +1,6 @@
 import { z } from 'zod'
 import type { Demo, Scene } from '@overscan/types'
 
-const AnimatableFloatSchema = z.union([
-  z.number(),
-  z.object({ track: z.string() }),
-  z.object({ node: z.string(), output: z.string() }),
-])
-
 const RocketInterpolationSchema = z.enum([
   'step',
   'linear',

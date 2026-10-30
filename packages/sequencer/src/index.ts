@@ -156,13 +156,13 @@ export function hexToRgb(hex: string): [number, number, number] {
   ]
 }
 
-export async function buildDemoRuntimeSections<TScene extends DemoSceneLike, TRuntime>(
+export async function buildDemoRuntimeSections<TRuntime>(
   demo: Demo,
   loadSection: (
     scenePath: string,
     section: DemoSection,
     index: number,
-  ) => Promise<{ scene: TScene; runtime: TRuntime; scenePath?: string }>,
+  ) => Promise<{ scene: DemoSceneLike; runtime: TRuntime; scenePath?: string }>,
 ): Promise<DemoSectionsResult<TRuntime>> {
   const sections: DemoRuntimeSection<TRuntime>[] = []
   let cursor = 0
@@ -174,7 +174,7 @@ export async function buildDemoRuntimeSections<TScene extends DemoSceneLike, TRu
     const loaded = await loadSection(section.scene, section, i)
     const scene = loaded.scene
     if (baseFps === 0) baseFps = scene.fps
-    if (!baseResolution) baseResolution = scene.resolution
+    baseResolution ??= scene.resolution
     if (scene.fps !== baseFps) {
       throw new Error(`Demo section '${section.id}' fps ${scene.fps} does not match ${baseFps}`)
     }
@@ -374,13 +374,13 @@ function sampleBuffer(
   return [data[i] ?? 0, data[i + 1] ?? 0, data[i + 2] ?? 0, data[i + 3] ?? 255]
 }
 
-function syncBufferToCpu<TBuffer extends DemoBufferLike>(gl: WebGL2RenderingContext | null, buffer: TBuffer): void {
+function syncBufferToCpu(gl: WebGL2RenderingContext | null, buffer: DemoBufferLike): void {
   if (!gl || !buffer.fbo) return
   gl.bindFramebuffer(gl.FRAMEBUFFER, buffer.fbo)
   gl.readPixels(0, 0, buffer.width, buffer.height, gl.RGBA, gl.UNSIGNED_BYTE, buffer.data)
 }
 
-function syncBufferToTexture<TBuffer extends DemoBufferLike>(gl: WebGL2RenderingContext | null, buffer: TBuffer): void {
+function syncBufferToTexture(gl: WebGL2RenderingContext | null, buffer: DemoBufferLike): void {
   if (!gl || !buffer.texture) return
   gl.bindTexture(gl.TEXTURE_2D, buffer.texture)
   gl.texImage2D(

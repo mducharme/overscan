@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { Button, Card, Collapse, ColorPicker, Descriptions, Empty, Form, Input, InputNumber, Select, Space, Switch, Tabs, Tag, Typography } from 'antd'
 import type { Scene, SceneEdge, SceneNode } from '@overscan/types'
 import { getConfigFieldHint } from '../graph/node-catalog'
@@ -22,7 +23,6 @@ export function InspectorPanel({
   signalOptions,
   readOnly,
   onClear,
-  onSceneChange,
   onSceneFieldChange,
   onNodeConfigChange,
   onNodeRename,
@@ -87,7 +87,7 @@ export function InspectorPanel({
       )
     }
     if (hint === 'number' || hint === 'animatable') {
-      const currentNumber = typeof value === 'number' ? value : isAnimatableValue(value) ? Number((value as { track?: string }).track ? 0 : 0) : 0
+      const currentNumber = typeof value === 'number' ? value : 0
       return (
         <Space.Compact block>
           <InputNumber
@@ -102,9 +102,9 @@ export function InspectorPanel({
               style={{ width: 170 }}
               value={
                 typeof value === 'object' && value && 'node' in value && 'output' in value
-                  ? `${value.node}.${value.output}`
+                  ? `${String(value.node)}.${String(value.output)}`
                   : typeof value === 'object' && value && 'track' in value
-                    ? `track:${value.track}`
+                    ? `track:${String(value.track)}`
                     : 'literal'
               }
               onChange={next => {
@@ -138,7 +138,7 @@ export function InspectorPanel({
     if (hint === 'glsl') {
       return (
         <Space orientation="vertical" style={{ width: '100%' }}>
-          <Input.TextArea rows={8} value={String(value ?? '')} disabled={readOnly} onChange={event => { onNodeConfigChange(selectedNode.id, key, event.target.value); }} />
+          <Input.TextArea rows={8} value={typeof value === 'string' ? value : ''} disabled={readOnly} onChange={event => { onNodeConfigChange(selectedNode.id, key, event.target.value); }} />
           <Button size="small" onClick={onOpenShaderEditor}>Open shader editor</Button>
         </Space>
       )
@@ -165,14 +165,14 @@ export function InspectorPanel({
                   disabled={readOnly}
                   onChange={next => { updatePalette(key, value.map((item, itemIndex) =>
                     itemIndex === index ? fromHexColor(next.toHexString()) : item,
-                  ) as PaletteValue); }}
+                  )); }}
                 />
                 <Input
                   value={toHexColor(entry) ?? '#ffffff'}
                   disabled={readOnly}
                   onChange={event => { updatePalette(key, value.map((item, itemIndex) =>
                     itemIndex === index ? fromHexColor(event.target.value) : item,
-                  ) as PaletteValue); }}
+                  )); }}
                 />
                 <Space.Compact>
                   <Button
@@ -201,7 +201,7 @@ export function InspectorPanel({
                     size="small"
                     danger
                     disabled={readOnly || value.length <= 1}
-                    onClick={() => { updatePalette(key, value.filter((_, itemIndex) => itemIndex !== index) as PaletteValue); }}
+                    onClick={() => { updatePalette(key, value.filter((_, itemIndex) => itemIndex !== index)); }}
                   >
                     Remove
                   </Button>
@@ -220,7 +220,7 @@ export function InspectorPanel({
             <Button
               size="small"
               disabled={readOnly}
-              onClick={() => navigator.clipboard.writeText(JSON.stringify(value))}
+              onClick={() => { void navigator.clipboard.writeText(JSON.stringify(value)) }}
             >
               Copy JSON
             </Button>

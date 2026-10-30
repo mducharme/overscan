@@ -10,7 +10,7 @@ export function sampleAsciiCell(
   x: number,
   y: number,
 ): { ch: string; r: number; g: number; b: number } {
-  const { width, height, data } = frame
+  const { width, data } = frame
   const off = (y * width + x) * 4
   const r = data[off] ?? 0
   const g = data[off + 1] ?? 0
