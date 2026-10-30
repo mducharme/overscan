@@ -6,7 +6,7 @@
  * Requires `pnpm build` and Chrome (or CHROME_PATH). Screenshots go to bench-results/studio-smoke/.
  */
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -23,6 +23,32 @@ const CHROME = [
   '/usr/bin/chromium',
   '/usr/bin/chromium-browser',
 ].find(p => p && existsSync(p))
+
+/** A mono 16-bit WAV: a 110 Hz tone pulsing twice a second. */
+function toneWav(seconds, rate = 22_050) {
+  const n = seconds * rate
+  const buf = Buffer.alloc(44 + n * 2)
+  buf.write('RIFF', 0); buf.writeUInt32LE(36 + n * 2, 4); buf.write('WAVEfmt ', 8)
+  buf.writeUInt32LE(16, 16); buf.writeUInt16LE(1, 20); buf.writeUInt16LE(1, 22); buf.writeUInt32LE(rate, 24)
+  buf.writeUInt32LE(rate * 2, 28); buf.writeUInt16LE(2, 32); buf.writeUInt16LE(16, 34); buf.write('data', 36); buf.writeUInt32LE(n * 2, 40)
+  for (let i = 0; i < n; i++) {
+    const t = i / rate
+    buf.writeInt16LE(Math.round(Math.sin(2 * Math.PI * 110 * t) * Math.abs(Math.sin(Math.PI * 2 * t)) * 20_000), 44 + i * 2)
+  }
+  return buf
+}
+
+/** The first showcase sections with a generated soundtrack, written next to the screenshots. */
+function writeAudioDemo() {
+  const dir = join(OUT, 'audio-demo')
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, 'tone.wav'), toneWav(30))
+  const demo = JSON.parse(readFileSync(join(ROOT, 'examples', 'showcase.demo.json'), 'utf8'))
+  demo.audio = 'tone.wav'
+  demo.sections = demo.sections.slice(0, 3).map(s => ({ ...s, scene: `../../../examples/${s.scene}` }))
+  writeFileSync(join(dir, 'audio.demo.json'), JSON.stringify(demo, null, 2))
+  return 'bench-results/studio-smoke/audio-demo/audio.demo.json'
+}
 
 const key = k => `window.dispatchEvent(new KeyboardEvent('keydown', { key: ${JSON.stringify(k)} }))`
 const store = 'window.__overscanStudio.getState()'
@@ -60,12 +86,33 @@ const SCENARIOS = [
       [`${store}.renderError === null || 'render error: ' + ${store}.renderError`, 0],
       [`${store}.pause(); ${store}.seek(0.5); ${key('ArrowRight')}`, 100],
       [`${store}.time === ${store}.document.player.sections[1].start || 'ArrowRight should jump to the next section'`, 0],
+      [`document.querySelectorAll('.tl-section').length === 16 || 'timeline should show 16 sections'`, 0],
+      [`${store}.seek(9)`, 300],
+      [`(() => { const n = document.querySelectorAll('.tl-row--track').length, want = ${store}.document.player.sectionAt(9).scene.tracks.length; return n === want || 'track lanes: ' + n + ', expected ' + want })()`, 0],
+      [`document.querySelectorAll('.tl-transition').length > 0 || 'transitions should be drawn'`, 0],
       [`${store}.play(); ${store}.seek(60)`, 800],
     ],
     checks: [
       ['loads', 's => s.status === "ready"'],
       ['all sections', 's => s.document.player.sections.length === 16'],
       ['no asset problems', 's => s.document.assetProblems.length === 0'],
+      ['no render error', 's => s.renderError === null'],
+    ],
+  },
+  {
+    name: 'audio',
+    file: writeAudioDemo,
+    steps: [
+      [`(() => { window.__plays = []; const play = HTMLMediaElement.prototype.play; HTMLMediaElement.prototype.play = function () { window.__plays.push(this); return play.call(this) }; return true })()`, 1500],
+      [`(document.querySelector('.waveform path')?.getAttribute('d') ?? '').length > 100 || 'waveform not drawn'`, 0],
+      [`${store}.seek(2); ${store}.play()`, 1500],
+      [`(() => { const a = window.__plays[0]; if (!a) return 'audio never started'; if (a.paused) return 'audio paused while playing'; const drift = Math.abs(a.currentTime - ${store}.time); return drift < 0.25 || 'audio drift ' + drift.toFixed(2) + ' s' })()`, 0],
+      [`window.__plays.length === 1 || 'play() called ' + window.__plays.length + ' times'`, 0],
+      [`${store}.pause()`, 200],
+      [`window.__plays[0].paused || 'audio kept playing after pause'`, 0],
+    ],
+    checks: [
+      ['loads', 's => s.status === "ready"'],
       ['no render error', 's => s.renderError === null'],
     ],
   },
@@ -87,7 +134,7 @@ async function startDevServer(file) {
 
 async function withChrome(fn) {
   const port = 9300 + Math.floor(Math.random() * 500)
-  const chrome = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'studio-smoke-'))}`, 'about:blank'], { stdio: 'ignore' })
+  const chrome = spawn(CHROME, ['--headless=new', '--autoplay-policy=no-user-gesture-required', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'studio-smoke-'))}`, 'about:blank'], { stdio: 'ignore' })
   try {
     let wsUrl
     for (let i = 0; i < 50 && !wsUrl; i++) {
@@ -133,6 +180,7 @@ if (!CHROME) {
 mkdirSync(OUT, { recursive: true })
 let failures = 0
 for (const scenario of SCENARIOS) {
+  if (typeof scenario.file === 'function') scenario.file = scenario.file()
   const server = await startDevServer(scenario.file)
   try {
     await withChrome(async ({ send, problems }) => {
