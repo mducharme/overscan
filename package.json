@@ -13,6 +13,7 @@
     "export-example-gifs": "node scripts/export-example-gifs.mjs",
     "validate-examples": "node scripts/validate-examples.mjs",
     "build-examples-html": "node scripts/build-examples-html.mjs",
+    "build-effects-reference": "node scripts/build-effects-reference.mjs",
     "typecheck": "turbo run typecheck",
     "clean":     "turbo run clean"
   },

@@ -17,7 +17,7 @@ pnpm build
 pnpm export-example-gifs
 ```
 
-Full option tables for every `impl` are in [`overscan-effects-catalogue.md`](../overscan-effects-catalogue.md). JSON blocks below are **this repo’s example `config`** only.
+Full option tables for every `impl` are in [`EFFECTS.md`](EFFECTS.md). JSON blocks below are **this repo’s example `config`** only.
 
 ---
 
