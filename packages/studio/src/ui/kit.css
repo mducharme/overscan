@@ -1,0 +1,56 @@
+/* Component kit styles. Class names are prefixed `ui-`. */
+.ui-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-1);
+  height: var(--control-h); padding: 0 var(--space-3);
+  border: 1px solid var(--border); border-radius: var(--radius-m);
+  background: var(--surface-raised); color: var(--text);
+  font: inherit; font-size: var(--text-s); white-space: nowrap; cursor: pointer;
+}
+.ui-button:hover:not(:disabled) { border-color: var(--border-strong); background: #242833; }
+.ui-button:disabled { color: var(--text-faint); cursor: default; }
+.ui-button--primary { background: var(--accent); border-color: var(--accent); color: #1a0d02; font-weight: 600; }
+.ui-button--primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.ui-button--ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
+.ui-button--ghost:hover:not(:disabled) { background: var(--surface-raised); color: var(--text); }
+.ui-button--danger { color: var(--danger); }
+.ui-button--icon { width: var(--control-h); padding: 0; }
+
+.ui-toggle-group { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--radius-m); background: var(--surface-sunken); border: 1px solid var(--border); }
+.ui-toggle-group button {
+  height: calc(var(--control-h) - 6px); padding: 0 var(--space-2);
+  border: 0; border-radius: var(--radius-s); background: transparent;
+  color: var(--text-muted); font: inherit; font-size: var(--text-s); cursor: pointer;
+}
+.ui-toggle-group button:hover { color: var(--text); }
+.ui-toggle-group button[aria-pressed='true'] { background: var(--surface-raised); color: var(--text); box-shadow: inset 0 0 0 1px var(--border-strong); }
+
+.ui-input, .ui-select {
+  height: var(--control-h); min-width: 0; padding: 0 var(--space-2);
+  border: 1px solid var(--border); border-radius: var(--radius-m);
+  background: var(--surface-sunken); color: var(--text); font: inherit; font-size: var(--text-s);
+}
+.ui-input:hover, .ui-select:hover { border-color: var(--border-strong); }
+.ui-input--mono { font-family: var(--font-mono); }
+.ui-input[aria-invalid='true'] { border-color: var(--danger); }
+
+.ui-slider { display: flex; align-items: center; gap: var(--space-2); }
+.ui-slider input[type='range'] { flex: 1; accent-color: var(--accent); }
+.ui-slider .ui-input { width: 72px; text-align: right; }
+
+.ui-color { display: flex; align-items: center; gap: var(--space-2); }
+.ui-color input[type='color'] { width: var(--control-h); height: var(--control-h); padding: 0; border: 1px solid var(--border); border-radius: var(--radius-m); background: none; }
+.ui-color .ui-input { width: 96px; }
+
+.ui-field { display: grid; gap: var(--space-1); }
+.ui-field__label { font-size: var(--text-s); color: var(--text-muted); }
+.ui-field__help { font-size: var(--text-xs); color: var(--text-faint); }
+
+.ui-panel { display: flex; flex-direction: column; min-height: 0; border: 1px solid var(--border); border-radius: var(--radius-l); background: var(--surface); }
+.ui-panel__header { display: flex; align-items: center; gap: var(--space-2); height: 40px; padding: 0 var(--space-3); border-bottom: 1px solid var(--border); }
+.ui-panel__title { font-weight: 600; font-size: var(--text-m); }
+.ui-panel__actions { margin-left: auto; display: flex; gap: var(--space-1); }
+.ui-panel__body { flex: 1; min-height: 0; overflow: auto; }
+
+.ui-notice { padding: var(--space-2) var(--space-3); border-radius: var(--radius-m); font-size: var(--text-s); border: 1px solid; }
+.ui-notice--error { color: var(--danger); border-color: rgba(255, 90, 106, 0.4); background: rgba(255, 90, 106, 0.08); }
+.ui-notice--warning { color: var(--warning); border-color: rgba(255, 194, 75, 0.35); background: rgba(255, 194, 75, 0.07); }

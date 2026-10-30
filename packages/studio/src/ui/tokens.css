@@ -1,0 +1,50 @@
+/* Design tokens for the studio: a dark, low-glare palette with one warm accent. */
+:root {
+  --bg: #0e0f12;
+  --surface: #16181d;
+  --surface-raised: #1d2027;
+  --surface-sunken: #0a0b0d;
+  --border: #2a2e37;
+  --border-strong: #3a3f4b;
+  --text: #e6e8ee;
+  --text-muted: #9097a6;
+  --text-faint: #646b7a;
+  --accent: #ff7a1a;
+  --accent-strong: #ff9447;
+  --accent-soft: rgba(255, 122, 26, 0.14);
+  --danger: #ff5a6a;
+  --warning: #ffc24b;
+  --ok: #4fd18b;
+  --focus: #6aa8ff;
+
+  --radius-s: 4px;
+  --radius-m: 6px;
+  --radius-l: 10px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --text-xs: 11px;
+  --text-s: 12px;
+  --text-m: 13px;
+  --text-l: 15px;
+  --control-h: 28px;
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: var(--text-m) / 1.4 var(--font-ui);
+}
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
