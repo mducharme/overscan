@@ -252,6 +252,9 @@ importers:
       vite:
         specifier: ^5.4.0
         version: 5.4.21(@types/node@20.19.37)
+      vitest:
+        specifier: '*'
+        version: 1.6.1(@types/node@20.19.37)
 
   packages/text:
     devDependencies:
