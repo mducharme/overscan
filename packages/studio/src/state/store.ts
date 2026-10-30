@@ -61,7 +61,7 @@ const initialState: StudioState = {
   playing: false,
   rate: 1,
   loop: true,
-  renderer: 'gl',
+  renderer: 'ansi',
   renderScale: 1,
   renderError: null,
   selectedNodeId: null,

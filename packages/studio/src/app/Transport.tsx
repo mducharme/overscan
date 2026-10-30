@@ -3,11 +3,12 @@ import type { Renderer, RenderScale } from '../state/store'
 import { Button, Select, ToggleGroup } from '../ui/kit'
 import { useStudio, useStudioStore } from './studio-context'
 
+// Terminal previews first: they show what `overscan run` will look like.
 const RENDERERS = [
-  { value: 'gl', label: 'GL', title: 'WebGL: GPU paths where effects have them' },
-  { value: '2d', label: '2D', title: 'CPU rendering on a 2D canvas' },
-  { value: 'ansi', label: 'ANSI', title: 'Terminal half-block preview' },
+  { value: 'ansi', label: 'ANSI', title: 'Terminal half-block preview (as `overscan run` shows it)' },
   { value: 'ascii', label: 'ASCII', title: 'Terminal character preview' },
+  { value: '2d', label: '2D', title: 'CPU rendering on a 2D canvas' },
+  { value: 'gl', label: 'GL', title: 'WebGL: GPU paths where effects have them' },
 ] as const satisfies readonly { value: Renderer; label: string; title: string }[]
 
 const RATES = [0.25, 0.5, 1, 2, 4]
