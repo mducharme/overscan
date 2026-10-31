@@ -2,7 +2,7 @@
 
 > Audiovisual effects in your terminal, written in TypeScript. Open the same scene in the browser when you want a bigger canvas—not the other way around.
 
-Walkthroughs and the node index: **[docs/EXAMPLES.md](docs/EXAMPLES.md)**.
+Every effect with an animated preview: **[docs/EXAMPLES.md](docs/EXAMPLES.md)**; every option of every effect: **[docs/EFFECTS.md](docs/EFFECTS.md)**.
 
 JSON node graphs in TypeScript: frames to the terminal (sixel, ANSI half-blocks, ASCII), **Overscan Studio** in the browser when you want it. **Inspired by** demoscene culture, not a stand-in for it—familiar tooling for people who liked that look. **No assembly required** (every sense).
 

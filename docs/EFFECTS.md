@@ -158,7 +158,7 @@ Ignored (kept for compatibility): `font`.
 | --- | --- | --- | --- | --- |
 | `imageUrl` | image file | — |  | Picture to show (png, jpg, …); without one the text logo is drawn. |
 | `text` | string | `"OVERSCAN"` |  | Logo text, used when there is no image. |
-| `font` | one of (or any string): `tiny5x7`, `press2p`, `share-tech-mono` | `"tiny5x7"` |  | Bitmap font of the logo. |
+| `font` | one of (or any string): `overscan://fonts/Tiny5x7`, `overscan://fonts/Press2P`, `overscan://fonts/ShareTechMono` | `"overscan://fonts/Tiny5x7"` |  | Bitmap font of the logo. |
 | `palette` | palette | `[[255,248,196],[255,176,64],[232,72,1…` |  | Logo fill, top to bottom. |
 | `outline` | integer | `1` | 0 – 4 | Dark outline around the letters, in logo pixels. |
 | `fit` | one of: `contain`, `cover`, `stretch` | `"contain"` |  | How the picture fills the frame before scale: whole picture, whole frame, or stretched. |

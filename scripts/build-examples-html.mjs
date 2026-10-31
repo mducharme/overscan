@@ -141,7 +141,7 @@ const html = `<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Overscan — Examples gallery</title>
-<meta name="description" content="Generator and advanced scene examples with terminal and WebGL GIF previews.">
+<meta name="description" content="Every Overscan effect with an example, previewed in the terminal look and at full resolution.">
 <style>${css}</style>
 </head>
 <body>
