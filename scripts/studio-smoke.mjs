@@ -90,6 +90,11 @@ const SCENARIOS = [
       [`${store}.seek(9)`, 300],
       [`(() => { const n = document.querySelectorAll('.tl-row--track').length, want = ${store}.document.player.sectionAt(9).scene.tracks.length; return n === want || 'track lanes: ' + n + ', expected ' + want })()`, 0],
       [`document.querySelectorAll('.tl-transition').length > 0 || 'transitions should be drawn'`, 0],
+      [`(() => { const n = document.querySelectorAll('.react-flow__node').length, want = ${store}.document.player.sectionAt(9).scene.graph.nodes.length + 1; return n === want || 'graph nodes: ' + n + ', expected ' + want })()`, 0],
+      [`document.querySelector('.react-flow__node:not([data-id="__output__"])').dispatchEvent(new MouseEvent('click', { bubbles: true }))`, 300],
+      [`(${store}.selectedNodeId !== null && document.querySelector('.details') !== null) || 'clicking a graph node should select and inspect it'`, 0],
+      [key('Escape'), 100],
+      [`${store}.selectedNodeId === null || 'Esc should clear the selection'`, 0],
       [`${store}.play(); ${store}.seek(60)`, 800],
     ],
     checks: [
