@@ -50,6 +50,23 @@ describe('loadDocument', () => {
     expect(render(doc, 30)?.buffer.data.some(v => v > 0)).toBe(true)
   })
 
+  it('tracks the demo file and every section scene', async () => {
+    const doc = await loadDocument(fsBridge, join(EXAMPLES, 'showcase.demo.json'))
+    const paths = Object.keys(doc.files)
+    expect(paths).toContain(join(EXAMPLES, 'showcase.demo.json'))
+    expect(paths.filter(p => p.endsWith('.scene.json')).length).toBeGreaterThan(10)
+  })
+
+  it('builds from edited files without touching what was saved', async () => {
+    const path = join(EXAMPLES, 'generators', 'plasma.scene.json')
+    const disk = await loadDocument(fsBridge, path)
+    const file = disk.files[path]!
+    const text = file.text.replace(/"duration": [\d.]+/, '"duration": 3')
+    const doc = await loadDocument(fsBridge, path, { files: { [path]: { ...file, text } } })
+    expect(doc.player.duration).toBe(3)
+    expect(doc.files[path]).toEqual({ ...file, text })
+  })
+
   it('loads shader assets relative to each section, with no asset problems', async () => {
     const doc = await loadDocument(fsBridge, join(EXAMPLES, 'showcase.demo.json'))
     expect(doc.assetProblems).toEqual([])

@@ -20,7 +20,7 @@ function fakeDocument(filePath: string, duration = 10): StudioDocument {
     updateScene: () => Promise.resolve(),
     destroy: vi.fn(),
   }
-  return { kind: 'scene', filePath, text: '{}', mtimeMs: 0, scene: null, demo: null, player, assetProblems: [], sceneFiles: {} }
+  return { kind: 'scene', filePath, text: '{}', mtimeMs: 0, scene: null, demo: null, player, assetProblems: [], files: {} }
 }
 
 describe('studio store', () => {
@@ -113,7 +113,7 @@ function editableDocument(path = '/p/plasma.scene.json'): { document: StudioDocu
     updates,
     document: {
       kind: 'scene', filePath: path, text, mtimeMs: 5, scene, demo: null, player, assetProblems: [],
-      sceneFiles: { [path]: { path, text, savedText: text, mtimeMs: 5 } },
+      files: { [path]: { path, text, savedText: text, mtimeMs: 5 } },
     },
   }
 }
@@ -124,12 +124,12 @@ describe('editing', () => {
     const store = createStudioStore({ load: async () => document })
     await store.getState().openDocument('/p/plasma.scene.json')
     store.getState().setNodeParam('/p/plasma.scene.json', 'plasma', 'speed', 2.5)
-    const file = store.getState().document!.sceneFiles['/p/plasma.scene.json']!
+    const file = store.getState().document!.files['/p/plasma.scene.json']!
     expect(file.text).toBe(file.savedText.replace('"speed": 1.4', '"speed": 2.5'))
     expect(updates.at(-1)?.graph.nodes[0]?.config.speed).toBe(2.5)
     expect(dirtyFiles(store.getState().document)).toHaveLength(1)
     store.getState().setNodeParam('/p/plasma.scene.json', 'plasma', 'speed', undefined)
-    expect(store.getState().document!.sceneFiles['/p/plasma.scene.json']!.text).not.toContain('"speed"')
+    expect(store.getState().document!.files['/p/plasma.scene.json']!.text).not.toContain('"speed"')
   })
 
   it('saves dirty files, and refuses files changed on disk unless forced', async () => {
@@ -146,7 +146,7 @@ describe('editing', () => {
     await store.getState().save({ force: true })
     expect(save).toHaveBeenCalledWith('/p/plasma.scene.json', expect.stringContaining('"zoom": 3'))
     expect(dirtyFiles(store.getState().document)).toHaveLength(0)
-    expect(store.getState().document!.sceneFiles['/p/plasma.scene.json']!.mtimeMs).toBe(9)
+    expect(store.getState().document!.files['/p/plasma.scene.json']!.mtimeMs).toBe(9)
     expect(store.getState().saveError).toBeNull()
   })
 
@@ -157,5 +157,112 @@ describe('editing', () => {
     store.getState().setNodeParam('/p/plasma.scene.json', 'plasma', 'boom', true)
     await new Promise(r => setTimeout(r, 0))
     expect(store.getState().editError).toContain('cannot build')
+  })
+})
+
+async function openEditable() {
+  const { document, updates } = editableDocument()
+  const load = vi.fn(async () => document)
+  const store = createStudioStore({ load })
+  await store.getState().openDocument('/p/plasma.scene.json')
+  const text = () => store.getState().document!.files['/p/plasma.scene.json']!.text
+  const scene = () => JSON.parse(text()) as Scene
+  return { store, s: store.getState, text, scene, updates, load, original: document.files['/p/plasma.scene.json']!.text }
+}
+const P = '/p/plasma.scene.json'
+
+describe('undo and redo', () => {
+  it('steps back and forward through edits, merging quick edits of the same option', async () => {
+    const { s, text, original } = await openEditable()
+    s().setNodeParam(P, 'plasma', 'speed', 2)
+    s().setNodeParam(P, 'plasma', 'speed', 3)
+    s().setNodeParam(P, 'lens', 'zoom', 1)
+    expect(s().past).toHaveLength(2)
+    s().undo()
+    expect(text()).toContain('"zoom": 2.2')
+    expect(text()).toContain('"speed": 3')
+    s().undo()
+    expect(text()).toBe(original)
+    s().redo()
+    expect(text()).toContain('"speed": 3')
+    // A new edit clears the redo stack.
+    s().setNodeParam(P, 'plasma', 'scale', 1)
+    expect(s().future).toHaveLength(0)
+  })
+
+  it('undoes JSON edits and refuses invalid ones', async () => {
+    const { s, text, original } = await openEditable()
+    expect(s().setFileText(P, '{ nope')).toMatch(/JSON|Unexpected|position/i)
+    expect(text()).toBe(original)
+    expect(s().setFileText(P, original.replace('"chroma": 0.8', '"chroma": 0.1'))).toBeNull()
+    s().undo()
+    expect(text()).toBe(original)
+  })
+
+  it('rebuilds the document when the scene changes shape', async () => {
+    const { s, load, original } = await openEditable()
+    s().setFileText(P, original.replace('"duration": 6', '"duration": 4'))
+    expect(load).toHaveBeenLastCalledWith(P, expect.objectContaining({ [P]: expect.objectContaining({ text: expect.stringContaining('"duration": 4') }) }))
+  })
+})
+
+describe('graph and keyframe edits', () => {
+  it('inserts a modifier after a node, taking over its outputs, and removes it again', async () => {
+    const { s, scene, text, original } = await openEditable()
+    const id = s().addNode(P, 'glow', 'lens')
+    expect(id).toBe('glow')
+    expect(s().selectedNodeId).toBe('glow')
+    expect(scene().graph.outputs.browser).toBe('glow')
+    expect(scene().graph.edges).toContainEqual({ from: { node: 'lens', output: 'color' }, to: { node: 'glow', input: 'in' } })
+    expect(s().addNode(P, 'glow')).toBeNull()
+    expect(s().editError).toContain('select the node')
+    expect(s().addNode(P, 'glow', 'glow')).toBe('glow2')
+    s().removeNode(P, 'glow2')
+    s().removeNode(P, 'glow')
+    expect(scene().graph.outputs.browser).toBe('lens')
+    expect(scene().graph.edges).toHaveLength(1)
+    s().undo()
+    s().undo()
+    s().undo()
+    s().undo()
+    expect(text()).toBe(original)
+  })
+
+  it('bypasses a removed modifier and refuses to remove an output with nothing to fall back on', async () => {
+    const { s, scene } = await openEditable()
+    s().removeNode(P, 'lens')
+    expect(scene().graph.outputs.terminal).toBe('plasma')
+    expect(scene().graph.edges).toEqual([])
+    s().removeNode(P, 'plasma')
+    expect(s().editError).toContain('output')
+    expect(scene().graph.nodes).toHaveLength(1)
+  })
+
+  it('connects ports, replacing what fed the input, and refuses loops and missing inputs', async () => {
+    const { s, scene } = await openEditable()
+    s().addNode(P, 'starfield')
+    s().connect(P, { node: 'starfield', output: 'color' }, { node: 'lens', input: 'in' })
+    expect(scene().graph.edges).toEqual([{ from: { node: 'starfield', output: 'color' }, to: { node: 'lens', input: 'in' } }])
+    s().addNode(P, 'glow', 'lens')
+    s().connect(P, { node: 'glow', output: 'color' }, { node: 'lens', input: 'in' })
+    expect(s().editError).toContain('loop')
+    s().disconnect(P, 0)
+    expect(s().editError).toContain('missing its input')
+    s().setOutput(P, 'starfield')
+    expect(Object.values(scene().graph.outputs)).toEqual(['starfield', 'starfield', 'starfield'])
+  })
+
+  it('adds, moves (between neighbours), retimes and removes keys', async () => {
+    const { s, scene } = await openEditable()
+    s().addKey(P, 'lens.x', { row: 24, value: 0.5, interpolation: 'linear' })
+    expect(scene().tracks[0]!.keys.map(k => k.row)).toEqual([0, 24, 48, 96])
+    s().updateKey(P, 'lens.x', 1, { row: 70, value: 0.6 }, 'drag')
+    expect(scene().tracks[0]!.keys[1]).toEqual({ row: 47, value: 0.6, interpolation: 'linear' })
+    s().updateKey(P, 'lens.x', 1, { interpolation: 'step' })
+    s().removeKey(P, 'lens.x', 1)
+    expect(scene().tracks[0]!.keys.map(k => k.row)).toEqual([0, 48, 96])
+    expect(s().bindNewTrack(P, 'lens', 'zoom', 2.2)).toBe('lens.zoom')
+    expect(scene().graph.nodes[1]!.config.zoom).toEqual({ track: 'lens.zoom' })
+    expect(scene().tracks.at(-1)).toEqual({ name: 'lens.zoom', keys: [{ row: 0, value: 2.2, interpolation: 'linear' }] })
   })
 })

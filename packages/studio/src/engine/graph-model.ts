@@ -81,6 +81,8 @@ export const handleId = {
   bindings: 'bind',
 }
 
+const union = (a: readonly string[], b: readonly string[]): string[] => [...new Set([...a, ...b])]
+
 type Validate = (schema: NodeSchema, config: Record<string, unknown>) => ConfigProblem[]
 
 /**
@@ -99,8 +101,9 @@ export function buildGraphModel(scene: Scene, schemas: Readonly<Record<string, N
     map.set(node, list)
   }
 
-  const imageEdges = [...graph.edges].sort((a, b) => (a.z ?? 0) - (b.z ?? 0))
-  for (const [i, edge] of imageEdges.entries()) {
+  // Ids carry the edge's index in the file, so an edge picked in the graph can be edited.
+  const imageEdges = graph.edges.map((edge, i) => ({ edge, i })).sort((a, b) => (a.edge.z ?? 0) - (b.edge.z ?? 0))
+  for (const { edge, i } of imageEdges) {
     if (!ids.has(edge.from.node) || !ids.has(edge.to.node)) continue
     addPort(outputs, edge.from.node, edge.from.output)
     addPort(inputs, edge.to.node, edge.to.input)
@@ -165,8 +168,10 @@ export function buildGraphModel(scene: Scene, schemas: Readonly<Record<string, N
   const nodes: GraphModelNode[] = graph.nodes.map(node => {
     const schema = schemas[node.impl]
     const bindings = bindingsByNode.get(node.id) ?? []
-    const nodeInputs = inputs.get(node.id) ?? [...(schema?.inputs ?? (node.type === 'modifier' ? ['in'] : []))]
-    const nodeOutputs = outputs.get(node.id) ?? []
+    // Ports in use plus every port the node offers, so unconnected ones can be wired up.
+    const usedInputs = inputs.get(node.id) ?? []
+    const nodeInputs = union(usedInputs, schema?.inputs ?? (node.type === 'modifier' && usedInputs.length === 0 ? ['in'] : []))
+    const nodeOutputs = union(outputs.get(node.id) ?? [], node.type === 'signal' ? schema?.outputs ?? ['value'] : ['color'])
     return {
       id: node.id,
       kind: node.type,

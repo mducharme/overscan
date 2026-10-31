@@ -18,7 +18,7 @@ declare global {
 
 const bridge = createHttpBridge()
 const store = createStudioStore({
-  load: filePath => loadDocument(bridge, filePath, { decodeImage: decodeImageInBrowser }),
+  load: (filePath, files) => loadDocument(bridge, filePath, { decodeImage: decodeImageInBrowser, ...(files ? { files } : {}) }),
   save: (filePath, text) => bridge.save(filePath, text),
   stat: filePath => bridge.stat(filePath),
 })
