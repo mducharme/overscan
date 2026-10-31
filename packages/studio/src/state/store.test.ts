@@ -4,7 +4,9 @@ import type { Player } from '../engine/player'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseSceneJson } from '@overscan/core/browser'
-import type { Scene } from '@overscan/types'
+import type { Demo, Scene } from '@overscan/types'
+import type { Bridge } from '../engine/bridge'
+import { loadDocument } from '../engine/document'
 import { createStudioStore, dirtyFiles, MAX_RATE } from './store'
 
 function fakeDocument(filePath: string, duration = 10): StudioDocument {
@@ -265,4 +267,70 @@ describe('graph and keyframe edits', () => {
     expect(scene().graph.nodes[1]!.config.zoom).toEqual({ track: 'lens.zoom' })
     expect(scene().tracks.at(-1)).toEqual({ name: 'lens.zoom', keys: [{ row: 0, value: 2.2, interpolation: 'linear' }] })
   })
+})
+
+describe('tracks', () => {
+  it('renames a track with its bindings and removes one, keeping its first value', async () => {
+    const { s, scene } = await openEditable()
+    s().renameTrack(P, 'lens.x', 'lens.cx')
+    expect(scene().tracks[0]!.name).toBe('lens.cx')
+    expect(scene().graph.nodes[1]!.config.centerX).toEqual({ track: 'lens.cx' })
+    s().renameTrack(P, 'lens.cx', 'lens.y')
+    expect(s().editError).toContain('already')
+    s().removeTrack(P, 'lens.y')
+    expect(scene().tracks.map(t => t.name)).toEqual(['lens.cx'])
+    expect(scene().graph.nodes[1]!.config.centerY).toBe(0.35)
+    expect(s().addTrack(P, 'lens.cx')).toBe('lens.cx2')
+  })
+})
+
+describe('demo edits', () => {
+  const EXAMPLES = join(__dirname, '../../../../examples')
+  const DEMO = join(EXAMPLES, 'showcase.demo.json')
+  const fsBridge: Bridge = {
+    async read(filePath) {
+      return { filePath, text: readFileSync(filePath, 'utf8'), mtimeMs: 1 }
+    },
+    save: () => Promise.reject(new Error('read-only')),
+    stat: async () => 1,
+    readBinary: async filePath => new Uint8Array(readFileSync(filePath)),
+    mediaUrl: filePath => filePath,
+  }
+  /** Waits for the rebuild an edit starts: the player is replaced. */
+  const rebuilt = async (store: ReturnType<typeof createStudioStore>, player: Player): Promise<void> => {
+    for (let i = 0; i < 200 && store.getState().document!.player === player; i++) await new Promise(r => setTimeout(r, 10))
+    expect(store.getState().document!.player).not.toBe(player)
+  }
+
+  it('edits sections and settings in the demo file and rebuilds the player', async () => {
+    const store = createStudioStore({ load: (path, files) => loadDocument(fsBridge, path, files ? { files } : {}) })
+    await store.getState().openDocument(DEMO)
+    const s = store.getState
+    const demo = () => JSON.parse(s().document!.files[DEMO]!.text) as Demo
+    const original = s().document!.files[DEMO]!.text
+
+    let player = s().document!.player
+    s().setDemoValue(['sections', 0, 'duration'], 4)
+    await rebuilt(store, player)
+    expect(s().document!.player.sections[0]!.end).toBe(4)
+    expect(s().document!.files[DEMO]!.text).toBe(original.replace('"duration": 8', '"duration": 4'))
+
+    player = s().document!.player
+    s().addSection(0, join(EXAMPLES, 'generators', 'plasma.scene.json'), 3)
+    await rebuilt(store, player)
+    expect(demo().sections[1]).toEqual({ id: 'plasma2', scene: './generators/plasma.scene.json', duration: 3 })
+    expect(s().document!.player.sections[1]!.scenePath).toBe(join(EXAMPLES, 'generators', 'plasma.scene.json'))
+    expect(Object.keys(s().document!.files)).toContain(join(EXAMPLES, 'generators', 'plasma.scene.json'))
+
+    s().moveSection(1, -1)
+    expect(demo().sections.map(x => x.id).slice(0, 2)).toEqual(['plasma2', 'intro'])
+    s().removeSection(0)
+    s().addDemoModifier('glow')
+    expect(demo().modifiers?.map(m => m.id)).toEqual(['crt', 'glow'])
+    s().removeDemoModifier(1)
+    s().setDemoValue(['sections', 0, 'duration'], 8)
+    expect(s().document!.files[DEMO]!.text).toBe(original)
+    s().setDemoValue(['sections', 0, 'duration'], undefined)
+    expect(demo().sections[0]).toEqual({ id: 'intro', scene: './showcase/01-intro.scene.json', transition: { type: 'flash', duration: 0.3 } })
+  }, 20_000)
 })

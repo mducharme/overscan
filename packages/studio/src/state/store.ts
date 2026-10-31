@@ -1,9 +1,10 @@
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { parseDemoJson, parseSceneJson, validateSceneGraph } from '@overscan/core/browser'
 import { buildBuiltinRegistry, NODE_SCHEMAS } from '@overscan/nodes/browser'
-import type { RocketInterpolation, RocketKey, Scene, SceneEdge, SceneNode } from '@overscan/types'
+import type { Demo, RocketInterpolation, RocketKey, Scene, SceneEdge, SceneNode } from '@overscan/types'
 import type { SourceFile, StudioDocument } from '../engine/document'
 import { insertJsonValue, removeJsonValue, setJsonValue, type JsonPath } from '../engine/json-edit'
+import { relativePath } from '../engine/paths'
 
 export type Renderer = 'ascii' | 'ansi' | '2d' | 'gl'
 
@@ -111,6 +112,22 @@ export interface StudioActions {
   removeKey(scenePath: string, track: string, index: number): void
   /** Creates a track holding `value` and binds the node option to it, in one undo step. Returns the track name. */
   bindNewTrack(scenePath: string, nodeId: string, key: string, value: number): string | null
+  /** Adds an empty track (a unique name based on `name`). Returns the name used. */
+  addTrack(scenePath: string, name: string): string | null
+  /** Renames a track and every setting bound to it. */
+  renameTrack(scenePath: string, from: string, to: string): void
+  /** Removes a track; settings bound to it keep its first value as a fixed number. */
+  removeTrack(scenePath: string, name: string): void
+  /** Sets (or with `undefined`, removes) a value in the demo file, e.g. `['sections', 2, 'duration']`. */
+  setDemoValue(path: JsonPath, value: unknown, coalesce?: string): void
+  /** Adds a section showing the scene file at `scenePath` after section `index` (-1: first). */
+  addSection(index: number, scenePath: string, duration?: number): void
+  removeSection(index: number): void
+  /** Moves section `index` one place earlier (-1) or later (+1). */
+  moveSection(index: number, delta: -1 | 1): void
+  /** Adds a demo-wide modifier (applied over every section). */
+  addDemoModifier(impl: string): void
+  removeDemoModifier(index: number): void
   undo(): void
   redo(): void
   /** Writes every edited file. Refuses files changed on disk since loading unless `force`. */
@@ -197,6 +214,21 @@ function reaches(edges: readonly SceneEdge[], from: string, to: string): boolean
   return false
 }
 
+/** JSON paths of every `{ "track": name }` binding in the scene's node configs (vectors and nested objects too). */
+function trackBindings(scene: Scene, name: string): JsonPath[] {
+  const found: JsonPath[] = []
+  const walk = (value: unknown, path: (string | number)[]): void => {
+    if (Array.isArray(value)) value.forEach((item, i) => { walk(item, [...path, i]) })
+    else if (value && typeof value === 'object') {
+      const record = value as Record<string, unknown>
+      if (record.track === name && typeof record.track === 'string') found.push(path)
+      else for (const [key, item] of Object.entries(record)) walk(item, [...path, key])
+    }
+  }
+  scene.graph.nodes.forEach((node, i) => { walk(node.config, ['graph', 'nodes', i, 'config']) })
+  return found
+}
+
 const nodeIndex = (scene: Scene, nodeId: string): number => {
   const i = scene.graph.nodes.findIndex(n => n.id === nodeId)
   return i >= 0 ? i : refuse(`No node '${nodeId}'`)
@@ -229,7 +261,8 @@ export function createStudioStore(deps: StoreDeps): StudioStore {
           return
         }
         current.player.destroy()
-        set({ document: { ...next, files: current.files }, time: clamp(get().time, 0, next.player.duration), renderError: null })
+        // Files the rebuild newly read (an added section's scene) join the ones being edited.
+        set({ document: { ...next, files: { ...next.files, ...current.files } }, time: clamp(get().time, 0, next.player.duration), renderError: null })
       } catch (error) {
         if (token === rebuildToken) set({ editError: message(error) })
       }
@@ -296,6 +329,23 @@ export function createStudioStore(deps: StoreDeps): StudioStore {
         return false
       }
       const error = commit(scenePath, edit.text, label, coalesce)
+      if (error !== null) set({ editError: `${label}: ${error}` })
+      return error === null
+    }
+
+    /** Runs an edit of the demo file against its current text and parsed demo. */
+    const editDemo = (label: string, build: (edit: SceneEdit, demo: Demo) => void, coalesce?: string): boolean => {
+      const { document } = get()
+      const file = document?.kind === 'demo' ? document.files[document.filePath] : undefined
+      if (!document || !file) return false
+      const edit = new SceneEdit(file.text)
+      try {
+        build(edit, parseDemoJson(file.text))
+      } catch (error) {
+        set({ editError: `${label}: ${message(error)}` })
+        return false
+      }
+      const error = commit(document.filePath, edit.text, label, coalesce)
       if (error !== null) set({ editError: `${label}: ${error}` })
       return error === null
     }
@@ -494,6 +544,93 @@ export function createStudioStore(deps: StoreDeps): StudioStore {
           edit.set(['graph', 'nodes', nodeIndex(scene, nodeId), 'config', key], { track: name })
         })
         return name
+      },
+
+      addTrack(scenePath, name) {
+        let used: string | null = null
+        editScene(scenePath, 'Add track', (edit, scene) => {
+          const names = new Set(scene.tracks.map(t => t.name))
+          used = name
+          for (let i = 2; names.has(used); i++) used = `${name}${i}`
+          edit.insert(['tracks'], { name: used, keys: [{ row: 0, value: 0, interpolation: 'linear' }] })
+        })
+        return used
+      },
+
+      renameTrack(scenePath, from, to) {
+        const name = to.trim()
+        if (!name || name === from) return
+        editScene(scenePath, `Rename ${from}`, (edit, scene) => {
+          if (scene.tracks.some(t => t.name === name)) refuse(`there is already a track '${name}'`)
+          edit.set(['tracks', trackIndex(scene, from), 'name'], name)
+          for (const path of trackBindings(scene, from)) edit.set([...path, 'track'], name)
+        })
+      },
+
+      removeTrack(scenePath, name) {
+        editScene(scenePath, `Remove ${name}`, (edit, scene) => {
+          const ti = trackIndex(scene, name)
+          const value = scene.tracks[ti]!.keys[0]?.value ?? 0
+          for (const path of trackBindings(scene, name)) edit.set(path, value)
+          edit.remove(['tracks', ti])
+        })
+      },
+
+      setDemoValue(path, value, coalesce) {
+        editDemo(`Demo ${path.join('.')}`, edit => {
+          if (value === undefined) edit.remove(path)
+          else edit.set(path, value)
+        }, coalesce ?? `demo:${path.join('.')}`)
+      },
+
+      addSection(index, scenePath, duration) {
+        const { document } = get()
+        if (!document) return
+        editDemo('Add section', (edit, demo) => {
+          const ids = new Set(demo.sections.map(s => s.id))
+          const stem = scenePath.split(/[\\/]/).pop()!.replace(/\.scene\.json$/, '').replace(/^\d+-/, '') || 'section'
+          let id = stem
+          for (let i = 2; ids.has(id); i++) id = `${stem}${i}`
+          const section = { id, scene: relativePath(document.filePath, scenePath), ...(duration ? { duration } : {}) }
+          edit.insert(['sections'], section, index + 1)
+        })
+      },
+
+      removeSection(index) {
+        editDemo('Remove section', (edit, demo) => {
+          if (demo.sections.length <= 1) refuse('a demo needs at least one section')
+          if (!demo.sections[index]) refuse(`No section ${index}`)
+          edit.remove(['sections', index])
+        })
+      },
+
+      moveSection(index, delta) {
+        editDemo('Move section', (edit, demo) => {
+          const to = index + delta
+          const section = demo.sections[index]
+          if (!section || to < 0 || to >= demo.sections.length) return
+          edit.remove(['sections', index])
+          edit.insert(['sections'], section, to)
+        })
+      },
+
+      addDemoModifier(impl) {
+        const schema = NODE_SCHEMAS[impl]
+        if (schema?.kind !== 'modifier') {
+          set({ editError: `'${impl}' is not a modifier` })
+          return
+        }
+        editDemo(`Add ${schema.label}`, (edit, demo) => {
+          const ids = new Set((demo.modifiers ?? []).map(m => m.id))
+          let id = impl
+          for (let i = 2; ids.has(id); i++) id = `${impl}${i}`
+          if (edit.text.includes('"modifiers"')) edit.insert(['modifiers'], { id, impl, config: {} })
+          else edit.set(['modifiers'], [{ id, impl, config: {} }])
+        })
+      },
+
+      removeDemoModifier(index) {
+        editDemo('Remove modifier', edit => { edit.remove(['modifiers', index]) })
       },
 
       undo() {

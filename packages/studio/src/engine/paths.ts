@@ -36,3 +36,14 @@ export function resolvePath(baseFile: string, target: string): string {
 export function baseName(filePath: string): string {
   return filePath.split(/[\\/]/).pop() ?? filePath
 }
+
+/** `target` relative to the directory of `fromFile`, with forward slashes (`./a.json`, `../b/c.json`). */
+export function relativePath(fromFile: string, target: string): string {
+  const from = fromFile.split(/[\\/]/).slice(0, -1)
+  const to = target.split(/[\\/]/)
+  let common = 0
+  while (common < from.length && common < to.length - 1 && from[common] === to[common]) common++
+  const up = from.length - common
+  const rest = to.slice(common).join('/')
+  return up === 0 ? `./${rest}` : `${'../'.repeat(up)}${rest}`
+}

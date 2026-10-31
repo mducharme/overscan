@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { baseName, resolvePath } from './paths'
+import { baseName, relativePath, resolvePath } from './paths'
 
 describe('resolvePath', () => {
   it('resolves relative paths against a POSIX file, keeping forward slashes', () => {
@@ -23,5 +23,13 @@ describe('resolvePath', () => {
   it('gives the file name', () => {
     expect(baseName('/a/b/plasma.scene.json')).toBe('plasma.scene.json')
     expect(baseName('C:\\a\\demo.json')).toBe('demo.json')
+  })
+})
+
+describe('relativePath', () => {
+  it('walks down and up from the base file directory', () => {
+    expect(relativePath('/p/examples/show.demo.json', '/p/examples/showcase/a.scene.json')).toBe('./showcase/a.scene.json')
+    expect(relativePath('/p/examples/sub/x.demo.json', '/p/examples/a.scene.json')).toBe('../a.scene.json')
+    expect(relativePath('/p/a/b/x.demo.json', '/p/c/d.scene.json')).toBe('../../c/d.scene.json')
   })
 })
