@@ -68,22 +68,24 @@ export function RadialBlurModifier(config: Partial<RadialBlurConfig> = {}): Modi
         for (let x = 0; x < w; x++) {
           const dx = cx - x
           const dy = cy - y
-          let r = 0, g = 0, b = 0
+          let r = 0, g = 0, b = 0, a = 0
           for (let s = 0; s < samples; s++) {
             const k = (s / (samples - 1)) * strength
             const sx = Math.min(w - 1, Math.max(0, Math.round(x + dx * k)))
             const sy = Math.min(h - 1, Math.max(0, Math.round(y + dy * k)))
             const p = (sy * w + sx) * 4
-            r += streakSource[p]!; g += streakSource[p + 1]!; b += streakSource[p + 2]!
+            r += streakSource[p]!; g += streakSource[p + 1]!; b += streakSource[p + 2]!; a += src[p + 3]!
           }
           const o = (y * w + x) * 4
           if (mode === 'rays') {
             const k = intensity / samples
             dst[o] = src[o]! + r * k; dst[o + 1] = src[o + 1]! + g * k; dst[o + 2] = src[o + 2]! + b * k
+            // Rays are light: where they cross a transparent background they make it visible.
+            dst[o + 3] = Math.max(src[o + 3]!, Math.max(r, g, b) * k)
           } else {
             dst[o] = r / samples; dst[o + 1] = g / samples; dst[o + 2] = b / samples
+            dst[o + 3] = a / samples
           }
-          dst[o + 3] = src[o + 3]!
         }
       }
     },
