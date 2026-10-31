@@ -8,6 +8,14 @@
   "fps": 30,
   "tracks": [
     {
+      "name": "beams",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 64, "value": 0, "interpolation": "ease-out" },
+        { "row": 80, "value": 0.9, "interpolation": "step" }
+      ]
+    },
+    {
       "name": "drop",
       "keys": [
         { "row": 0, "value": -0.6, "interpolation": "step" },
@@ -63,12 +71,16 @@
   "graph": {
     "nodes": [
       { "id": "floor", "type": "generator", "impl": "checkerboard-floor", "config": { "color1": "#ff00aa", "color2": "#12002a", "skyColor": "#0a0018", "fogColor": "#30005a", "horizon": 0.55, "cameraHeight": 0.6, "tileSize": 0.7, "scrollSpeed": 4, "fogDistance": 0.85 } },
+      { "id": "beams", "type": "generator", "impl": "lasers", "config": { "beamCount": 14, "emitterCount": 2, "spread": 1.2, "sweepSpeed": 1.2, "intensity": { "track": "beams" }, "backgroundColor": "#000000", "palette": ["#ff2bd6", "#45f4ff"] } },
+      { "id": "sky", "type": "compositor", "impl": "screen-blend", "config": {} },
       { "id": "knot", "type": "generator", "impl": "polygon", "config": { "mesh": "torus-knot", "shading": "envmap", "scale": { "track": "punch" }, "y": { "track": "drop" }, "rotationX": 1.1, "rotationY": 1.7, "rotationZ": 0.4, "palette": [[255, 120, 230]] } },
       { "id": "over", "type": "compositor", "impl": "alpha-blend", "config": {} },
       { "id": "split", "type": "modifier", "impl": "chromatic-aberration", "config": { "amount": { "track": "split" }, "radial": true } }
     ],
     "edges": [
-      { "from": { "node": "floor", "output": "color" }, "to": { "node": "over", "input": "base" } },
+      { "from": { "node": "floor", "output": "color" }, "to": { "node": "sky", "input": "base" } },
+      { "from": { "node": "beams", "output": "color" }, "to": { "node": "sky", "input": "overlay" } },
+      { "from": { "node": "sky", "output": "color" }, "to": { "node": "over", "input": "base" } },
       { "from": { "node": "knot", "output": "color" }, "to": { "node": "over", "input": "overlay" } },
       { "from": { "node": "over", "output": "color" }, "to": { "node": "split", "input": "in" } }
     ],

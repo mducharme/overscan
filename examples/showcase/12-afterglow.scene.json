@@ -8,6 +8,14 @@
   "fps": 30,
   "tracks": [
     {
+      "name": "glyphs",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 64, "value": 0, "interpolation": "linear" },
+        { "row": 96, "value": 1, "interpolation": "step" }
+      ]
+    },
+    {
       "name": "tag.in",
       "keys": [
         { "row": 0, "value": 0, "interpolation": "step" },
@@ -31,6 +39,8 @@
       { "id": "title", "type": "compositor", "impl": "alpha-blend", "config": {} },
       { "id": "tag", "type": "generator", "impl": "text", "config": { "text": "PIXELS BLEEDING\nBEYOND THE EDGE", "font": "overscan://fonts/Press2P", "fontSize": 16, "color": "#ffbe46", "letterSpacing": 1, "lineHeight": 1.5, "y": 0.27 } },
       { "id": "text", "type": "compositor", "impl": "additive-blend", "config": { "opacity": { "track": "tag.in" } } },
+      { "id": "glyphs", "type": "modifier", "impl": "ansi-art", "config": { "charset": "block" } },
+      { "id": "terminal", "type": "compositor", "impl": "transition", "config": { "mode": "dissolve", "progress": { "track": "glyphs" }, "easing": "smooth" } },
       { "id": "fade", "type": "modifier", "impl": "palette-flash", "config": { "color": "#000000", "strength": { "track": "fade" }, "blendMode": "alpha" } }
     ],
     "edges": [
@@ -38,7 +48,10 @@
       { "from": { "node": "logo", "output": "color" }, "to": { "node": "title", "input": "overlay" } },
       { "from": { "node": "title", "output": "color" }, "to": { "node": "text", "input": "base" } },
       { "from": { "node": "tag", "output": "color" }, "to": { "node": "text", "input": "overlay" } },
-      { "from": { "node": "text", "output": "color" }, "to": { "node": "fade", "input": "in" } }
+      { "from": { "node": "text", "output": "color" }, "to": { "node": "glyphs", "input": "in" } },
+      { "from": { "node": "text", "output": "color" }, "to": { "node": "terminal", "input": "base" } },
+      { "from": { "node": "glyphs", "output": "color" }, "to": { "node": "terminal", "input": "overlay" } },
+      { "from": { "node": "terminal", "output": "color" }, "to": { "node": "fade", "input": "in" } }
     ],
     "outputs": { "terminal": "fade", "browser": "fade", "export": "fade" }
   }

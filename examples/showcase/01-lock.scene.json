@@ -8,18 +8,26 @@
   "fps": 30,
   "tracks": [
     {
+      "name": "scope.out",
+      "keys": [
+        { "row": 0, "value": 1, "interpolation": "step" },
+        { "row": 32, "value": 1, "interpolation": "ease-in" },
+        { "row": 80, "value": 0, "interpolation": "step" }
+      ]
+    },
+    {
       "name": "logo.in",
       "keys": [
         { "row": 0, "value": 0, "interpolation": "step" },
-        { "row": 16, "value": 0, "interpolation": "ease-out" },
-        { "row": 32, "value": 1, "interpolation": "step" }
+        { "row": 32, "value": 0, "interpolation": "ease-out" },
+        { "row": 48, "value": 1, "interpolation": "step" }
       ]
     },
     {
       "name": "tear",
       "keys": [
         { "row": 0, "value": 160, "interpolation": "step" },
-        { "row": 16, "value": 160, "interpolation": "expo-out" },
+        { "row": 32, "value": 160, "interpolation": "expo-out" },
         { "row": 80, "value": 0, "interpolation": "step" }
       ]
     },
@@ -27,7 +35,7 @@
       "name": "split",
       "keys": [
         { "row": 0, "value": 14, "interpolation": "step" },
-        { "row": 16, "value": 14, "interpolation": "ease-out" },
+        { "row": 32, "value": 14, "interpolation": "ease-out" },
         { "row": 80, "value": 0.6, "interpolation": "step" }
       ]
     },
@@ -42,6 +50,9 @@
   ],
   "graph": {
     "nodes": [
+      { "id": "hunt", "type": "signal", "impl": "lfo", "config": { "shape": "sine", "rate": { "bars": 1 }, "bipolar": false, "amplitude": 1.6, "offset": 0.3 } },
+      { "id": "scope", "type": "generator", "impl": "oscilloscope", "config": { "color": "#ffb030", "lineWidth": 2, "voltScale": { "node": "hunt", "output": "value" }, "timeScale": 1.4, "persistence": 0.6, "gridColor": "#1c0e00", "gridDivisions": 10 } },
+      { "id": "trace", "type": "compositor", "impl": "additive-blend", "config": { "opacity": { "track": "scope.out" } } },
       { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "OVERSCAN", "scale": 0.82, "y": 0.42, "opacity": { "track": "logo.in" }, "palette": [[210, 110, 10], [255, 190, 70], [255, 240, 200], [70, 28, 0]] } },
       { "id": "hold", "type": "modifier", "impl": "wobble", "config": { "amplitude": { "track": "tear" }, "waves": 0.7, "speed": 9, "turbulence": 0.6, "edges": "wrap" } },
       { "id": "split", "type": "modifier", "impl": "chromatic-aberration", "config": { "amount": { "track": "split" } } },
@@ -52,8 +63,10 @@
       { "from": { "node": "logo", "output": "color" }, "to": { "node": "hold", "input": "in" } },
       { "from": { "node": "hold", "output": "color" }, "to": { "node": "split", "input": "in" } },
       { "from": { "node": "split", "output": "color" }, "to": { "node": "mix", "input": "base" } },
-      { "from": { "node": "tag", "output": "color" }, "to": { "node": "mix", "input": "overlay" } }
+      { "from": { "node": "tag", "output": "color" }, "to": { "node": "mix", "input": "overlay" } },
+      { "from": { "node": "mix", "output": "color" }, "to": { "node": "trace", "input": "base" } },
+      { "from": { "node": "scope", "output": "color" }, "to": { "node": "trace", "input": "overlay" } }
     ],
-    "outputs": { "terminal": "mix", "browser": "mix", "export": "mix" }
+    "outputs": { "terminal": "trace", "browser": "trace", "export": "trace" }
   }
 }

@@ -8,6 +8,22 @@
   "fps": 30,
   "tracks": [
     {
+      "name": "lens",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 64, "value": 0, "interpolation": "ease-out" },
+        { "row": 80, "value": 0.9, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "lens.x",
+      "keys": [
+        { "row": 0, "value": 0.15, "interpolation": "step" },
+        { "row": 64, "value": 0.15, "interpolation": "smooth" },
+        { "row": 128, "value": 0.85, "interpolation": "step" }
+      ]
+    },
+    {
       "name": "petal",
       "keys": [
         { "row": 0, "value": 0.9, "interpolation": "ease-out" },
@@ -55,11 +71,13 @@
   "graph": {
     "nodes": [
       { "id": "plasma", "type": "generator", "impl": "plasma", "config": { "speed": 0.55, "scale": 1.2, "palette": [[6, 0, 18], [50, 0, 100], [200, 0, 150], [0, 170, 230], [200, 230, 255]] } },
-      { "id": "tube", "type": "modifier", "impl": "uv-map", "config": { "preset": "flower", "petals": 5, "amount": { "track": "petal" }, "rotation": { "track": "spin" }, "speedV": 1.1, "shade": 0.95 } }
+      { "id": "tube", "type": "modifier", "impl": "uv-map", "config": { "preset": "flower", "petals": 5, "amount": { "track": "petal" }, "rotation": { "track": "spin" }, "speedV": 1.1, "shade": 0.95 } },
+      { "id": "lens", "type": "modifier", "impl": "lens", "config": { "strength": { "track": "lens" }, "radius": 0.3, "zoom": 2.6, "chroma": 1.2, "centerX": { "track": "lens.x" }, "centerY": 0.55 } }
     ],
     "edges": [
-      { "from": { "node": "plasma", "output": "color" }, "to": { "node": "tube", "input": "in" } }
+      { "from": { "node": "plasma", "output": "color" }, "to": { "node": "tube", "input": "in" } },
+      { "from": { "node": "tube", "output": "color" }, "to": { "node": "lens", "input": "in" } }
     ],
-    "outputs": { "terminal": "tube", "browser": "tube", "export": "tube" }
+    "outputs": { "terminal": "lens", "browser": "lens", "export": "lens" }
   }
 }

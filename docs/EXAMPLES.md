@@ -21,18 +21,18 @@ Play any example in the terminal with `pnpm run overscan -- run <scene>`, or ope
 
 | # | Section | Effects | Into the next |
 | ---: | --- | --- | --- |
-| 1 | [lock](../examples/showcase/01-lock.scene.json) | `image`, `wobble`, `chromatic-aberration`, `text`, `additive-blend` | — |
+| 1 | [lock](../examples/showcase/01-lock.scene.json) | `lfo`, `oscilloscope`, `additive-blend`, `image`, `wobble`, `chromatic-aberration`, `text` | — |
 | 2 | [bleed](../examples/showcase/02-bleed.scene.json) | `image`, `text`, `additive-blend`, `radial-blur`, `feedback`, `color-grade` | flash 0.25 s |
-| 3 | [grid](../examples/showcase/03-grid.scene.json) | `checkerboard-floor`, `polygon`, `alpha-blend`, `chromatic-aberration` | push 0.35 s |
+| 3 | [grid](../examples/showcase/03-grid.scene.json) | `checkerboard-floor`, `lasers`, `screen-blend`, `polygon`, `alpha-blend`, `chromatic-aberration` | push 0.35 s |
 | 4 | [walls](../examples/showcase/04-walls.scene.json) | `kefrens`, `palette-flash` | checker 0.45 s |
-| 5 | [flower](../examples/showcase/05-flower.scene.json) | `plasma`, `uv-map` | blinds 0.45 s |
+| 5 | [flower](../examples/showcase/05-flower.scene.json) | `plasma`, `uv-map`, `lens` | blinds 0.45 s |
 | 6 | [jelly](../examples/showcase/06-jelly.scene.json) | `copperbars`, `polygon`, `alpha-blend`, `dither` | melt 0.9 s |
 | 7 | [planet](../examples/showcase/07-planet.scene.json) | `starfield`, `plasma`, `uv-map`, `alpha-blend`, `scroller`, `radial-blur` | flash 0.25 s |
-| 8 | [hyperspace](../examples/showcase/08-hyperspace.scene.json) | `dot-tunnel`, `radial-blur` | zoom-out 0.5 s |
-| 9 | [monument](../examples/showcase/09-monument.scene.json) | `raymarcher`, `color-grade`, `radial-blur` | push 0.35 s |
-| 10 | [burn](../examples/showcase/10-burn.scene.json) | `image`, `fire`, `additive-blend`, `particles`, `wobble` | checker 0.4 s |
+| 8 | [dive](../examples/showcase/08-dive.scene.json) | `fractal-zoom`, `dot-tunnel`, `screen-blend` | iris 0.5 s |
+| 9 | [monument](../examples/showcase/09-monument.scene.json) | `raymarcher`, `color-grade`, `radial-blur` | wipe-up 0.4 s |
+| 10 | [burn](../examples/showcase/10-burn.scene.json) | `noise`, `image`, `fire`, `additive-blend`, `particles`, `wobble` | dissolve 0.5 s |
 | 11 | [finale](../examples/showcase/11-finale.scene.json) | `plasma`, `uv-map`, `polygon`, `particles`, `additive-blend`, `feedback`, `alpha-blend` | melt 1 s |
-| 12 | [afterglow](../examples/showcase/12-afterglow.scene.json) | `particles`, `image`, `alpha-blend`, `text`, `additive-blend`, `palette-flash` | — |
+| 12 | [afterglow](../examples/showcase/12-afterglow.scene.json) | `particles`, `image`, `alpha-blend`, `text`, `additive-blend`, `ansi-art`, `transition`, `palette-flash` | — |
 
 Demo-wide modifiers: `crt`.
 

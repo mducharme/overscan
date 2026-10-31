@@ -1,7 +1,7 @@
 {
   "id": "10-burn",
   "title": "Showcase · Burn",
-  "duration": 7.9,
+  "duration": 8.0,
   "bpm": 128,
   "rowsPerBeat": 8,
   "resolution": { "width": 640, "height": 360 },
@@ -54,8 +54,9 @@
   ],
   "graph": {
     "nodes": [
+      { "id": "gust", "type": "signal", "impl": "noise", "config": { "frequency": 1.2, "smoothing": 0.9, "seed": 3 } },
       { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "OVERSCAN", "scale": 0.8, "y": { "track": "lift" }, "outline": 1, "backgroundColor": "#000000", "palette": [[150, 50, 10], [70, 12, 0]] } },
-      { "id": "flames", "type": "generator", "impl": "fire", "config": { "cooling": { "track": "cool" }, "seedIntensity": 1.4, "spread": 3, "palette": [[0, 0, 0], [90, 0, 10], [220, 40, 10], [255, 150, 20], [255, 240, 200]] } },
+      { "id": "flames", "type": "generator", "impl": "fire", "config": { "cooling": { "track": "cool" }, "wind": { "node": "gust", "output": "bipolar" }, "seedIntensity": 1.4, "spread": 3, "palette": [[0, 0, 0], [90, 0, 10], [220, 40, 10], [255, 150, 20], [255, 240, 200]] } },
       { "id": "mix", "type": "compositor", "impl": "additive-blend", "config": {} },
       { "id": "embers", "type": "generator", "impl": "particles", "config": { "mode": "fountain", "count": 260, "emitY": 1.02, "speed": 0.9, "spread": 0.9, "gravity": 0.15, "lifetime": 3.2, "size": 1.3, "backgroundColor": "transparent", "randomSeed": 9, "palette": [[255, 230, 160], [255, 140, 30], [200, 40, 10], [60, 0, 0]] } },
       { "id": "air", "type": "compositor", "impl": "additive-blend", "config": {} },

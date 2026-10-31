@@ -1,0 +1,68 @@
+{
+  "id": "08-dive",
+  "title": "Showcase · Dive",
+  "duration": 8.0,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "rings",
+      "keys": [
+        { "row": 0, "value": 1, "interpolation": "step" },
+        { "row": 32, "value": 1, "interpolation": "ease-in" },
+        { "row": 64, "value": 0, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "cycle",
+      "keys": [
+        { "row": 0, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 6, "value": 0.08, "interpolation": "step" },
+        { "row": 8, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 14, "value": 0.08, "interpolation": "step" },
+        { "row": 16, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 22, "value": 0.08, "interpolation": "step" },
+        { "row": 24, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 30, "value": 0.08, "interpolation": "step" },
+        { "row": 32, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 38, "value": 0.08, "interpolation": "step" },
+        { "row": 40, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 46, "value": 0.08, "interpolation": "step" },
+        { "row": 48, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 54, "value": 0.08, "interpolation": "step" },
+        { "row": 56, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 62, "value": 0.08, "interpolation": "step" },
+        { "row": 64, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 70, "value": 0.08, "interpolation": "step" },
+        { "row": 72, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 78, "value": 0.08, "interpolation": "step" },
+        { "row": 80, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 86, "value": 0.08, "interpolation": "step" },
+        { "row": 88, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 94, "value": 0.08, "interpolation": "step" },
+        { "row": 96, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 102, "value": 0.08, "interpolation": "step" },
+        { "row": 104, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 110, "value": 0.08, "interpolation": "step" },
+        { "row": 112, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 118, "value": 0.08, "interpolation": "step" },
+        { "row": 120, "value": 0.6, "interpolation": "expo-out" },
+        { "row": 126, "value": 0.08, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "fractal", "type": "generator", "impl": "fractal-zoom", "config": { "centerX": -0.7453, "centerY": 0.1127, "zoom": 0.6, "zoomSpeed": 7, "maxIter": 160, "paletteSpeed": { "track": "cycle" }, "palette": [[12, 0, 6], [110, 8, 30], [240, 50, 40], [255, 160, 30], [255, 248, 220]] } },
+      { "id": "rings", "type": "generator", "impl": "dot-tunnel", "config": { "speed": 22, "bend": 2.4, "spin": 1.2, "twist": 0.15, "dotSize": 4, "rings": 56, "backgroundColor": "#000000", "palette": [[0, 0, 0], [100, 0, 20], [255, 40, 20], [255, 140, 30], [255, 230, 160]] } },
+      { "id": "mix", "type": "compositor", "impl": "screen-blend", "config": { "opacity": { "track": "rings" } } }
+    ],
+    "edges": [
+      { "from": { "node": "fractal", "output": "color" }, "to": { "node": "mix", "input": "base" } },
+      { "from": { "node": "rings", "output": "color" }, "to": { "node": "mix", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "mix", "browser": "mix", "export": "mix" }
+  }
+}
