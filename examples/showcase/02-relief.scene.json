@@ -1,0 +1,51 @@
+{
+  "id": "02-relief",
+  "title": "Showcase · Relief",
+  "duration": 7.75,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "light.x",
+      "keys": [
+        { "row": 0, "value": -0.1, "interpolation": "smooth" },
+        { "row": 64, "value": 0.8, "interpolation": "smooth" },
+        { "row": 128, "value": 0.35, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "vortex.mix",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "smooth" },
+        { "row": 64, "value": 0.3, "interpolation": "ease-in" },
+        { "row": 128, "value": 1, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "riser",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 64, "value": 0, "interpolation": "expo-in" },
+        { "row": 128, "value": 0.55, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "OVERSCAN", "scale": 0.86, "outline": 0, "backgroundColor": "#000000", "y": 0.46 } },
+      { "id": "bump", "type": "modifier", "impl": "bump", "config": { "lightX": { "track": "light.x" }, "lightY": 0.42, "depth": 5, "radius": 0.95, "ambient": 0.2, "lightColor": "#ffe2b0" } },
+      { "id": "vortex", "type": "generator", "impl": "particles", "config": { "mode": "vortex", "count": 1600, "backgroundColor": "transparent", "speed": 1.6, "size": 1.6, "palette": [[255, 255, 255], [255, 200, 120], [255, 90, 60]] } },
+      { "id": "mix", "type": "compositor", "impl": "additive-blend", "config": { "opacity": { "track": "vortex.mix" } } },
+      { "id": "zoom", "type": "modifier", "impl": "radial-blur", "config": { "strength": { "track": "riser" } } }
+    ],
+    "edges": [
+      { "from": { "node": "logo", "output": "color" }, "to": { "node": "bump", "input": "in" } },
+      { "from": { "node": "bump", "output": "color" }, "to": { "node": "mix", "input": "base" } },
+      { "from": { "node": "vortex", "output": "color" }, "to": { "node": "mix", "input": "overlay" } },
+      { "from": { "node": "mix", "output": "color" }, "to": { "node": "zoom", "input": "in" } }
+    ],
+    "outputs": { "terminal": "zoom", "browser": "zoom", "export": "zoom" }
+  }
+}

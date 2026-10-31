@@ -50,11 +50,11 @@ function writeAudioDemo() {
   return 'bench-results/studio-smoke/audio-demo/audio.demo.json'
 }
 
-/** A copy of the plasma showcase scene the edit scenario may change and save. */
+/** A copy of the plasma-under-a-lens scene the edit scenario may change and save. */
 function writeEditScene() {
   const dir = join(OUT, 'edit')
   mkdirSync(dir, { recursive: true })
-  writeFileSync(join(dir, 'plasma.scene.json'), readFileSync(join(ROOT, 'examples', 'showcase', '03-plasma.scene.json')))
+  writeFileSync(join(dir, 'plasma.scene.json'), readFileSync(join(ROOT, 'examples', 'advanced', 'plasma-lens.scene.json')))
   return 'bench-results/studio-smoke/edit/plasma.scene.json'
 }
 
@@ -62,7 +62,7 @@ function writeEditScene() {
 function writeAuthorScene() {
   const dir = join(OUT, 'author')
   mkdirSync(dir, { recursive: true })
-  writeFileSync(join(dir, 'plasma.scene.json'), readFileSync(join(ROOT, 'examples', 'showcase', '03-plasma.scene.json')))
+  writeFileSync(join(dir, 'plasma.scene.json'), readFileSync(join(ROOT, 'examples', 'advanced', 'plasma-lens.scene.json')))
   return 'bench-results/studio-smoke/author/plasma.scene.json'
 }
 
@@ -160,7 +160,7 @@ const SCENARIOS = [
       [`${store}.renderError === null || 'render error: ' + ${store}.renderError`, 0],
       [`${store}.pause(); ${store}.seek(0.5); ${key('ArrowRight')}`, 100],
       [`${store}.time === ${store}.document.player.sections[1].start || 'ArrowRight should jump to the next section'`, 0],
-      [`document.querySelectorAll('.tl-section').length === 16 || 'timeline should show 16 sections'`, 0],
+      [`document.querySelectorAll('.tl-section').length === 12 || 'timeline should show 12 sections'`, 0],
       [`${store}.seek(9)`, 300],
       [`(() => { const n = document.querySelectorAll('.tl-row--track').length, want = ${store}.document.player.sectionAt(9).scene.tracks.length; return n === want || 'track lanes: ' + n + ', expected ' + want })()`, 0],
       [`document.querySelectorAll('.tl-transition').length > 0 || 'transitions should be drawn'`, 0],
@@ -173,7 +173,7 @@ const SCENARIOS = [
     ],
     checks: [
       ['loads', 's => s.status === "ready"'],
-      ['all sections', 's => s.document.player.sections.length === 16'],
+      ['all sections', 's => s.document.player.sections.length === 12'],
       ['no asset problems', 's => s.document.assetProblems.length === 0'],
       ['no render error', 's => s.renderError === null'],
     ],
@@ -314,21 +314,22 @@ SCENARIOS.push(
     steps: [
       [tab('Demo'), 400],
       [`document.querySelectorAll('.demo__section').length === 3 || 'Demo tab does not list the 3 sections'`, 0],
-      [typeInto('input[aria-label="intro length"]', `'4'`), 50],
-      [enter('input[aria-label="intro length"]'), 0],
+      [typeInto('input[aria-label="boot length"]', `'4'`), 50],
+      [enter('input[aria-label="boot length"]'), 0],
       [until(`${store}.document.player.sections[0].end === 4`, 8000, 'the rebuilt demo'), 0],
-      [typeInto('select[aria-label="intro transition"]', `'dissolve'`), 200],
+      [typeInto('select[aria-label="boot transition"]', `'dissolve'`), 200],
       [`JSON.parse(${fileText}).sections[0].transition.type === 'dissolve' || 'transition not changed'`, 0],
-      [click('button[aria-label="Move intro later"]'), 200],
-      [`JSON.parse(${fileText}).sections.map(s => s.id).join() === 'copper,intro,plasma' || 'move failed'`, 0],
+      [click('button[aria-label="Move boot later"]'), 200],
+      [`JSON.parse(${fileText}).sections.map(s => s.id).join() === 'relief,boot,chrome' || 'move failed'`, 0],
       [typeInto('select[aria-label="Add a demo-wide modifier"]', `'glow'`), 200],
       [`JSON.parse(${fileText}).modifiers.map(m => m.id).join() === 'crt,glow' || 'modifier not added'`, 0],
-      [until(`${store}.document.player.sections[0].id === 'copper'`, 8000, 'the reordered demo'), 0],
+      [until(`${store}.document.player.sections[0].id === 'relief'`, 8000, 'the reordered demo'), 0],
       // Resize the first section on the timeline: drag its edge right.
       [`(() => { window.__len = ${store}.document.player.sections[0].end; return true })()`, 0],
       [drag('.tl-section .tl-section__edge', 80, 0), 0],
       [until(`${store}.document.player.sections[0].end > window.__len`, 8000, 'the resized section'), 0],
-      [`(() => { const d = JSON.parse(${fileText}).sections[0].duration; return Math.abs(d * 2 - Math.round(d * 2)) < 1e-6 || 'length did not snap to beats: ' + d })()`, 0],
+      // The next section must start on a beat: the length minus the transition overlap is whole beats.
+      [`(() => { const s = JSON.parse(${fileText}).sections[0]; const beats = (s.duration - (s.transition?.duration ?? 0)) * 128 / 60; return Math.abs(beats - Math.round(beats)) < 1e-3 || 'next section does not start on a beat: ' + s.duration })()`, 0],
     ],
     checks: [
       ['loads', 's => s.status === "ready"'],
@@ -338,7 +339,7 @@ SCENARIOS.push(
   },
   {
     name: 'export',
-    file: () => copyExample('export', 'showcase/03-plasma.scene.json', 'plasma.scene.json'),
+    file: () => copyExample('export', 'advanced/plasma-lens.scene.json', 'plasma.scene.json'),
     steps: [
       [`(() => { const b = [...document.querySelectorAll('button')].find(b => b.textContent === 'Export…'); if (!b) return 'no Export button'; b.click(); return true })()`, 300],
       [typeInto('select[aria-label="Look"]', `'ansi'`), 100],

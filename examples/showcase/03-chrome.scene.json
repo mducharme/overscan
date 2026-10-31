@@ -1,0 +1,99 @@
+{
+  "id": "03-chrome",
+  "title": "Showcase · Chrome knot",
+  "duration": 7.85,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "punch",
+      "keys": [
+        { "row": 0, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 6, "value": 0.9, "interpolation": "step" },
+        { "row": 8, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 14, "value": 0.9, "interpolation": "step" },
+        { "row": 16, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 22, "value": 0.9, "interpolation": "step" },
+        { "row": 24, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 30, "value": 0.9, "interpolation": "step" },
+        { "row": 32, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 38, "value": 0.9, "interpolation": "step" },
+        { "row": 40, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 46, "value": 0.9, "interpolation": "step" },
+        { "row": 48, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 54, "value": 0.9, "interpolation": "step" },
+        { "row": 56, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 62, "value": 0.9, "interpolation": "step" },
+        { "row": 64, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 70, "value": 0.9, "interpolation": "step" },
+        { "row": 72, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 78, "value": 0.9, "interpolation": "step" },
+        { "row": 80, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 86, "value": 0.9, "interpolation": "step" },
+        { "row": 88, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 94, "value": 0.9, "interpolation": "step" },
+        { "row": 96, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 102, "value": 0.9, "interpolation": "step" },
+        { "row": 104, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 110, "value": 0.9, "interpolation": "step" },
+        { "row": 112, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 118, "value": 0.9, "interpolation": "step" },
+        { "row": 120, "value": 1.12, "interpolation": "expo-out" },
+        { "row": 126, "value": 0.9, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "split",
+      "keys": [
+        { "row": 0, "value": 9, "interpolation": "expo-out" },
+        { "row": 6, "value": 1.5, "interpolation": "step" },
+        { "row": 8, "value": 9, "interpolation": "expo-out" },
+        { "row": 14, "value": 1.5, "interpolation": "step" },
+        { "row": 16, "value": 9, "interpolation": "expo-out" },
+        { "row": 22, "value": 1.5, "interpolation": "step" },
+        { "row": 24, "value": 9, "interpolation": "expo-out" },
+        { "row": 30, "value": 1.5, "interpolation": "step" },
+        { "row": 32, "value": 9, "interpolation": "expo-out" },
+        { "row": 38, "value": 1.5, "interpolation": "step" },
+        { "row": 40, "value": 9, "interpolation": "expo-out" },
+        { "row": 46, "value": 1.5, "interpolation": "step" },
+        { "row": 48, "value": 9, "interpolation": "expo-out" },
+        { "row": 54, "value": 1.5, "interpolation": "step" },
+        { "row": 56, "value": 9, "interpolation": "expo-out" },
+        { "row": 62, "value": 1.5, "interpolation": "step" },
+        { "row": 64, "value": 9, "interpolation": "expo-out" },
+        { "row": 70, "value": 1.5, "interpolation": "step" },
+        { "row": 72, "value": 9, "interpolation": "expo-out" },
+        { "row": 78, "value": 1.5, "interpolation": "step" },
+        { "row": 80, "value": 9, "interpolation": "expo-out" },
+        { "row": 86, "value": 1.5, "interpolation": "step" },
+        { "row": 88, "value": 9, "interpolation": "expo-out" },
+        { "row": 94, "value": 1.5, "interpolation": "step" },
+        { "row": 96, "value": 9, "interpolation": "expo-out" },
+        { "row": 102, "value": 1.5, "interpolation": "step" },
+        { "row": 104, "value": 9, "interpolation": "expo-out" },
+        { "row": 110, "value": 1.5, "interpolation": "step" },
+        { "row": 112, "value": 9, "interpolation": "expo-out" },
+        { "row": 118, "value": 1.5, "interpolation": "step" },
+        { "row": 120, "value": 9, "interpolation": "expo-out" },
+        { "row": 126, "value": 1.5, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "walls", "type": "generator", "impl": "kefrens", "config": { "barWidth": 26, "speed": 3, "twist": 0.55, "top": 0, "palette": [[20, 4, 40], [110, 20, 150], [255, 70, 190], [255, 240, 255]] } },
+      { "id": "knot", "type": "generator", "impl": "polygon", "config": { "mesh": "torus-knot", "shading": "envmap", "scale": { "track": "punch" }, "rotationX": 1.3, "rotationY": 1.9, "rotationZ": 0.6, "palette": [[255, 200, 240]] } },
+      { "id": "over", "type": "compositor", "impl": "alpha-blend", "config": {} },
+      { "id": "split", "type": "modifier", "impl": "chromatic-aberration", "config": { "amount": { "track": "split" }, "radial": true } }
+    ],
+    "edges": [
+      { "from": { "node": "walls", "output": "color" }, "to": { "node": "over", "input": "base" } },
+      { "from": { "node": "knot", "output": "color" }, "to": { "node": "over", "input": "overlay" } },
+      { "from": { "node": "over", "output": "color" }, "to": { "node": "split", "input": "in" } }
+    ],
+    "outputs": { "terminal": "split", "browser": "split", "export": "split" }
+  }
+}

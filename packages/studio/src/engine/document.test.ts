@@ -44,7 +44,7 @@ describe('loadDocument', () => {
   it('loads every section of a demo, resolving section paths on any platform separator', async () => {
     const doc = await loadDocument(fsBridge, join(EXAMPLES, 'showcase.demo.json'))
     expect(doc.kind).toBe('demo')
-    expect(doc.player.sections.length).toBe(16)
+    expect(doc.player.sections.length).toBe(12)
     expect(doc.player.duration).toBeGreaterThan(80)
     expect(doc.player.sectionAt(30)?.id).toBeDefined()
     expect(render(doc, 30)?.buffer.data.some(v => v > 0)).toBe(true)

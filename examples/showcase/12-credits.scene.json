@@ -1,0 +1,39 @@
+{
+  "id": "12-credits",
+  "title": "Showcase · Credits",
+  "duration": 7.5,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "fade",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 88, "value": 0, "interpolation": "ease-in" },
+        { "row": 128, "value": 1, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "cloud", "type": "generator", "impl": "particles", "config": { "mode": "attractor", "count": 70000, "size": 0.6, "palette": [[255, 250, 220], [255, 170, 90], [200, 60, 140], [60, 30, 120]] } },
+      { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "OVERSCAN", "scale": 0.55, "y": 0.22, "palette": [[255, 248, 196], [255, 176, 64], [232, 72, 120], [120, 56, 200]] } },
+      { "id": "wobble", "type": "modifier", "impl": "wobble", "config": { "amplitude": 6, "waves": 1, "speed": 2 } },
+      { "id": "title", "type": "compositor", "impl": "alpha-blend", "config": {} },
+      { "id": "credits", "type": "generator", "impl": "scroller", "config": { "mode": "dycp", "text": "  CODE, MUSIC AND PIXELS: OVERSCAN  *  MADE OF NODES, TRACKS AND A TERMINAL  *  THANKS FOR WATCHING  ", "fontSize": 24, "speed": 22, "waveAmplitude": 10, "waveFrequency": 0.5, "verticalPosition": 0.82, "color": "#fff4d0" } },
+      { "id": "text", "type": "compositor", "impl": "alpha-blend", "config": {} },
+      { "id": "fade", "type": "modifier", "impl": "palette-flash", "config": { "color": "#000000", "strength": { "track": "fade" }, "blendMode": "alpha" } }
+    ],
+    "edges": [
+      { "from": { "node": "logo", "output": "color" }, "to": { "node": "wobble", "input": "in" } },
+      { "from": { "node": "cloud", "output": "color" }, "to": { "node": "title", "input": "base" } },
+      { "from": { "node": "wobble", "output": "color" }, "to": { "node": "title", "input": "overlay" } },
+      { "from": { "node": "title", "output": "color" }, "to": { "node": "text", "input": "base" } },
+      { "from": { "node": "credits", "output": "color" }, "to": { "node": "text", "input": "overlay" } },
+      { "from": { "node": "text", "output": "color" }, "to": { "node": "fade", "input": "in" } }
+    ],
+    "outputs": { "terminal": "fade", "browser": "fade", "export": "fade" }
+  }
+}

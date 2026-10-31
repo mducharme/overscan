@@ -1,0 +1,111 @@
+{
+  "id": "11-finale",
+  "title": "Showcase · Finale",
+  "duration": 8.5,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "punch",
+      "keys": [
+        { "row": 0, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 6, "value": 0.5, "interpolation": "step" },
+        { "row": 8, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 14, "value": 0.5, "interpolation": "step" },
+        { "row": 16, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 22, "value": 0.5, "interpolation": "step" },
+        { "row": 24, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 30, "value": 0.5, "interpolation": "step" },
+        { "row": 32, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 38, "value": 0.5, "interpolation": "step" },
+        { "row": 40, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 46, "value": 0.5, "interpolation": "step" },
+        { "row": 48, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 54, "value": 0.5, "interpolation": "step" },
+        { "row": 56, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 62, "value": 0.5, "interpolation": "step" },
+        { "row": 64, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 70, "value": 0.5, "interpolation": "step" },
+        { "row": 72, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 78, "value": 0.5, "interpolation": "step" },
+        { "row": 80, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 86, "value": 0.5, "interpolation": "step" },
+        { "row": 88, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 94, "value": 0.5, "interpolation": "step" },
+        { "row": 96, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 102, "value": 0.5, "interpolation": "step" },
+        { "row": 104, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 110, "value": 0.5, "interpolation": "step" },
+        { "row": 112, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 118, "value": 0.5, "interpolation": "step" },
+        { "row": 120, "value": 0.62, "interpolation": "expo-out" },
+        { "row": 126, "value": 0.5, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "split",
+      "keys": [
+        { "row": 0, "value": 8, "interpolation": "expo-out" },
+        { "row": 6, "value": 1, "interpolation": "step" },
+        { "row": 8, "value": 8, "interpolation": "expo-out" },
+        { "row": 14, "value": 1, "interpolation": "step" },
+        { "row": 16, "value": 8, "interpolation": "expo-out" },
+        { "row": 22, "value": 1, "interpolation": "step" },
+        { "row": 24, "value": 8, "interpolation": "expo-out" },
+        { "row": 30, "value": 1, "interpolation": "step" },
+        { "row": 32, "value": 8, "interpolation": "expo-out" },
+        { "row": 38, "value": 1, "interpolation": "step" },
+        { "row": 40, "value": 8, "interpolation": "expo-out" },
+        { "row": 46, "value": 1, "interpolation": "step" },
+        { "row": 48, "value": 8, "interpolation": "expo-out" },
+        { "row": 54, "value": 1, "interpolation": "step" },
+        { "row": 56, "value": 8, "interpolation": "expo-out" },
+        { "row": 62, "value": 1, "interpolation": "step" },
+        { "row": 64, "value": 8, "interpolation": "expo-out" },
+        { "row": 70, "value": 1, "interpolation": "step" },
+        { "row": 72, "value": 8, "interpolation": "expo-out" },
+        { "row": 78, "value": 1, "interpolation": "step" },
+        { "row": 80, "value": 8, "interpolation": "expo-out" },
+        { "row": 86, "value": 1, "interpolation": "step" },
+        { "row": 88, "value": 8, "interpolation": "expo-out" },
+        { "row": 94, "value": 1, "interpolation": "step" },
+        { "row": 96, "value": 8, "interpolation": "expo-out" },
+        { "row": 102, "value": 1, "interpolation": "step" },
+        { "row": 104, "value": 8, "interpolation": "expo-out" },
+        { "row": 110, "value": 1, "interpolation": "step" },
+        { "row": 112, "value": 8, "interpolation": "expo-out" },
+        { "row": 118, "value": 1, "interpolation": "step" },
+        { "row": 120, "value": 8, "interpolation": "expo-out" },
+        { "row": 126, "value": 1, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "twist",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "smooth" },
+        { "row": 64, "value": 0.8, "interpolation": "smooth" },
+        { "row": 128, "value": -0.4, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "tunnel", "type": "generator", "impl": "tunnel", "config": { "speed": 2.4, "twist": { "track": "twist" }, "fog": 0.15 } },
+      { "id": "ball", "type": "generator", "impl": "polygon", "config": { "mesh": "sphere", "shading": "envmap", "scale": { "track": "punch" }, "rotationY": 2 } },
+      { "id": "over", "type": "compositor", "impl": "alpha-blend", "config": {} },
+      { "id": "sparks", "type": "generator", "impl": "particles", "config": { "mode": "explosion", "count": 500, "lifetime": 0.4688, "speed": 1.6, "size": 1.8, "backgroundColor": "transparent", "randomSeed": 4, "palette": [[255, 255, 255], [255, 230, 120], [255, 120, 40], [80, 20, 10]] } },
+      { "id": "mix", "type": "compositor", "impl": "additive-blend", "config": {} },
+      { "id": "split", "type": "modifier", "impl": "chromatic-aberration", "config": { "amount": { "track": "split" }, "radial": true } }
+    ],
+    "edges": [
+      { "from": { "node": "tunnel", "output": "color" }, "to": { "node": "over", "input": "base" } },
+      { "from": { "node": "ball", "output": "color" }, "to": { "node": "over", "input": "overlay" } },
+      { "from": { "node": "over", "output": "color" }, "to": { "node": "mix", "input": "base" } },
+      { "from": { "node": "sparks", "output": "color" }, "to": { "node": "mix", "input": "overlay" } },
+      { "from": { "node": "mix", "output": "color" }, "to": { "node": "split", "input": "in" } }
+    ],
+    "outputs": { "terminal": "split", "browser": "split", "export": "split" }
+  }
+}

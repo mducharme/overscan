@@ -2,25 +2,22 @@
   "id": "showcase",
   "title": "Overscan Showcase",
   "loop": false,
+  "audio": "./showcase/music.mp3",
   "modifiers": [
-    { "id": "crt", "impl": "crt", "config": { "scanlineStrength": 0.12, "vignetteStrength": 0.18, "barrelDistortion": 0.02 } }
+    { "id": "crt", "impl": "crt", "config": { "scanlineStrength": 0.12, "vignetteStrength": 0.2, "barrelDistortion": 0.02 } }
   ],
   "sections": [
-    { "id": "intro", "scene": "./showcase/01-intro.scene.json", "duration": 8, "transition": { "type": "flash", "duration": 0.3 } },
-    { "id": "copper", "scene": "./showcase/02-copper.scene.json", "duration": 6, "transition": { "type": "wipe-down", "duration": 0.5 } },
-    { "id": "plasma", "scene": "./showcase/03-plasma.scene.json", "duration": 6, "transition": { "type": "dissolve", "duration": 0.6 } },
-    { "id": "twister", "scene": "./showcase/04-twister.scene.json", "duration": 6, "transition": { "type": "iris", "duration": 0.5 } },
-    { "id": "tunnel", "scene": "./showcase/05-tunnel.scene.json", "duration": 6, "transition": { "type": "zoom-out", "duration": 0.5 } },
-    { "id": "rotozoom", "scene": "./showcase/06-rotozoom.scene.json", "duration": 6, "transition": { "type": "wipe-left", "duration": 0.4 } },
-    { "id": "metaballs", "scene": "./showcase/07-metaballs.scene.json", "duration": 6, "transition": { "type": "flash", "duration": 0.3 } },
-    { "id": "balls", "scene": "./showcase/08-balls.scene.json", "duration": 6, "transition": { "type": "wipe-right", "duration": 0.5 } },
-    { "id": "glenz", "scene": "./showcase/09-glenz.scene.json", "duration": 6, "transition": { "type": "dissolve", "duration": 0.6 } },
-    { "id": "shadebobs", "scene": "./showcase/10-shadebobs.scene.json", "duration": 6, "transition": { "type": "iris", "duration": 0.5 } },
-    { "id": "fractal", "scene": "./showcase/11-fractal.scene.json", "duration": 6, "transition": { "type": "wipe-up", "duration": 0.4 } },
-    { "id": "raymarcher", "scene": "./showcase/12-raymarcher.scene.json", "duration": 6, "transition": { "type": "zoom-out", "duration": 0.5 } },
-    { "id": "voxel", "scene": "./showcase/13-voxel.scene.json", "duration": 6, "transition": { "type": "dissolve", "duration": 0.6 } },
-    { "id": "water", "scene": "./showcase/14-water.scene.json", "duration": 6, "transition": { "type": "wipe-down", "duration": 0.4 } },
-    { "id": "dots", "scene": "./showcase/15-dots.scene.json", "duration": 6, "transition": { "type": "flash", "duration": 0.3 } },
-    { "id": "credits", "scene": "./showcase/16-credits.scene.json", "duration": 7 }
+    { "id": "boot", "scene": "./showcase/01-boot.scene.json", "duration": 7.8, "transition": { "type": "flash", "duration": 0.3 } },
+    { "id": "relief", "scene": "./showcase/02-relief.scene.json", "duration": 7.75, "transition": { "type": "flash", "duration": 0.25 } },
+    { "id": "chrome", "scene": "./showcase/03-chrome.scene.json", "duration": 7.85, "transition": { "type": "push", "duration": 0.35 } },
+    { "id": "flower", "scene": "./showcase/04-flower.scene.json", "duration": 7.95, "transition": { "type": "checker", "duration": 0.45 } },
+    { "id": "burst", "scene": "./showcase/05-burst.scene.json", "duration": 7.95, "transition": { "type": "blinds", "duration": 0.45 } },
+    { "id": "jelly", "scene": "./showcase/06-jelly.scene.json", "duration": 8.4, "transition": { "type": "melt", "duration": 0.9 } },
+    { "id": "planet", "scene": "./showcase/07-planet.scene.json", "duration": 15.5, "transition": { "type": "iris", "duration": 0.5 } },
+    { "id": "monument", "scene": "./showcase/08-monument.scene.json", "duration": 8.0, "transition": { "type": "zoom-out", "duration": 0.5 } },
+    { "id": "canyon", "scene": "./showcase/09-canyon.scene.json", "duration": 7.85, "transition": { "type": "push", "duration": 0.35 } },
+    { "id": "bloom", "scene": "./showcase/10-bloom.scene.json", "duration": 7.9, "transition": { "type": "checker", "duration": 0.4 } },
+    { "id": "finale", "scene": "./showcase/11-finale.scene.json", "duration": 8.5, "transition": { "type": "melt", "duration": 1.0 } },
+    { "id": "credits", "scene": "./showcase/12-credits.scene.json", "duration": 7.5 }
   ]
 }

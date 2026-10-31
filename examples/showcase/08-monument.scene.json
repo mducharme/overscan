@@ -1,0 +1,88 @@
+{
+  "id": "08-monument",
+  "title": "Showcase · Monument",
+  "duration": 8.0,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "kick",
+      "keys": [
+        { "row": 0, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 6, "value": 1.4, "interpolation": "step" },
+        { "row": 8, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 14, "value": 1.4, "interpolation": "step" },
+        { "row": 16, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 22, "value": 1.4, "interpolation": "step" },
+        { "row": 24, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 30, "value": 1.4, "interpolation": "step" },
+        { "row": 32, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 38, "value": 1.4, "interpolation": "step" },
+        { "row": 40, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 46, "value": 1.4, "interpolation": "step" },
+        { "row": 48, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 54, "value": 1.4, "interpolation": "step" },
+        { "row": 56, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 62, "value": 1.4, "interpolation": "step" },
+        { "row": 64, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 70, "value": 1.4, "interpolation": "step" },
+        { "row": 72, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 78, "value": 1.4, "interpolation": "step" },
+        { "row": 80, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 86, "value": 1.4, "interpolation": "step" },
+        { "row": 88, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 94, "value": 1.4, "interpolation": "step" },
+        { "row": 96, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 102, "value": 1.4, "interpolation": "step" },
+        { "row": 104, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 110, "value": 1.4, "interpolation": "step" },
+        { "row": 112, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 118, "value": 1.4, "interpolation": "step" },
+        { "row": 120, "value": 3.2, "interpolation": "expo-out" },
+        { "row": 126, "value": 1.4, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "sun",
+      "keys": [
+        { "row": 0, "value": 0.15, "interpolation": "smooth" },
+        { "row": 128, "value": 0.85, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "split",
+      "keys": [
+        { "row": 0, "value": 7, "interpolation": "expo-out" },
+        { "row": 10, "value": 0.8, "interpolation": "step" },
+        { "row": 16, "value": 7, "interpolation": "expo-out" },
+        { "row": 26, "value": 0.8, "interpolation": "step" },
+        { "row": 32, "value": 7, "interpolation": "expo-out" },
+        { "row": 42, "value": 0.8, "interpolation": "step" },
+        { "row": 48, "value": 7, "interpolation": "expo-out" },
+        { "row": 58, "value": 0.8, "interpolation": "step" },
+        { "row": 64, "value": 7, "interpolation": "expo-out" },
+        { "row": 74, "value": 0.8, "interpolation": "step" },
+        { "row": 80, "value": 7, "interpolation": "expo-out" },
+        { "row": 90, "value": 0.8, "interpolation": "step" },
+        { "row": 96, "value": 7, "interpolation": "expo-out" },
+        { "row": 106, "value": 0.8, "interpolation": "step" },
+        { "row": 112, "value": 7, "interpolation": "expo-out" },
+        { "row": 122, "value": 0.8, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "rm", "type": "generator", "impl": "raymarcher", "config": { "fogColor": "#02050b", "cameraPos": [0, 0.4, 2.1], "camera": { "target": [0, 0.15, 0] }, "scenePath": "../shaders/raymarcher-monument.glsl" } },
+      { "id": "rays", "type": "modifier", "impl": "radial-blur", "config": { "mode": "rays", "strength": 0.6, "threshold": 0.25, "intensity": { "track": "kick" }, "centerX": { "track": "sun" }, "centerY": 0.3 } },
+      { "id": "split", "type": "modifier", "impl": "chromatic-aberration", "config": { "amount": { "track": "split" }, "radial": true } }
+    ],
+    "edges": [
+      { "from": { "node": "rm", "output": "color" }, "to": { "node": "rays", "input": "in" } },
+      { "from": { "node": "rays", "output": "color" }, "to": { "node": "split", "input": "in" } }
+    ],
+    "outputs": { "terminal": "split", "browser": "split", "export": "split" }
+  }
+}

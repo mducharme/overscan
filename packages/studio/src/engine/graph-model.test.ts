@@ -23,7 +23,7 @@ describe('bindings', () => {
 
 describe('buildGraphModel', () => {
   it('lays a chain out top to bottom and ends at the output node', () => {
-    const model = buildGraphModel(load('showcase/03-plasma.scene.json'), NODE_SCHEMAS, validateNodeConfig)
+    const model = buildGraphModel(load('advanced/plasma-lens.scene.json'), NODE_SCHEMAS, validateNodeConfig)
     const y = Object.fromEntries(model.nodes.map(n => [n.id, n.y]))
     expect(y.plasma).toBeLessThan(y.lens!)
     expect(y.lens).toBeLessThan(y[OUTPUT_NODE_ID]!)
@@ -42,7 +42,7 @@ describe('buildGraphModel', () => {
   })
 
   it('keeps nodes in a layer from overlapping and reports config problems', () => {
-    const scene = load('showcase/03-plasma.scene.json')
+    const scene = load('advanced/plasma-lens.scene.json')
     scene.graph.nodes[0]!.config = { ...scene.graph.nodes[0]!.config, speed: 'fast' }
     const model = buildGraphModel(scene, NODE_SCHEMAS, validateNodeConfig)
     expect(model.nodes.find(n => n.id === 'plasma')?.problems.length).toBeGreaterThan(0)
@@ -57,7 +57,7 @@ describe('buildGraphModel', () => {
 
 describe('layout spacing', () => {
   it('puts the output node directly below the last node, with no empty layer', () => {
-    const model = buildGraphModel(load('showcase/01-intro.scene.json'), NODE_SCHEMAS, validateNodeConfig)
+    const model = buildGraphModel(load('showcase/01-boot.scene.json'), NODE_SCHEMAS, validateNodeConfig)
     const ys = [...new Set(model.nodes.map(n => n.y))].sort((a, b) => a - b)
     const gaps = ys.slice(1).map((y, i) => y - ys[i]!)
     expect(new Set(gaps).size).toBe(1)

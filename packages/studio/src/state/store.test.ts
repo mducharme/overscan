@@ -93,7 +93,7 @@ describe('render errors', () => {
 
 /** A real scene file behind a fake player that records scene updates like the real one. */
 function editableDocument(path = '/p/plasma.scene.json'): { document: StudioDocument; updates: Scene[] } {
-  const text = readFileSync(join(__dirname, '../../../../examples/showcase/03-plasma.scene.json'), 'utf8')
+  const text = readFileSync(join(__dirname, '../../../../examples/advanced/plasma-lens.scene.json'), 'utf8')
   const scene = parseSceneJson(text)
   const updates: Scene[] = []
   let sections = [{ id: scene.id, title: scene.title, start: 0, end: scene.duration, scenePath: path, scene, transition: { type: 'cut', duration: 0 } }]
@@ -313,24 +313,24 @@ describe('demo edits', () => {
     s().setDemoValue(['sections', 0, 'duration'], 4)
     await rebuilt(store, player)
     expect(s().document!.player.sections[0]!.end).toBe(4)
-    expect(s().document!.files[DEMO]!.text).toBe(original.replace('"duration": 8', '"duration": 4'))
+    expect(s().document!.files[DEMO]!.text).toBe(original.replace('"duration": 7.8', '"duration": 4'))
 
     player = s().document!.player
     s().addSection(0, join(EXAMPLES, 'generators', 'plasma.scene.json'), 3)
     await rebuilt(store, player)
-    expect(demo().sections[1]).toEqual({ id: 'plasma2', scene: './generators/plasma.scene.json', duration: 3 })
+    expect(demo().sections[1]).toEqual({ id: 'plasma', scene: './generators/plasma.scene.json', duration: 3 })
     expect(s().document!.player.sections[1]!.scenePath).toBe(join(EXAMPLES, 'generators', 'plasma.scene.json'))
     expect(Object.keys(s().document!.files)).toContain(join(EXAMPLES, 'generators', 'plasma.scene.json'))
 
     s().moveSection(1, -1)
-    expect(demo().sections.map(x => x.id).slice(0, 2)).toEqual(['plasma2', 'intro'])
+    expect(demo().sections.map(x => x.id).slice(0, 2)).toEqual(['plasma', 'boot'])
     s().removeSection(0)
     s().addDemoModifier('glow')
     expect(demo().modifiers?.map(m => m.id)).toEqual(['crt', 'glow'])
     s().removeDemoModifier(1)
-    s().setDemoValue(['sections', 0, 'duration'], 8)
+    s().setDemoValue(['sections', 0, 'duration'], 7.8)
     expect(s().document!.files[DEMO]!.text).toBe(original)
     s().setDemoValue(['sections', 0, 'duration'], undefined)
-    expect(demo().sections[0]).toEqual({ id: 'intro', scene: './showcase/01-intro.scene.json', transition: { type: 'flash', duration: 0.3 } })
+    expect(demo().sections[0]).toEqual({ id: 'boot', scene: './showcase/01-boot.scene.json', transition: { type: 'flash', duration: 0.3 } })
   }, 20_000)
 })

@@ -15,7 +15,7 @@ pnpm install && pnpm build
 pnpm run overscan -- run examples/generators/twister.scene.json
 ```
 
-That should fill the terminal with a twister. For the full tour, `pnpm run overscan -- run examples/showcase.demo.json` plays a 90-second demo (left/right skip sections, space pauses, Esc quits). Browser: `pnpm run overscan -- dev examples/generators/plasma.scene.json` — run `run` and `dev` side by side if you want terminal + canvas.
+That should fill the terminal with a twister. For the full tour, `pnpm run overscan -- run examples/showcase.demo.json` plays the 97-second showcase with its synthesised soundtrack (left/right skip sections, space pauses, Esc quits; audio needs `mpv`). Browser: `pnpm run overscan -- dev examples/generators/plasma.scene.json` — run `run` and `dev` side by side if you want terminal + canvas.
 
 ## What it looks like
 

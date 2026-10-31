@@ -1,0 +1,70 @@
+{
+  "id": "06-jelly",
+  "title": "Showcase · Jelly",
+  "duration": 8.4,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "jelly",
+      "keys": [
+        { "row": 0, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 8, "value": 0.05, "interpolation": "step" },
+        { "row": 8, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 16, "value": 0.05, "interpolation": "step" },
+        { "row": 16, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 24, "value": 0.05, "interpolation": "step" },
+        { "row": 24, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 32, "value": 0.05, "interpolation": "step" },
+        { "row": 32, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 40, "value": 0.05, "interpolation": "step" },
+        { "row": 40, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 48, "value": 0.05, "interpolation": "step" },
+        { "row": 48, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 56, "value": 0.05, "interpolation": "step" },
+        { "row": 56, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 64, "value": 0.05, "interpolation": "step" },
+        { "row": 64, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 72, "value": 0.05, "interpolation": "step" },
+        { "row": 72, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 80, "value": 0.05, "interpolation": "step" },
+        { "row": 80, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 88, "value": 0.05, "interpolation": "step" },
+        { "row": 88, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 96, "value": 0.05, "interpolation": "step" },
+        { "row": 96, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 104, "value": 0.05, "interpolation": "step" },
+        { "row": 104, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 112, "value": 0.05, "interpolation": "step" },
+        { "row": 112, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 120, "value": 0.05, "interpolation": "step" },
+        { "row": 120, "value": 0.55, "interpolation": "ease-out" },
+        { "row": 128, "value": 0.05, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "crush",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 96, "value": 0, "interpolation": "step" },
+        { "row": 100, "value": 0.7, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "bars", "type": "generator", "impl": "copperbars", "config": { "count": 14, "speed": 2, "barHeight": 10, "amplitude": 0.45 } },
+      { "id": "cube", "type": "generator", "impl": "polygon", "config": { "mesh": "glenz", "shading": "flat", "rubber": { "track": "jelly" }, "scale": 0.8, "rotationX": 1.6, "rotationY": 1.2, "rotationZ": 0.4 } },
+      { "id": "over", "type": "compositor", "impl": "alpha-blend", "config": {} },
+      { "id": "c64", "type": "modifier", "impl": "dither", "config": { "palette": "c64", "matrix": "4x4", "pixelSize": 2, "spread": { "track": "crush" } } }
+    ],
+    "edges": [
+      { "from": { "node": "bars", "output": "color" }, "to": { "node": "over", "input": "base" } },
+      { "from": { "node": "cube", "output": "color" }, "to": { "node": "over", "input": "overlay" } },
+      { "from": { "node": "over", "output": "color" }, "to": { "node": "c64", "input": "in" } }
+    ],
+    "outputs": { "terminal": "c64", "browser": "c64", "export": "c64" }
+  }
+}

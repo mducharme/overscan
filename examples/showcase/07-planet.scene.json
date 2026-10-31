@@ -1,0 +1,49 @@
+{
+  "id": "07-planet",
+  "title": "Showcase · Planet",
+  "duration": 15.5,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "bob",
+      "keys": [
+        { "row": 0, "value": 0.44, "interpolation": "smooth" },
+        { "row": 64, "value": 0.38, "interpolation": "smooth" },
+        { "row": 128, "value": 0.46, "interpolation": "smooth" },
+        { "row": 192, "value": 0.38, "interpolation": "smooth" },
+        { "row": 256, "value": 0.44, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "riser",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 192, "value": 0, "interpolation": "expo-in" },
+        { "row": 256, "value": 0.6, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "stars", "type": "generator", "impl": "starfield", "config": { "count": 400, "warpSpeed": 0.25 } },
+      { "id": "tex", "type": "generator", "impl": "rotozoom", "config": { "textureUrl": "overscan://checkerboard", "rotationSpeed": 0, "zoomSpeed": 0 } },
+      { "id": "ball", "type": "modifier", "impl": "uv-map", "config": { "preset": "sphere", "radius": 0.36, "speedU": 0.1, "centerY": { "track": "bob" }, "repeat": 3 } },
+      { "id": "space", "type": "compositor", "impl": "alpha-blend", "config": {} },
+      { "id": "greets", "type": "generator", "impl": "scroller", "config": { "mode": "dycp", "text": "  GREETINGS TO EVERYONE STILL MAKING PIXELS DANCE  *  TERMINAL DEMOSCENE FOREVER  *  ", "fontSize": 30, "speed": 18, "waveAmplitude": 26, "waveFrequency": 0.45, "waveSpeed": 3, "verticalPosition": 0.86, "color": "#ffe6a8" } },
+      { "id": "text", "type": "compositor", "impl": "alpha-blend", "config": {} },
+      { "id": "zoom", "type": "modifier", "impl": "radial-blur", "config": { "strength": { "track": "riser" } } }
+    ],
+    "edges": [
+      { "from": { "node": "tex", "output": "color" }, "to": { "node": "ball", "input": "in" } },
+      { "from": { "node": "stars", "output": "color" }, "to": { "node": "space", "input": "base" } },
+      { "from": { "node": "ball", "output": "color" }, "to": { "node": "space", "input": "overlay" } },
+      { "from": { "node": "space", "output": "color" }, "to": { "node": "text", "input": "base" } },
+      { "from": { "node": "greets", "output": "color" }, "to": { "node": "text", "input": "overlay" } },
+      { "from": { "node": "text", "output": "color" }, "to": { "node": "zoom", "input": "in" } }
+    ],
+    "outputs": { "terminal": "zoom", "browser": "zoom", "export": "zoom" }
+  }
+}
