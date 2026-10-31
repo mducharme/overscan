@@ -41,8 +41,8 @@
   "graph": {
     "nodes": [
       { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "OVERSCAN", "scale": 0.82, "y": 0.42, "palette": [[210, 110, 10], [255, 190, 70], [255, 240, 200], [70, 28, 0]] } },
-      { "id": "tag", "type": "generator", "impl": "image", "config": { "text": "PIXELS BLEEDING BEYOND THE EDGE", "scale": 0.86, "y": 0.7, "outline": 0, "palette": [[255, 190, 70], [210, 110, 10]], "opacity": { "track": "tag.out" } } },
-      { "id": "mix", "type": "compositor", "impl": "additive-blend", "config": {} },
+      { "id": "tag", "type": "generator", "impl": "text", "config": { "text": "PIXELS BLEEDING\nBEYOND THE EDGE", "font": "overscan://fonts/Press2P", "fontSize": 24, "color": "#ffbe46", "letterSpacing": 1, "lineHeight": 1.5, "y": 0.74 } },
+      { "id": "mix", "type": "compositor", "impl": "additive-blend", "config": { "opacity": { "track": "tag.out" } } },
       { "id": "rays", "type": "modifier", "impl": "radial-blur", "config": { "mode": "rays", "strength": { "track": "reach" }, "threshold": 0.35, "intensity": 1.4, "centerY": 0.45 } },
       { "id": "trail", "type": "modifier", "impl": "feedback", "config": { "decay": { "track": "trail" }, "blendMode": "alpha", "scale": 1.03 } },
       { "id": "heat", "type": "modifier", "impl": "color-grade", "config": { "palette": [[8, 3, 0], [70, 28, 0], [210, 110, 10], [230, 0, 160], [255, 255, 255]], "strength": { "track": "heat" } } }

@@ -26,11 +26,11 @@
   ],
   "graph": {
     "nodes": [
-      { "id": "cloud", "type": "generator", "impl": "particles", "config": { "mode": "attractor", "count": 70000, "size": 0.6, "emitY": 0.58, "backgroundColor": "#040100", "palette": [[255, 240, 200], [255, 190, 70], [210, 110, 10], [70, 28, 0]] } },
-      { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "OVERSCAN", "scale": 0.55, "y": 0.17, "palette": [[210, 110, 10], [255, 190, 70], [255, 240, 200], [70, 28, 0]] } },
+      { "id": "cloud", "type": "generator", "impl": "particles", "config": { "mode": "attractor", "count": 70000, "size": 0.6, "emitY": 0.7, "backgroundColor": "#040100", "palette": [[255, 240, 200], [255, 190, 70], [210, 110, 10], [70, 28, 0]] } },
+      { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "OVERSCAN", "scale": 0.5, "y": 0.12, "palette": [[210, 110, 10], [255, 190, 70], [255, 240, 200], [70, 28, 0]] } },
       { "id": "title", "type": "compositor", "impl": "alpha-blend", "config": {} },
-      { "id": "tag", "type": "generator", "impl": "image", "config": { "text": "PIXELS BLEEDING BEYOND THE EDGE", "scale": 0.6, "y": 0.92, "outline": 0, "palette": [[255, 190, 70], [210, 110, 10]], "opacity": { "track": "tag.in" } } },
-      { "id": "text", "type": "compositor", "impl": "additive-blend", "config": {} },
+      { "id": "tag", "type": "generator", "impl": "text", "config": { "text": "PIXELS BLEEDING\nBEYOND THE EDGE", "font": "overscan://fonts/Press2P", "fontSize": 16, "color": "#ffbe46", "letterSpacing": 1, "lineHeight": 1.5, "y": 0.27 } },
+      { "id": "text", "type": "compositor", "impl": "additive-blend", "config": { "opacity": { "track": "tag.in" } } },
       { "id": "fade", "type": "modifier", "impl": "palette-flash", "config": { "color": "#000000", "strength": { "track": "fade" }, "blendMode": "alpha" } }
     ],
     "edges": [
