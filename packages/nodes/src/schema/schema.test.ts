@@ -2,6 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { listBuiltinImpls } from '../registry.js'
+import { CLASSIC_SCHEMAS } from './classics.js'
 import { COMPOSITOR_SCHEMAS } from './compositors.js'
 import { GENERATOR_SCHEMAS_1 } from './generators-1.js'
 import { GENERATOR_SCHEMAS_2 } from './generators-2.js'
@@ -22,7 +23,7 @@ function sceneFiles(dir: string): string[] {
 
 describe('node settings schemas', () => {
   it('covers every registered effect exactly once', () => {
-    const all = [...GENERATOR_SCHEMAS_1, ...GENERATOR_SCHEMAS_2, ...MODIFIER_SCHEMAS, ...COMPOSITOR_SCHEMAS, ...SIGNAL_SCHEMAS]
+    const all = [...GENERATOR_SCHEMAS_1, ...GENERATOR_SCHEMAS_2, ...CLASSIC_SCHEMAS, ...MODIFIER_SCHEMAS, ...COMPOSITOR_SCHEMAS, ...SIGNAL_SCHEMAS]
     const impls = all.map(s => s.impl)
     expect(impls.length).toBe(new Set(impls).size)
     expect([...impls].sort()).toEqual([...listBuiltinImpls()].sort())

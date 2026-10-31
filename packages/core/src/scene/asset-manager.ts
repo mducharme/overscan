@@ -1,6 +1,6 @@
 import type { AssetManager, LoadedImageAsset, Scene } from '@overscan/types'
 
-const ASSET_CONFIG_KEYS = new Set(['textureUrl', 'heightmap', 'colormap', 'backgroundUrl', 'font', 'scenePath', 'shaderPath'])
+const ASSET_CONFIG_KEYS = new Set(['textureUrl', 'imageUrl', 'heightmap', 'colormap', 'backgroundUrl', 'font', 'scenePath', 'shaderPath'])
 
 const IMAGE_EXTENSIONS = /\.(png|jpg|jpeg|bmp|gif|webp)$/i
 

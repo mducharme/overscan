@@ -1,3 +1,4 @@
+import { CLASSIC_SCHEMAS } from './classics.js'
 import { COMPOSITOR_SCHEMAS } from './compositors.js'
 import { GENERATOR_SCHEMAS_1 } from './generators-1.js'
 import { GENERATOR_SCHEMAS_2 } from './generators-2.js'
@@ -10,6 +11,6 @@ export { validateNodeConfig, type ConfigProblem } from './validate.js'
 
 /** Every built-in effect's settings schema, keyed by `impl`. */
 export const NODE_SCHEMAS: Readonly<Record<string, NodeSchema>> = Object.fromEntries(
-  [...GENERATOR_SCHEMAS_1, ...GENERATOR_SCHEMAS_2, ...MODIFIER_SCHEMAS, ...COMPOSITOR_SCHEMAS, ...SIGNAL_SCHEMAS]
+  [...GENERATOR_SCHEMAS_1, ...GENERATOR_SCHEMAS_2, ...CLASSIC_SCHEMAS, ...MODIFIER_SCHEMAS, ...COMPOSITOR_SCHEMAS, ...SIGNAL_SCHEMAS]
     .map(schema => [schema.impl, schema]),
 )
