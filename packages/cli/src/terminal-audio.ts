@@ -216,10 +216,18 @@ function sendCommand(socket: net.Socket, command: readonly unknown[]): Promise<v
   })
 }
 
-function makeSocketPath(runtimeDir: string, key: string): string {
+/** Unix socket paths are limited to 104 bytes on macOS (108 on Linux); mpv silently fails beyond that. */
+const MAX_SOCKET_PATH = 100
+let socketCounter = 0
+
+/** Where mpv's IPC socket goes: inside the runtime folder when the path fits, else a short name in /tmp. */
+export function makeSocketPath(runtimeDir: string, key: string): string {
   const suffix = `${process.pid}-${key}-${randomUUID()}`
   if (process.platform === 'win32') return `\\\\.\\pipe\\overscan-mpv-${suffix}`
-  return join(runtimeDir, `${key}.sock`)
+  const preferred = join(runtimeDir, `${key}.sock`)
+  if (Buffer.byteLength(preferred) <= MAX_SOCKET_PATH) return preferred
+  // macOS temp folders (/var/folders/…) alone use half the limit.
+  return `/tmp/overscan-mpv-${process.pid}-${++socketCounter}.sock`
 }
 
 function isMissingMpv(error: unknown): boolean {
