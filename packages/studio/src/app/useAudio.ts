@@ -6,9 +6,11 @@ import { useBridge, useStudio, useStudioStore } from './studio-context'
 export function useAudio(): void {
   const store = useStudioStore()
   const bridge = useBridge()
-  const document = useStudio(s => s.document)
+  // Keyed by the player: config edits replace the document object but must not restart the audio.
+  const player = useStudio(s => s.document?.player)
   useEffect(() => {
-    if (!document) return
+    const { document } = store.getState()
+    if (!player || !document) return
     const clips = timelineAudio(document)
     if (clips.length === 0) return
     const playback = new AudioPlayback(clips, path => bridge.mediaUrl(path))
@@ -19,5 +21,5 @@ export function useAudio(): void {
     sync()
     const unsubscribe = store.subscribe(sync)
     return () => { unsubscribe(); playback.destroy() }
-  }, [store, bridge, document])
+  }, [store, bridge, player])
 }

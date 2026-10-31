@@ -51,7 +51,8 @@ export function Timeline() {
   const [width, setWidth] = useState(0)
   const [view, setView] = useState<TimeView>({ start: 0, end: 1 })
 
-  useEffect(() => { setView({ start: 0, end: duration || 1 }) }, [document, duration])
+  const player = document?.player
+  useEffect(() => { setView({ start: 0, end: duration || 1 }) }, [player, duration])
   useEffect(() => {
     if (playing) setView(v => followTime(v, time, duration))
   }, [playing, time, duration])
@@ -62,7 +63,7 @@ export function Timeline() {
     const observer = new ResizeObserver(([entry]) => { if (entry) setWidth(Math.max(0, Math.floor(entry.contentRect.width) - LABEL_W)) })
     observer.observe(el)
     return () => { observer.disconnect() }
-  }, [document])
+  }, [player])
 
   // Wheel needs a non-passive listener to stop the page zooming on pinch.
   const viewRef = useRef(view)
@@ -94,7 +95,8 @@ export function Timeline() {
     const node = focus?.scene.graph.nodes.find(n => n.id === selectedNodeId)
     return new Set(node ? configBindings(node.config).flatMap(b => (b.binding.kind === 'track' ? [b.binding.track] : [])) : [])
   }, [focus, selectedNodeId])
-  const audio = useMemo(() => (document ? timelineAudio(document) : []), [document])
+  // Audio placement only changes with a new player; config edits keep it.
+  const audio = useMemo(() => (document ? timelineAudio(document) : []), [player])
   const scale = makeScale(view, width)
   // During a transition overlap the incoming section owns the grid, so beat lines never double up.
   const spans = useMemo(() => sections.map((s, i) => ({ start: s.start, end: Math.min(s.end, sections[i + 1]?.start ?? s.end), bpm: s.scene.bpm })), [sections])

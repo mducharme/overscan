@@ -17,7 +17,11 @@ declare global {
 }
 
 const bridge = createHttpBridge()
-const store = createStudioStore({ load: filePath => loadDocument(bridge, filePath, { decodeImage: decodeImageInBrowser }) })
+const store = createStudioStore({
+  load: filePath => loadDocument(bridge, filePath, { decodeImage: decodeImageInBrowser }),
+  save: (filePath, text) => bridge.save(filePath, text),
+  stat: filePath => bridge.stat(filePath),
+})
 window.__overscanStudio = store
 
 const initialFile = new URLSearchParams(window.location.search).get('file') ?? (typeof __OVERSCAN_FILE__ === 'string' ? __OVERSCAN_FILE__ : '')

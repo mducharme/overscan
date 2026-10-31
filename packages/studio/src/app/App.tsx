@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { baseName } from '../engine/paths'
 import { Button } from '../ui/kit'
 import { GraphPanel } from './GraphPanel'
-import { NodeDetails } from './NodeDetails'
+import { Inspector } from './Inspector'
+import { SaveControls } from './SaveControls'
 import { Notices } from './Notices'
 import { Preview, type PreviewHandle } from './Preview'
 import { useStudio, useStudioStore } from './studio-context'
@@ -34,6 +35,7 @@ export function App() {
           {document && <span className="app__file" title={document.filePath}>{baseName(document.filePath)}</span>}
           {title && <span className="app__doc-title">{title}</span>}
           {document && <span className="app__kind">{document.kind === 'demo' ? `${document.player.sections.length} sections` : 'scene'}</span>}
+          {document && <SaveControls />}
         </div>
         <Transport onScreenshot={() => previewRef.current?.screenshot()} onFullscreen={() => previewRef.current?.fullscreen()} />
         {document && (
@@ -55,7 +57,7 @@ export function App() {
         {document && showGraph && (
           <aside className="app__side">
             <GraphPanel />
-            <NodeDetails />
+            <Inspector />
           </aside>
         )}
       </main>

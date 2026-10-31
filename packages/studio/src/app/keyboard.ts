@@ -2,15 +2,22 @@ import type { StudioStore } from '../state/store'
 
 /**
  * Player shortcuts, matching `overscan run`: Space play/pause, ←/→ previous/next section in a demo
- * (±5 s in a scene), ↑/↓ double/halve the rate, Home rewind, L loop, M mute, F fullscreen, G graph, Esc deselect.
+ * (±5 s in a scene), ↑/↓ double/halve the rate, Home rewind, L loop, M mute, F fullscreen, G graph, Esc deselect, ⌘/Ctrl+S save.
  * Ignored while typing in a field. Returns a function that removes the listener.
  */
 export function bindPlayerKeys(store: StudioStore, actions: { fullscreen: () => void; toggleGraph: () => void }): () => void {
   const onKey = (event: KeyboardEvent): void => {
     const target = event.target
+    const s = store.getState()
+    // ⌘S / Ctrl+S saves, even from inside a field (after it commits on blur).
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+      event.preventDefault()
+      if (target instanceof HTMLElement) target.blur()
+      void s.save()
+      return
+    }
     if (target instanceof Element && target.closest('input, textarea, select, [contenteditable="true"]')) return
     if (event.metaKey || event.ctrlKey || event.altKey) return
-    const s = store.getState()
     const player = s.document?.player
     if (!player) return
     const step = (direction: -1 | 1): void => {

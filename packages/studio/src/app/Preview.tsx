@@ -42,7 +42,9 @@ export const Preview = forwardRef<PreviewHandle>(function Preview(_props, ref) {
 
   // Everything that needs a new renderer, as one key. It also keys the <canvas>: a canvas keeps its first
   // context type (2D vs WebGL), so switching renderers needs a fresh element.
-  const documentId = useMemo(() => (document ? `${document.filePath}@${document.mtimeMs}#${++documentCounter}` : ''), [document])
+  // Keyed by the player, not the document object: edits replace the document but keep its player.
+  const player = document?.player
+  const documentId = useMemo(() => (player ? `player${++documentCounter}` : ''), [player])
   const viewportKey = mode === 'ansi' || mode === 'ascii' ? `${viewport.width}x${viewport.height}` : viewport.width > 0 ? 'ready' : ''
   const rendererKey = `${documentId}|${mode}|${scale}|${viewportKey}`
 
@@ -53,6 +55,7 @@ export const Preview = forwardRef<PreviewHandle>(function Preview(_props, ref) {
     let raf = 0
     let last = performance.now()
     let lastRendered = Number.NaN
+    let lastVersion = -1
     let frames = 0
     let fpsSince = last
     void createPreviewRenderer(canvas, document.player, { mode, scale, viewport })
@@ -66,8 +69,10 @@ export const Preview = forwardRef<PreviewHandle>(function Preview(_props, ref) {
           const state = store.getState()
           state.advance(dt)
           const { time, renderError } = store.getState()
-          if (time !== lastRendered && !renderError) {
+          // Redraw when the time moved or an edit changed the scene (even while paused).
+          if ((time !== lastRendered || document.player.version !== lastVersion) && !renderError) {
             try {
+              lastVersion = document.player.version
               renderer.render(time, Number.isNaN(lastRendered) ? 0 : Math.max(0, time - lastRendered))
               lastRendered = time
               frames++
