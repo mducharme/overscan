@@ -85,11 +85,13 @@ export function ParticlesGenerator(config: Partial<ParticlesConfig> = {}): Gener
       }
 
       if (mode === 'attractor') {
-        // Clifford attractor; its parameters drift slowly so the cloud breathes.
-        const a = -1.4 + 0.25 * Math.sin(t * 0.21), b = 1.6 + 0.2 * Math.cos(t * 0.17)
-        const cc = 1.0 + 0.15 * Math.sin(t * 0.13), d = 0.7 + 0.2 * Math.cos(t * 0.11)
+        // Clifford attractor with fixed, chaotic parameters: changing them over time drops the cloud into
+        // periodic windows where it collapses to a few points. It turns and breathes instead.
+        const a = -1.4, b = 1.6, cc = 1.0, d = 0.7
         let x = 0.1, y = 0.1
-        const scale = unit * 0.2
+        const scale = unit * 0.2 * (1 + 0.06 * Math.sin(t * 0.5))
+        const turn = t * 0.12
+        const cos = Math.cos(turn), sin = Math.sin(turn)
         // Small points (the usual case) splat into a light buffer, coloured from a palette table: much
         // cheaper than a soft dot each. Each splat carries the same total light as the dot it replaces.
         const splat = size <= 1
@@ -106,10 +108,10 @@ export function ParticlesGenerator(config: Partial<ParticlesConfig> = {}): Gener
           if (i < 50) continue
           const age01 = 1 - Math.min(1, Math.hypot(x, y) / 2.5)
           if (!splat) {
-            plot(ex + x * scale, ey + y * scale, age01, 0.35)
+            plot(ex + (x * cos - y * sin) * scale, ey + (x * sin + y * cos) * scale, age01, 0.35)
             continue
           }
-          addSplat(light, lut!, w, h, ex + x * scale - 0.5, ey + y * scale - 0.5, age01, energy)
+          addSplat(light, lut!, w, h, ex + (x * cos - y * sin) * scale - 0.5, ey + (x * sin + y * cos) * scale - 0.5, age01, energy)
         }
         if (splat) {
           for (let p = 0, o = 0; p < light.length; p += 3, o += 4) {
