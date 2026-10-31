@@ -17,22 +17,22 @@ Play any example in the terminal with `pnpm run overscan -- run <scene>`, or ope
 
 ## Showcase demo
 
-[`examples/showcase.demo.json`](../examples/showcase.demo.json): **Overscan Showcase**, 12 sections cut to a synthesised soundtrack (`./showcase/music.mp3`, built by `scripts/build-showcase-music.mjs`). Play it with `pnpm run overscan -- run examples/showcase.demo.json` (audio needs `mpv`) or open it in the studio.
+[`examples/showcase.demo.json`](../examples/showcase.demo.json): **Overscan: pixels bleeding beyond the edge**, 12 sections cut to a synthesised soundtrack (`./showcase/music.mp3`, built by `scripts/build-showcase-music.mjs`). Play it with `pnpm run overscan -- run examples/showcase.demo.json` (audio needs `mpv`) or open it in the studio.
 
 | # | Section | Effects | Into the next |
 | ---: | --- | --- | --- |
-| 1 | [boot](../examples/showcase/01-boot.scene.json) | `starfield`, `image`, `wobble`, `radial-blur`, `alpha-blend` | flash 0.3 s |
-| 2 | [relief](../examples/showcase/02-relief.scene.json) | `image`, `bump`, `particles`, `additive-blend`, `radial-blur` | flash 0.25 s |
-| 3 | [chrome](../examples/showcase/03-chrome.scene.json) | `kefrens`, `polygon`, `alpha-blend`, `chromatic-aberration` | push 0.35 s |
-| 4 | [flower](../examples/showcase/04-flower.scene.json) | `plasma`, `uv-map`, `dot-tunnel`, `additive-blend`, `palette-flash` | checker 0.45 s |
-| 5 | [burst](../examples/showcase/05-burst.scene.json) | `particles`, `additive-blend`, `feedback`, `glow` | blinds 0.45 s |
+| 1 | [lock](../examples/showcase/01-lock.scene.json) | `image`, `wobble`, `chromatic-aberration`, `additive-blend` | — |
+| 2 | [bleed](../examples/showcase/02-bleed.scene.json) | `image`, `additive-blend`, `radial-blur`, `feedback`, `color-grade` | flash 0.25 s |
+| 3 | [grid](../examples/showcase/03-grid.scene.json) | `checkerboard-floor`, `polygon`, `alpha-blend`, `chromatic-aberration` | push 0.35 s |
+| 4 | [walls](../examples/showcase/04-walls.scene.json) | `kefrens`, `palette-flash` | checker 0.45 s |
+| 5 | [flower](../examples/showcase/05-flower.scene.json) | `plasma`, `uv-map` | blinds 0.45 s |
 | 6 | [jelly](../examples/showcase/06-jelly.scene.json) | `copperbars`, `polygon`, `alpha-blend`, `dither` | melt 0.9 s |
-| 7 | [planet](../examples/showcase/07-planet.scene.json) | `starfield`, `rotozoom`, `uv-map`, `alpha-blend`, `scroller`, `radial-blur` | iris 0.5 s |
-| 8 | [monument](../examples/showcase/08-monument.scene.json) | `raymarcher`, `radial-blur`, `chromatic-aberration` | zoom-out 0.5 s |
-| 9 | [canyon](../examples/showcase/09-canyon.scene.json) | `voxel-landscape`, `color-grade`, `uv-map`, `palette-flash` | push 0.35 s |
-| 10 | [bloom](../examples/showcase/10-bloom.scene.json) | `kefrens`, `dot-tunnel`, `screen-blend`, `glow` | checker 0.4 s |
-| 11 | [finale](../examples/showcase/11-finale.scene.json) | `tunnel`, `polygon`, `alpha-blend`, `particles`, `additive-blend`, `chromatic-aberration` | melt 1 s |
-| 12 | [credits](../examples/showcase/12-credits.scene.json) | `particles`, `image`, `wobble`, `alpha-blend`, `scroller`, `palette-flash` | — |
+| 7 | [planet](../examples/showcase/07-planet.scene.json) | `starfield`, `plasma`, `uv-map`, `alpha-blend`, `scroller`, `radial-blur` | flash 0.25 s |
+| 8 | [hyperspace](../examples/showcase/08-hyperspace.scene.json) | `dot-tunnel`, `radial-blur` | zoom-out 0.5 s |
+| 9 | [monument](../examples/showcase/09-monument.scene.json) | `raymarcher`, `color-grade`, `radial-blur` | push 0.35 s |
+| 10 | [burn](../examples/showcase/10-burn.scene.json) | `image`, `fire`, `additive-blend`, `particles`, `wobble` | checker 0.4 s |
+| 11 | [finale](../examples/showcase/11-finale.scene.json) | `plasma`, `uv-map`, `polygon`, `particles`, `additive-blend`, `feedback`, `alpha-blend` | melt 1 s |
+| 12 | [afterglow](../examples/showcase/12-afterglow.scene.json) | `particles`, `image`, `alpha-blend`, `additive-blend`, `palette-flash` | — |
 
 Demo-wide modifiers: `crt`.
 

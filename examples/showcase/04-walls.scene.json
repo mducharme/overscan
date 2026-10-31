@@ -1,0 +1,74 @@
+{
+  "id": "04-walls",
+  "title": "Showcase · Kefrens walls",
+  "duration": 7.95,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "swing",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "ease-in-out" },
+        { "row": 64, "value": 0.4, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "twist",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 32, "value": 0, "interpolation": "ease-in-out" },
+        { "row": 96, "value": 0.7, "interpolation": "smooth" },
+        { "row": 128, "value": 0.4, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "kick",
+      "keys": [
+        { "row": 0, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 4, "value": 0, "interpolation": "step" },
+        { "row": 8, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 12, "value": 0, "interpolation": "step" },
+        { "row": 16, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 20, "value": 0, "interpolation": "step" },
+        { "row": 24, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 28, "value": 0, "interpolation": "step" },
+        { "row": 32, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 36, "value": 0, "interpolation": "step" },
+        { "row": 40, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 44, "value": 0, "interpolation": "step" },
+        { "row": 48, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 52, "value": 0, "interpolation": "step" },
+        { "row": 56, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 60, "value": 0, "interpolation": "step" },
+        { "row": 64, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 68, "value": 0, "interpolation": "step" },
+        { "row": 72, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 76, "value": 0, "interpolation": "step" },
+        { "row": 80, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 84, "value": 0, "interpolation": "step" },
+        { "row": 88, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 92, "value": 0, "interpolation": "step" },
+        { "row": 96, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 100, "value": 0, "interpolation": "step" },
+        { "row": 104, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 108, "value": 0, "interpolation": "step" },
+        { "row": 112, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 116, "value": 0, "interpolation": "step" },
+        { "row": 120, "value": 0.18, "interpolation": "expo-out" },
+        { "row": 124, "value": 0, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "walls", "type": "generator", "impl": "kefrens", "config": { "barWidth": 24, "amplitude": { "track": "swing" }, "twist": { "track": "twist" }, "speed": 3, "waves": 1.4, "top": 0, "backgroundColor": "#06000f", "palette": [[30, 0, 60], [180, 0, 140], [255, 0, 170], [0, 220, 255], [255, 255, 255]] } },
+      { "id": "flash", "type": "modifier", "impl": "palette-flash", "config": { "color": "#00dcff", "strength": { "track": "kick" }, "blendMode": "additive" } }
+    ],
+    "edges": [
+      { "from": { "node": "walls", "output": "color" }, "to": { "node": "flash", "input": "in" } }
+    ],
+    "outputs": { "terminal": "flash", "browser": "flash", "export": "flash" }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "id": "01-lock",
+  "title": "Showcase · Signal lock",
+  "duration": 7.5,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "logo.in",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 16, "value": 0, "interpolation": "ease-out" },
+        { "row": 32, "value": 1, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "tear",
+      "keys": [
+        { "row": 0, "value": 160, "interpolation": "step" },
+        { "row": 16, "value": 160, "interpolation": "expo-out" },
+        { "row": 80, "value": 0, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "split",
+      "keys": [
+        { "row": 0, "value": 14, "interpolation": "step" },
+        { "row": 16, "value": 14, "interpolation": "ease-out" },
+        { "row": 80, "value": 0.6, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "tag.in",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 96, "value": 0, "interpolation": "ease-out" },
+        { "row": 112, "value": 1, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "OVERSCAN", "scale": 0.82, "y": 0.42, "opacity": { "track": "logo.in" }, "palette": [[210, 110, 10], [255, 190, 70], [255, 240, 200], [70, 28, 0]] } },
+      { "id": "hold", "type": "modifier", "impl": "wobble", "config": { "amplitude": { "track": "tear" }, "waves": 0.7, "speed": 9, "turbulence": 0.6, "edges": "wrap" } },
+      { "id": "split", "type": "modifier", "impl": "chromatic-aberration", "config": { "amount": { "track": "split" } } },
+      { "id": "tag", "type": "generator", "impl": "image", "config": { "text": "PIXELS BLEEDING BEYOND THE EDGE", "scale": 0.86, "y": 0.7, "opacity": { "track": "tag.in" }, "outline": 0, "palette": [[255, 190, 70], [210, 110, 10]] } },
+      { "id": "mix", "type": "compositor", "impl": "additive-blend", "config": {} }
+    ],
+    "edges": [
+      { "from": { "node": "logo", "output": "color" }, "to": { "node": "hold", "input": "in" } },
+      { "from": { "node": "hold", "output": "color" }, "to": { "node": "split", "input": "in" } },
+      { "from": { "node": "split", "output": "color" }, "to": { "node": "mix", "input": "base" } },
+      { "from": { "node": "tag", "output": "color" }, "to": { "node": "mix", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "mix", "browser": "mix", "export": "mix" }
+  }
+}

@@ -313,7 +313,7 @@ describe('demo edits', () => {
     s().setDemoValue(['sections', 0, 'duration'], 4)
     await rebuilt(store, player)
     expect(s().document!.player.sections[0]!.end).toBe(4)
-    expect(s().document!.files[DEMO]!.text).toBe(original.replace('"duration": 7.8', '"duration": 4'))
+    expect(s().document!.files[DEMO]!.text).toBe(original.replace('"duration": 7.5', '"duration": 4'))
 
     player = s().document!.player
     s().addSection(0, join(EXAMPLES, 'generators', 'plasma.scene.json'), 3)
@@ -323,14 +323,14 @@ describe('demo edits', () => {
     expect(Object.keys(s().document!.files)).toContain(join(EXAMPLES, 'generators', 'plasma.scene.json'))
 
     s().moveSection(1, -1)
-    expect(demo().sections.map(x => x.id).slice(0, 2)).toEqual(['plasma', 'boot'])
+    expect(demo().sections.map(x => x.id).slice(0, 2)).toEqual(['plasma', 'lock'])
     s().removeSection(0)
     s().addDemoModifier('glow')
     expect(demo().modifiers?.map(m => m.id)).toEqual(['crt', 'glow'])
     s().removeDemoModifier(1)
-    s().setDemoValue(['sections', 0, 'duration'], 7.8)
+    s().setDemoValue(['sections', 0, 'duration'], 7.5)
     expect(s().document!.files[DEMO]!.text).toBe(original)
     s().setDemoValue(['sections', 0, 'duration'], undefined)
-    expect(demo().sections[0]).toEqual({ id: 'boot', scene: './showcase/01-boot.scene.json', transition: { type: 'flash', duration: 0.3 } })
+    expect(demo().sections[0]).toEqual({ id: 'lock', scene: './showcase/01-lock.scene.json' })
   }, 20_000)
 })

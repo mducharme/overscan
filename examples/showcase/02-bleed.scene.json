@@ -1,0 +1,59 @@
+{
+  "id": "02-bleed",
+  "title": "Showcase · Bleed",
+  "duration": 7.75,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "tag.out",
+      "keys": [
+        { "row": 0, "value": 1, "interpolation": "step" },
+        { "row": 32, "value": 1, "interpolation": "ease-in" },
+        { "row": 64, "value": 0, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "reach",
+      "keys": [
+        { "row": 0, "value": 0.15, "interpolation": "ease-in" },
+        { "row": 128, "value": 0.85, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "trail",
+      "keys": [
+        { "row": 0, "value": 0.45, "interpolation": "ease-in" },
+        { "row": 128, "value": 0.93, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "heat",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 64, "value": 0, "interpolation": "ease-in" },
+        { "row": 128, "value": 1, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "OVERSCAN", "scale": 0.82, "y": 0.42, "palette": [[210, 110, 10], [255, 190, 70], [255, 240, 200], [70, 28, 0]] } },
+      { "id": "tag", "type": "generator", "impl": "image", "config": { "text": "PIXELS BLEEDING BEYOND THE EDGE", "scale": 0.86, "y": 0.7, "outline": 0, "palette": [[255, 190, 70], [210, 110, 10]], "opacity": { "track": "tag.out" } } },
+      { "id": "mix", "type": "compositor", "impl": "additive-blend", "config": {} },
+      { "id": "rays", "type": "modifier", "impl": "radial-blur", "config": { "mode": "rays", "strength": { "track": "reach" }, "threshold": 0.35, "intensity": 1.4, "centerY": 0.45 } },
+      { "id": "trail", "type": "modifier", "impl": "feedback", "config": { "decay": { "track": "trail" }, "blendMode": "alpha", "scale": 1.03 } },
+      { "id": "heat", "type": "modifier", "impl": "color-grade", "config": { "palette": [[8, 3, 0], [70, 28, 0], [210, 110, 10], [230, 0, 160], [255, 255, 255]], "strength": { "track": "heat" } } }
+    ],
+    "edges": [
+      { "from": { "node": "logo", "output": "color" }, "to": { "node": "mix", "input": "base" } },
+      { "from": { "node": "tag", "output": "color" }, "to": { "node": "mix", "input": "overlay" } },
+      { "from": { "node": "mix", "output": "color" }, "to": { "node": "rays", "input": "in" } },
+      { "from": { "node": "rays", "output": "color" }, "to": { "node": "trail", "input": "in" } },
+      { "from": { "node": "trail", "output": "color" }, "to": { "node": "heat", "input": "in" } }
+    ],
+    "outputs": { "terminal": "heat", "browser": "heat", "export": "heat" }
+  }
+}

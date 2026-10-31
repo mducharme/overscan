@@ -1,0 +1,45 @@
+{
+  "id": "12-afterglow",
+  "title": "Showcase · Afterglow",
+  "duration": 7.5,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "tag.in",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 32, "value": 0, "interpolation": "ease-out" },
+        { "row": 48, "value": 1, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "fade",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "step" },
+        { "row": 80, "value": 0, "interpolation": "ease-in" },
+        { "row": 128, "value": 1, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "cloud", "type": "generator", "impl": "particles", "config": { "mode": "attractor", "count": 70000, "size": 0.6, "emitY": 0.58, "backgroundColor": "#040100", "palette": [[255, 240, 200], [255, 190, 70], [210, 110, 10], [70, 28, 0]] } },
+      { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "OVERSCAN", "scale": 0.55, "y": 0.17, "palette": [[210, 110, 10], [255, 190, 70], [255, 240, 200], [70, 28, 0]] } },
+      { "id": "title", "type": "compositor", "impl": "alpha-blend", "config": {} },
+      { "id": "tag", "type": "generator", "impl": "image", "config": { "text": "PIXELS BLEEDING BEYOND THE EDGE", "scale": 0.6, "y": 0.92, "outline": 0, "palette": [[255, 190, 70], [210, 110, 10]], "opacity": { "track": "tag.in" } } },
+      { "id": "text", "type": "compositor", "impl": "additive-blend", "config": {} },
+      { "id": "fade", "type": "modifier", "impl": "palette-flash", "config": { "color": "#000000", "strength": { "track": "fade" }, "blendMode": "alpha" } }
+    ],
+    "edges": [
+      { "from": { "node": "cloud", "output": "color" }, "to": { "node": "title", "input": "base" } },
+      { "from": { "node": "logo", "output": "color" }, "to": { "node": "title", "input": "overlay" } },
+      { "from": { "node": "title", "output": "color" }, "to": { "node": "text", "input": "base" } },
+      { "from": { "node": "tag", "output": "color" }, "to": { "node": "text", "input": "overlay" } },
+      { "from": { "node": "text", "output": "color" }, "to": { "node": "fade", "input": "in" } }
+    ],
+    "outputs": { "terminal": "fade", "browser": "fade", "export": "fade" }
+  }
+}

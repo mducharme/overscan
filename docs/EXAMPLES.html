@@ -136,7 +136,7 @@ strong { color: #fff; }
 <li><a href="#advanced-compositions">Advanced compositions</a> (17)</li>
 </ul>
 <h2>Showcase demo</h2>
-<p><a href="../examples/showcase.demo.json"><code>examples/showcase.demo.json</code></a>: <strong>Overscan Showcase</strong>, 12 sections cut to a synthesised soundtrack (<code>./showcase/music.mp3</code>, built by <code>scripts/build-showcase-music.mjs</code>). Play it with <code>pnpm run overscan -- run examples/showcase.demo.json</code> (audio needs <code>mpv</code>) or open it in the studio.</p>
+<p><a href="../examples/showcase.demo.json"><code>examples/showcase.demo.json</code></a>: <strong>Overscan: pixels bleeding beyond the edge</strong>, 12 sections cut to a synthesised soundtrack (<code>./showcase/music.mp3</code>, built by <code>scripts/build-showcase-music.mjs</code>). Play it with <code>pnpm run overscan -- run examples/showcase.demo.json</code> (audio needs <code>mpv</code>) or open it in the studio.</p>
 <table>
 <thead>
 <tr>
@@ -148,32 +148,32 @@ strong { color: #fff; }
 </thead>
 <tbody><tr>
 <td align="right">1</td>
-<td><a href="../examples/showcase/01-boot.scene.json">boot</a></td>
-<td><code>starfield</code>, <code>image</code>, <code>wobble</code>, <code>radial-blur</code>, <code>alpha-blend</code></td>
-<td>flash 0.3 s</td>
+<td><a href="../examples/showcase/01-lock.scene.json">lock</a></td>
+<td><code>image</code>, <code>wobble</code>, <code>chromatic-aberration</code>, <code>additive-blend</code></td>
+<td>—</td>
 </tr>
 <tr>
 <td align="right">2</td>
-<td><a href="../examples/showcase/02-relief.scene.json">relief</a></td>
-<td><code>image</code>, <code>bump</code>, <code>particles</code>, <code>additive-blend</code>, <code>radial-blur</code></td>
+<td><a href="../examples/showcase/02-bleed.scene.json">bleed</a></td>
+<td><code>image</code>, <code>additive-blend</code>, <code>radial-blur</code>, <code>feedback</code>, <code>color-grade</code></td>
 <td>flash 0.25 s</td>
 </tr>
 <tr>
 <td align="right">3</td>
-<td><a href="../examples/showcase/03-chrome.scene.json">chrome</a></td>
-<td><code>kefrens</code>, <code>polygon</code>, <code>alpha-blend</code>, <code>chromatic-aberration</code></td>
+<td><a href="../examples/showcase/03-grid.scene.json">grid</a></td>
+<td><code>checkerboard-floor</code>, <code>polygon</code>, <code>alpha-blend</code>, <code>chromatic-aberration</code></td>
 <td>push 0.35 s</td>
 </tr>
 <tr>
 <td align="right">4</td>
-<td><a href="../examples/showcase/04-flower.scene.json">flower</a></td>
-<td><code>plasma</code>, <code>uv-map</code>, <code>dot-tunnel</code>, <code>additive-blend</code>, <code>palette-flash</code></td>
+<td><a href="../examples/showcase/04-walls.scene.json">walls</a></td>
+<td><code>kefrens</code>, <code>palette-flash</code></td>
 <td>checker 0.45 s</td>
 </tr>
 <tr>
 <td align="right">5</td>
-<td><a href="../examples/showcase/05-burst.scene.json">burst</a></td>
-<td><code>particles</code>, <code>additive-blend</code>, <code>feedback</code>, <code>glow</code></td>
+<td><a href="../examples/showcase/05-flower.scene.json">flower</a></td>
+<td><code>plasma</code>, <code>uv-map</code></td>
 <td>blinds 0.45 s</td>
 </tr>
 <tr>
@@ -185,37 +185,37 @@ strong { color: #fff; }
 <tr>
 <td align="right">7</td>
 <td><a href="../examples/showcase/07-planet.scene.json">planet</a></td>
-<td><code>starfield</code>, <code>rotozoom</code>, <code>uv-map</code>, <code>alpha-blend</code>, <code>scroller</code>, <code>radial-blur</code></td>
-<td>iris 0.5 s</td>
+<td><code>starfield</code>, <code>plasma</code>, <code>uv-map</code>, <code>alpha-blend</code>, <code>scroller</code>, <code>radial-blur</code></td>
+<td>flash 0.25 s</td>
 </tr>
 <tr>
 <td align="right">8</td>
-<td><a href="../examples/showcase/08-monument.scene.json">monument</a></td>
-<td><code>raymarcher</code>, <code>radial-blur</code>, <code>chromatic-aberration</code></td>
+<td><a href="../examples/showcase/08-hyperspace.scene.json">hyperspace</a></td>
+<td><code>dot-tunnel</code>, <code>radial-blur</code></td>
 <td>zoom-out 0.5 s</td>
 </tr>
 <tr>
 <td align="right">9</td>
-<td><a href="../examples/showcase/09-canyon.scene.json">canyon</a></td>
-<td><code>voxel-landscape</code>, <code>color-grade</code>, <code>uv-map</code>, <code>palette-flash</code></td>
+<td><a href="../examples/showcase/09-monument.scene.json">monument</a></td>
+<td><code>raymarcher</code>, <code>color-grade</code>, <code>radial-blur</code></td>
 <td>push 0.35 s</td>
 </tr>
 <tr>
 <td align="right">10</td>
-<td><a href="../examples/showcase/10-bloom.scene.json">bloom</a></td>
-<td><code>kefrens</code>, <code>dot-tunnel</code>, <code>screen-blend</code>, <code>glow</code></td>
+<td><a href="../examples/showcase/10-burn.scene.json">burn</a></td>
+<td><code>image</code>, <code>fire</code>, <code>additive-blend</code>, <code>particles</code>, <code>wobble</code></td>
 <td>checker 0.4 s</td>
 </tr>
 <tr>
 <td align="right">11</td>
 <td><a href="../examples/showcase/11-finale.scene.json">finale</a></td>
-<td><code>tunnel</code>, <code>polygon</code>, <code>alpha-blend</code>, <code>particles</code>, <code>additive-blend</code>, <code>chromatic-aberration</code></td>
+<td><code>plasma</code>, <code>uv-map</code>, <code>polygon</code>, <code>particles</code>, <code>additive-blend</code>, <code>feedback</code>, <code>alpha-blend</code></td>
 <td>melt 1 s</td>
 </tr>
 <tr>
 <td align="right">12</td>
-<td><a href="../examples/showcase/12-credits.scene.json">credits</a></td>
-<td><code>particles</code>, <code>image</code>, <code>wobble</code>, <code>alpha-blend</code>, <code>scroller</code>, <code>palette-flash</code></td>
+<td><a href="../examples/showcase/12-afterglow.scene.json">afterglow</a></td>
+<td><code>particles</code>, <code>image</code>, <code>alpha-blend</code>, <code>additive-blend</code>, <code>palette-flash</code></td>
 <td>—</td>
 </tr>
 </tbody></table>
@@ -1406,7 +1406,9 @@ strong { color: #fff; }
 <td align="center"><img src="examples/advanced/raymarcher-metaballs.gif" alt="Raymarcher Metaballs"></td>
 </tr>
 </tbody></table>
-<p><a href="../examples/advanced/raymarcher-metaballs.scene.json"><code>examples/advanced/raymarcher-metaballs.scene.json</code></a> · <code>pnpm 
+<p><a href="../examples/advanced/raymarcher-metaballs.scene.json"><code>examples/advanced/raymarcher-metaballs.scene.json</code></a> · <code>pnpm run overscan -- run examples/advanced/raymarcher-metaballs.scene.json</code></p>
+<h3>Scroller ASCII</h3>
+<p>Nodes: <code>starfield</code> · <code>scro
 </main>
 </body>
 </html>

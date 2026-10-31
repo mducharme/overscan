@@ -1,0 +1,73 @@
+{
+  "id": "10-burn",
+  "title": "Showcase · Burn",
+  "duration": 7.9,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "cool",
+      "keys": [
+        { "row": 0, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 6, "value": 0.2, "interpolation": "step" },
+        { "row": 8, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 14, "value": 0.2, "interpolation": "step" },
+        { "row": 16, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 22, "value": 0.2, "interpolation": "step" },
+        { "row": 24, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 30, "value": 0.2, "interpolation": "step" },
+        { "row": 32, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 38, "value": 0.2, "interpolation": "step" },
+        { "row": 40, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 46, "value": 0.2, "interpolation": "step" },
+        { "row": 48, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 54, "value": 0.2, "interpolation": "step" },
+        { "row": 56, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 62, "value": 0.2, "interpolation": "step" },
+        { "row": 64, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 70, "value": 0.2, "interpolation": "step" },
+        { "row": 72, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 78, "value": 0.2, "interpolation": "step" },
+        { "row": 80, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 86, "value": 0.2, "interpolation": "step" },
+        { "row": 88, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 94, "value": 0.2, "interpolation": "step" },
+        { "row": 96, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 102, "value": 0.2, "interpolation": "step" },
+        { "row": 104, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 110, "value": 0.2, "interpolation": "step" },
+        { "row": 112, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 118, "value": 0.2, "interpolation": "step" },
+        { "row": 120, "value": 0.1, "interpolation": "ease-out" },
+        { "row": 126, "value": 0.2, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "lift",
+      "keys": [
+        { "row": 0, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 64, "value": 0.68, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "OVERSCAN", "scale": 0.8, "y": { "track": "lift" }, "outline": 1, "backgroundColor": "#000000", "palette": [[150, 50, 10], [70, 12, 0]] } },
+      { "id": "flames", "type": "generator", "impl": "fire", "config": { "cooling": { "track": "cool" }, "seedIntensity": 1.4, "spread": 3, "palette": [[0, 0, 0], [90, 0, 10], [220, 40, 10], [255, 150, 20], [255, 240, 200]] } },
+      { "id": "mix", "type": "compositor", "impl": "additive-blend", "config": {} },
+      { "id": "embers", "type": "generator", "impl": "particles", "config": { "mode": "fountain", "count": 260, "emitY": 1.02, "speed": 0.9, "spread": 0.9, "gravity": 0.15, "lifetime": 3.2, "size": 1.3, "backgroundColor": "transparent", "randomSeed": 9, "palette": [[255, 230, 160], [255, 140, 30], [200, 40, 10], [60, 0, 0]] } },
+      { "id": "air", "type": "compositor", "impl": "additive-blend", "config": {} },
+      { "id": "haze", "type": "modifier", "impl": "wobble", "config": { "amplitude": 3, "waves": 6, "speed": 7, "turbulence": 0.5, "edges": "clamp" } }
+    ],
+    "edges": [
+      { "from": { "node": "logo", "output": "color" }, "to": { "node": "mix", "input": "base" } },
+      { "from": { "node": "flames", "output": "color" }, "to": { "node": "mix", "input": "overlay" } },
+      { "from": { "node": "mix", "output": "color" }, "to": { "node": "air", "input": "base" } },
+      { "from": { "node": "embers", "output": "color" }, "to": { "node": "air", "input": "overlay" } },
+      { "from": { "node": "air", "output": "color" }, "to": { "node": "haze", "input": "in" } }
+    ],
+    "outputs": { "terminal": "haze", "browser": "haze", "export": "haze" }
+  }
+}

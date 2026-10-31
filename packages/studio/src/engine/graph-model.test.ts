@@ -57,7 +57,7 @@ describe('buildGraphModel', () => {
 
 describe('layout spacing', () => {
   it('puts the output node directly below the last node, with no empty layer', () => {
-    const model = buildGraphModel(load('showcase/01-boot.scene.json'), NODE_SCHEMAS, validateNodeConfig)
+    const model = buildGraphModel(load('showcase/01-lock.scene.json'), NODE_SCHEMAS, validateNodeConfig)
     const ys = [...new Set(model.nodes.map(n => n.y))].sort((a, b) => a - b)
     const gaps = ys.slice(1).map((y, i) => y - ys[i]!)
     expect(new Set(gaps).size).toBe(1)

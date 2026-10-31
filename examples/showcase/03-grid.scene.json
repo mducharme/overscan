@@ -1,0 +1,77 @@
+{
+  "id": "03-grid",
+  "title": "Showcase · Neon grid",
+  "duration": 7.85,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "drop",
+      "keys": [
+        { "row": 0, "value": -0.6, "interpolation": "step" },
+        { "row": 32, "value": -0.6, "interpolation": "bounce" },
+        { "row": 64, "value": 0.36, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "punch",
+      "keys": [
+        { "row": 0, "value": 0.7, "interpolation": "step" },
+        { "row": 64, "value": 0.82, "interpolation": "expo-out" },
+        { "row": 70, "value": 0.7, "interpolation": "step" },
+        { "row": 72, "value": 0.82, "interpolation": "expo-out" },
+        { "row": 78, "value": 0.7, "interpolation": "step" },
+        { "row": 80, "value": 0.82, "interpolation": "expo-out" },
+        { "row": 86, "value": 0.7, "interpolation": "step" },
+        { "row": 88, "value": 0.82, "interpolation": "expo-out" },
+        { "row": 94, "value": 0.7, "interpolation": "step" },
+        { "row": 96, "value": 0.82, "interpolation": "expo-out" },
+        { "row": 102, "value": 0.7, "interpolation": "step" },
+        { "row": 104, "value": 0.82, "interpolation": "expo-out" },
+        { "row": 110, "value": 0.7, "interpolation": "step" },
+        { "row": 112, "value": 0.82, "interpolation": "expo-out" },
+        { "row": 118, "value": 0.7, "interpolation": "step" },
+        { "row": 120, "value": 0.82, "interpolation": "expo-out" },
+        { "row": 126, "value": 0.7, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "split",
+      "keys": [
+        { "row": 0, "value": 1, "interpolation": "step" },
+        { "row": 64, "value": 8, "interpolation": "expo-out" },
+        { "row": 70, "value": 1, "interpolation": "step" },
+        { "row": 72, "value": 8, "interpolation": "expo-out" },
+        { "row": 78, "value": 1, "interpolation": "step" },
+        { "row": 80, "value": 8, "interpolation": "expo-out" },
+        { "row": 86, "value": 1, "interpolation": "step" },
+        { "row": 88, "value": 8, "interpolation": "expo-out" },
+        { "row": 94, "value": 1, "interpolation": "step" },
+        { "row": 96, "value": 8, "interpolation": "expo-out" },
+        { "row": 102, "value": 1, "interpolation": "step" },
+        { "row": 104, "value": 8, "interpolation": "expo-out" },
+        { "row": 110, "value": 1, "interpolation": "step" },
+        { "row": 112, "value": 8, "interpolation": "expo-out" },
+        { "row": 118, "value": 1, "interpolation": "step" },
+        { "row": 120, "value": 8, "interpolation": "expo-out" },
+        { "row": 126, "value": 1, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "floor", "type": "generator", "impl": "checkerboard-floor", "config": { "color1": "#ff00aa", "color2": "#12002a", "skyColor": "#0a0018", "fogColor": "#30005a", "horizon": 0.55, "cameraHeight": 0.6, "tileSize": 0.7, "scrollSpeed": 4, "fogDistance": 0.85 } },
+      { "id": "knot", "type": "generator", "impl": "polygon", "config": { "mesh": "torus-knot", "shading": "envmap", "scale": { "track": "punch" }, "y": { "track": "drop" }, "rotationX": 1.1, "rotationY": 1.7, "rotationZ": 0.4, "palette": [[255, 120, 230]] } },
+      { "id": "over", "type": "compositor", "impl": "alpha-blend", "config": {} },
+      { "id": "split", "type": "modifier", "impl": "chromatic-aberration", "config": { "amount": { "track": "split" }, "radial": true } }
+    ],
+    "edges": [
+      { "from": { "node": "floor", "output": "color" }, "to": { "node": "over", "input": "base" } },
+      { "from": { "node": "knot", "output": "color" }, "to": { "node": "over", "input": "overlay" } },
+      { "from": { "node": "over", "output": "color" }, "to": { "node": "split", "input": "in" } }
+    ],
+    "outputs": { "terminal": "split", "browser": "split", "export": "split" }
+  }
+}

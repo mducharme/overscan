@@ -1,0 +1,65 @@
+{
+  "id": "05-flower",
+  "title": "Showcase · Flower tunnel",
+  "duration": 7.95,
+  "bpm": 128,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "petal",
+      "keys": [
+        { "row": 0, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 7, "value": 0.3, "interpolation": "step" },
+        { "row": 8, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 15, "value": 0.3, "interpolation": "step" },
+        { "row": 16, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 23, "value": 0.3, "interpolation": "step" },
+        { "row": 24, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 31, "value": 0.3, "interpolation": "step" },
+        { "row": 32, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 39, "value": 0.3, "interpolation": "step" },
+        { "row": 40, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 47, "value": 0.3, "interpolation": "step" },
+        { "row": 48, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 55, "value": 0.3, "interpolation": "step" },
+        { "row": 56, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 63, "value": 0.3, "interpolation": "step" },
+        { "row": 64, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 71, "value": 0.3, "interpolation": "step" },
+        { "row": 72, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 79, "value": 0.3, "interpolation": "step" },
+        { "row": 80, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 87, "value": 0.3, "interpolation": "step" },
+        { "row": 88, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 95, "value": 0.3, "interpolation": "step" },
+        { "row": 96, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 103, "value": 0.3, "interpolation": "step" },
+        { "row": 104, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 111, "value": 0.3, "interpolation": "step" },
+        { "row": 112, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 119, "value": 0.3, "interpolation": "step" },
+        { "row": 120, "value": 0.9, "interpolation": "ease-out" },
+        { "row": 127, "value": 0.3, "interpolation": "step" }
+      ]
+    },
+    {
+      "name": "spin",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "linear" },
+        { "row": 128, "value": 3.6, "interpolation": "step" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "plasma", "type": "generator", "impl": "plasma", "config": { "speed": 0.55, "scale": 1.2, "palette": [[6, 0, 18], [50, 0, 100], [200, 0, 150], [0, 170, 230], [200, 230, 255]] } },
+      { "id": "tube", "type": "modifier", "impl": "uv-map", "config": { "preset": "flower", "petals": 5, "amount": { "track": "petal" }, "rotation": { "track": "spin" }, "speedV": 1.1, "shade": 0.95 } }
+    ],
+    "edges": [
+      { "from": { "node": "plasma", "output": "color" }, "to": { "node": "tube", "input": "in" } }
+    ],
+    "outputs": { "terminal": "tube", "browser": "tube", "export": "tube" }
+  }
+}
