@@ -21,7 +21,7 @@
         "id": "fb1",
         "type": "modifier",
         "impl": "feedback",
-        "config": { "decay": 0.88, "blendMode": "additive", "scale": 0.998, "offsetX": 0.001, "offsetY": 0 }
+        "config": { "decay": 0.7, "blendMode": "alpha", "scale": 0.998, "offsetX": 0.001, "offsetY": 0 }
       },
       { "id": "crt1", "type": "modifier", "impl": "crt", "config": { "scanlineStrength": 0.2, "vignetteStrength": 0.12 } }
     ],

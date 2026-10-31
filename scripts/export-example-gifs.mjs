@@ -38,8 +38,8 @@ function toGif(frames, out, width, sharp, colors) {
   return run('ffmpeg', [
     '-hide_banner', '-loglevel', 'error', '-y', '-framerate', String(SOURCE_FPS),
     '-i', join(frames, 'frame-%06d.png'),
-    // Transparent pixels are composited over black, as the terminal and the studio show them.
-    '-vf', `format=rgba,premultiply=inplace=1,format=rgb24,fps=${GIF_FPS},scale=${width}:-2:flags=${sharp ? 'neighbor' : 'lanczos'},${palette}`,
+    // Alpha is dropped, as the terminal, the studio and the video exports do.
+    '-vf', `format=rgb24,fps=${GIF_FPS},scale=${width}:-2:flags=${sharp ? 'neighbor' : 'lanczos'},${palette}`,
     '-loop', '0', out,
   ])
 }
