@@ -6,6 +6,7 @@ import { WaterRippleGenerator } from './generators/water-ripple/index.js'
 import { GameOfLifeGenerator } from './generators/game-of-life/index.js'
 import { MatrixRainGenerator } from './generators/matrix-rain/index.js'
 import { LFOSource } from './signals/lfo.js'
+import { NoiseSource } from './signals/noise.js'
 
 const W = 160
 const H = 90
@@ -49,5 +50,18 @@ describe('deterministic output', () => {
     const sequential = sample([0, 0.6, 1.2, 1.8, 2.4])
     expect(sample([0, 0.6, 1.2, 1.8, 2.4])).toEqual(sequential)
     expect(sample([2.4])).toEqual([sequential[4]])
+  })
+
+  it('noise depends on the time only: seeking and frame rate give the same value', () => {
+    const at = (times: number[]): number => {
+      const noise = NoiseSource({ frequency: 3 })
+      let v = 0
+      for (const t of times) v = noise.tick(buildSignal({ t }))['value']!
+      return v
+    }
+    const every60 = Array.from({ length: 151 }, (_, i) => i / 60)
+    expect(at(every60)).toBe(at([2.5]))
+    expect(at([0.3, 1.1, 2.5])).toBe(at([2.5]))
+    expect(NoiseSource({ seed: 2 }).tick(buildSignal({ t: 2.5 }))['value']).not.toBe(at([2.5]))
   })
 })

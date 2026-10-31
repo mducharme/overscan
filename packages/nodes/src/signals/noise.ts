@@ -4,6 +4,7 @@ import {
   type Signal,
   type SignalSource,
 } from '@overscan/types'
+import { hash01 } from '../random.js'
 
 export interface NoiseConfig {
   frequency?: AnimatableFloat
@@ -11,21 +12,15 @@ export interface NoiseConfig {
   seed?: number
 }
 
-function makeRng(seed: number): () => number {
-  let s = (seed >>> 0) || 1
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0
-    return s / 0x100000000
-  }
-}
-
+/**
+ * Smooth random values that change `frequency` times a second. Computed from the time alone (a hashed
+ * target per step, glided into from the previous one), so seeking and any frame rate give the same value.
+ * `smoothing` is the share of each step spent gliding: 0 jumps, 1 glides the whole step.
+ */
 export function NoiseSource(config: Partial<NoiseConfig> = {}): SignalSource {
   const freqRef = config.frequency ?? 3
   const smooth = Math.min(1, Math.max(0, config.smoothing ?? 0.85))
-  const rand = makeRng(config.seed ?? 1)
-  let target = 0.5
-  let value = 0.5
-  let lastStep = -1
+  const seed = config.seed ?? 1
 
   return {
     type:     'signal',
@@ -36,12 +31,12 @@ export function NoiseSource(config: Partial<NoiseConfig> = {}): SignalSource {
     destroy:  () => {},
     tick(signal: Signal) {
       const freq = Math.max(1e-6, resolveAnimatableFloat(freqRef, signal))
-      const step = Math.floor(signal.t * freq)
-      if (step !== lastStep) {
-        lastStep = step
-        target = rand()
-      }
-      value = value * smooth + target * (1 - smooth)
+      const pos = signal.t * freq
+      const step = Math.floor(pos)
+      const glide = smooth > 0 ? Math.min(1, (pos - step) / smooth) : 1
+      const k = glide * glide * (3 - 2 * glide)
+      const from = step > 0 ? hash01(seed, step - 1) : 0.5
+      const value = from + (hash01(seed, step) - from) * k
       return { value, bipolar: value * 2 - 1 }
     },
   }
