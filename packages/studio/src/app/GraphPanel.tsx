@@ -16,7 +16,7 @@ import ReactFlow, {
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { NODE_SCHEMAS, validateNodeConfig } from '@overscan/nodes/browser'
-import { buildGraphModel, handleId, NODE_HEIGHT, NODE_WIDTH, OUTPUT_NODE_ID, type GraphModel, type GraphModelNode } from '../engine/graph-model'
+import { bindingOf, buildGraphModel, handleId, NODE_HEIGHT, NODE_WIDTH, OUTPUT_NODE_ID, type GraphModel, type GraphModelNode } from '../engine/graph-model'
 import { useFocusSection, useStudio, useStudioStore } from './studio-context'
 
 interface NodeData {
@@ -51,7 +51,7 @@ const StudioNode = memo(function StudioNode({ data }: NodeProps<NodeData>) {
       </span>
       {/* Config values bound to other nodes' outputs arrive on the left. */}
       {model.kind !== 'output' && (
-        <Handle type="target" id={handleId.bindings} position={Position.Left} className="ghandle ghandle--bind" isConnectable={false} />
+        <Handle type="target" id={handleId.bindings} position={Position.Left} className="ghandle ghandle--bind" title="Drop a signal output here to drive a setting" />
       )}
       {model.inputs.map((name, i) => (
         <Handle
@@ -74,8 +74,6 @@ const StudioNode = memo(function StudioNode({ data }: NodeProps<NodeData>) {
           position={Position.Bottom}
           style={{ left: spread(i, model.outputs.length) }}
           className="ghandle"
-          // Signal outputs drive settings (bind them in the inspector), not image inputs.
-          isConnectable={model.kind !== 'signal'}
           title={name}
         >
           {(model.outputs.length > 1 || model.kind === 'signal') && <span className="ghandle__label ghandle__label--out">{name}</span>}
@@ -116,6 +114,8 @@ function GraphCanvas() {
   const store = useStudioStore()
   const section = useFocusSection()
   const selectedNodeId = useStudio(s => s.selectedNodeId)
+  // A signal output dropped on a node: which of its settings should follow it.
+  const [pendingBind, setPendingBind] = useState<{ node: string; output: string; target: string } | null>(null)
   // Only the set of nodes outside their time window matters, so subscribe to that as a string.
   const inactiveKey = useStudio(s => {
     if (!section) return ''
@@ -171,11 +171,25 @@ function GraphCanvas() {
   const onConnect = (c: Connection): void => {
     if (!c.source || !c.target || !c.sourceHandle) return
     const output = c.sourceHandle.replace(/^out:/, '')
-    if (c.target === OUTPUT_NODE_ID) store.getState().setOutput(scenePath, c.source)
+    if (c.targetHandle === handleId.bindings) setPendingBind({ node: c.source, output, target: c.target })
+    else if (c.target === OUTPUT_NODE_ID) store.getState().setOutput(scenePath, c.source)
     else if (c.targetHandle) store.getState().connect(scenePath, { node: c.source, output }, { node: c.target, input: c.targetHandle.replace(/^in:/, '') })
   }
   return (
     <div className="graph" aria-label={`Node graph of ${section.id}`}>
+      {pendingBind && (
+        <BindPicker
+          {...pendingBind}
+          config={section.scene.graph.nodes.find(n => n.id === pendingBind.target)?.config ?? {}}
+          impl={section.scene.graph.nodes.find(n => n.id === pendingBind.target)?.impl ?? ''}
+          onPick={key => {
+            store.getState().setNodeParam(scenePath, pendingBind.target, key, { node: pendingBind.node, output: pendingBind.output })
+            store.getState().selectNode(pendingBind.target)
+            setPendingBind(null)
+          }}
+          onCancel={() => { setPendingBind(null) }}
+        />
+      )}
       <AddNode
         anchor={selectedNodeId ?? section.scene.graph.outputs.browser ?? null}
         onAdd={(impl, after) => { store.getState().addNode(scenePath, impl, after ?? undefined) }}
@@ -215,12 +229,54 @@ function GraphCanvas() {
   )
 }
 
-/** Image wires only: into a modifier or compositor input, or into Output; never from a signal. */
+/**
+ * Signal outputs go to a node's settings handle (left); images go into a modifier or compositor input,
+ * or into Output.
+ */
 function validConnection(model: GraphModel, c: Connection): boolean {
   const source = model.nodes.find(n => n.id === c.source)
   const target = model.nodes.find(n => n.id === c.target)
-  if (!source || !target || source.id === target.id || source.kind === 'signal') return false
+  if (!source || !target || source.id === target.id) return false
+  if (source.kind === 'signal') return c.targetHandle === handleId.bindings && animatableKeys(target.impl).length > 0
+  if (c.targetHandle === handleId.bindings) return false
   return target.kind === 'modifier' || target.kind === 'compositor' || target.kind === 'output'
+}
+
+/** Settings a signal can drive: the node's animatable numbers. */
+const animatableKeys = (impl: string): string[] =>
+  Object.entries(NODE_SCHEMAS[impl]?.params ?? {}).flatMap(([key, p]) => (p.type === 'number' && p.animatable ? [key] : []))
+
+function BindPicker({ node, output, target, impl, config, onPick, onCancel }: {
+  node: string
+  output: string
+  target: string
+  impl: string
+  config: Record<string, unknown>
+  onPick: (key: string) => void
+  onCancel: () => void
+}) {
+  const keys = animatableKeys(impl)
+  const describe = (value: unknown): string => {
+    const binding = bindingOf(value)
+    if (!binding) return typeof value === 'number' ? String(value) : 'default'
+    return binding.kind === 'track' ? `track ${binding.track}` : `${binding.node}.${binding.output}`
+  }
+  return (
+    <div className="graph__bind" role="dialog" aria-label={`Drive a setting of ${target} with ${node}.${output}`}>
+      <div className="graph__bind-title">Drive which setting of <code>{target}</code> with <code>{node}.{output}</code>?</div>
+      <ul>
+        {keys.map(key => (
+          <li key={key}>
+            <button type="button" onClick={() => { onPick(key) }}>
+              <span>{key}</span>
+              <span className="graph__bind-now">{describe(config[key])}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button type="button" className="graph__bind-cancel" onClick={onCancel}>Cancel</button>
+    </div>
+  )
 }
 
 const KIND_ORDER = ['generator', 'modifier', 'compositor', 'signal'] as const

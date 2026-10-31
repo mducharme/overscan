@@ -167,7 +167,7 @@ export function Timeline() {
               <Ruler scale={scale} grid={grid} />
             </Row>
             <Row label="Sections" className="tl-row--sections">
-              <Sections scale={scale} sections={sections} focus={focus} onZoom={s => { zoomTo(s.start, s.end) }} />
+              <Sections scale={scale} sections={sections} focus={focus} onZoom={s => { zoomTo(s.start, s.end) }} editable={document.kind === 'demo'} />
             </Row>
             {audio.map(clip => (
               <Row key={clip.key} label={<span title={clip.path}>♪ {clip.label}</span>} className="tl-row--audio">
@@ -218,24 +218,71 @@ function Ruler({ scale, grid }: { scale: Scale; grid: ReturnType<typeof gridLine
   )
 }
 
-function Sections({ scale, sections, focus, onZoom }: { scale: Scale; sections: readonly PlayerSection[]; focus: PlayerSection | undefined; onZoom: (section: PlayerSection) => void }) {
+function Sections({ scale, sections, focus, onZoom, editable }: {
+  scale: Scale
+  sections: readonly PlayerSection[]
+  focus: PlayerSection | undefined
+  onZoom: (section: PlayerSection) => void
+  /** Demo sections can be resized by dragging their right edge. */
+  editable: boolean
+}) {
+  const store = useStudioStore()
+  const selected = useStudio(s => s.selectedSectionId)
+  // While an edge is dragged: the section and its new length (applied on release; each change rebuilds the demo).
+  const [resize, setResize] = useState<{ index: number; length: number } | null>(null)
   // Blocks stop where the next section starts; the overlap (the transition) is drawn as its own band on top.
   return (
     <>
       {sections.map((section, i) => {
         const next = sections[i + 1]
+        const length = resize?.index === i ? resize.length : section.end - section.start
+        const end = section.start + length
         const left = scale.x(section.start)
-        const right = scale.x(Math.min(section.end, next?.start ?? section.end))
+        const right = scale.x(resize?.index === i ? end : Math.min(section.end, next?.start ?? section.end))
         if (right < 0 || left > scale.width) return null
         return (
           <div
             key={`${section.id}-${section.start}`}
-            className={`tl-section${section === focus ? ' tl-section--focus' : ''}`}
+            className={`tl-section${section === focus ? ' tl-section--focus' : ''}${section.id === selected ? ' tl-section--selected' : ''}${resize?.index === i ? ' tl-section--resizing' : ''}`}
             style={{ left, width: Math.max(1, right - left) }}
-            title={`${section.title}\n${formatTime(section.start)} – ${formatTime(section.end)}`}
+            title={`${section.title}\n${formatTime(section.start)} – ${formatTime(section.end)}${editable ? '\nDrag the right edge to change its length' : ''}`}
+            onPointerDown={() => { store.getState().selectSection(section.id) }}
             onDoubleClick={() => { onZoom(section) }}
           >
-            <span className="tl-section__name">{section.id}</span>
+            {/* The incoming transition band covers the block's start: the name begins after it. */}
+            <span className="tl-section__name" style={{ marginLeft: Math.max(0, scale.x(Math.min(end, sections[i - 1]?.end ?? 0)) - left) }}>
+              {section.id}{resize?.index === i ? ` · ${length.toFixed(2)}s` : ''}
+            </span>
+            {editable && (
+              <span
+                className="tl-section__edge"
+                aria-hidden
+                onPointerDown={event => {
+                  if (event.button !== 0) return
+                  event.stopPropagation()
+                  const el = event.currentTarget
+                  el.setPointerCapture(event.pointerId)
+                  const startX = event.clientX
+                  const original = section.end - section.start
+                  const beat = 60 / section.scene.bpm
+                  // Snaps to the section's beats; Alt for hundredths of a second.
+                  const lengthAt = (e: PointerEvent): number => {
+                    const raw = Math.max(beat, original + (e.clientX - startX) * ((scale.view.end - scale.view.start) / scale.width))
+                    return e.altKey ? Math.round(raw * 100) / 100 : Number((Math.round(raw / beat) * beat).toFixed(4))
+                  }
+                  const move = (e: PointerEvent): void => { setResize({ index: i, length: lengthAt(e) }) }
+                  const up = (e: PointerEvent): void => {
+                    el.removeEventListener('pointermove', move)
+                    el.removeEventListener('pointerup', up)
+                    setResize(null)
+                    const next = lengthAt(e)
+                    if (Math.abs(next - original) > 1e-6) store.getState().setDemoValue(['sections', i, 'duration'], next)
+                  }
+                  el.addEventListener('pointermove', move)
+                  el.addEventListener('pointerup', up)
+                }}
+              />
+            )}
           </div>
         )
       })}
@@ -323,6 +370,7 @@ function TrackLanes({ scale, section, time, demo, highlight, selected, onSelect 
   selected: KeyRef | null
   onSelect: (track: string, index: number) => void
 }) {
+  const store = useStudioStore()
   const { scene } = section
   const rps = rowsPerSecond(scene.bpm, scene.rowsPerBeat)
   const sampler = useMemo(() => new TrackSampler(scene.tracks), [scene])
@@ -330,19 +378,25 @@ function TrackLanes({ scale, section, time, demo, highlight, selected, onSelect 
   return (
     <>
       <div className="tl-group">
-        {scene.tracks.length === 0
-          ? `No keyframe tracks${demo ? ` in ${section.id}` : ''}`
-          : `Tracks${demo ? ` · ${section.id}` : ''} · ${scene.bpm} BPM · ${scene.rowsPerBeat} rows/beat · row ${Math.floor(local * rps)}`}
+        <span>
+          {scene.tracks.length === 0
+            ? `No keyframe tracks${demo ? ` in ${section.id}` : ''}`
+            : `Tracks${demo ? ` · ${section.id}` : ''} · ${scene.bpm} BPM · ${scene.rowsPerBeat} rows/beat · row ${Math.floor(local * rps)}`}
+        </span>
+        <button type="button" className="tl-group__add" title="Add a keyframe track" onClick={() => { store.getState().addTrack(section.scenePath, 'track') }}>+ Track</button>
       </div>
       {scene.tracks.map(track => (
         <Row
           key={track.name}
           className={`tl-row--track${highlight.has(track.name) ? ' tl-row--highlight' : ''}`}
           label={
-            <span className="tl-track-label" title={track.name}>
-              <span>{track.name}</span>
-              <span className="tl-track-label__value">{formatValue(sampler.valueAt(track.name, local * rps))}</span>
-            </span>
+            <TrackLabel
+              name={track.name}
+              value={formatValue(sampler.valueAt(track.name, local * rps))}
+              bound={scene.graph.nodes.filter(n => configBindings(n.config).some(b => b.binding.kind === 'track' && b.binding.track === track.name)).map(n => n.id)}
+              onRename={name => { store.getState().renameTrack(section.scenePath, track.name, name) }}
+              onRemove={() => { store.getState().removeTrack(section.scenePath, track.name) }}
+            />
           }
         >
           <TrackCurve
@@ -462,6 +516,62 @@ function TrackCurve({ scale, section, track, sampler, rps, selectedIndex, onSele
         )
       })}
     </div>
+  )
+}
+
+/** A track's name and live value; double-click to rename, × to remove (bound settings keep its first value). */
+function TrackLabel({ name, value, bound, onRename, onRemove }: {
+  name: string
+  value: string
+  bound: string[]
+  onRename: (name: string) => void
+  onRemove: () => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const done = useRef(false)
+  if (editing) {
+    // Enter or leaving the field renames; Escape keeps the name. Only the first of these counts.
+    const finish = (value: string | null): void => {
+      if (done.current) return
+      done.current = true
+      setEditing(false)
+      if (value !== null) onRename(value)
+    }
+    return (
+      <input
+        className="ui-input tl-track-label__input"
+        aria-label={`Rename ${name}`}
+        defaultValue={name}
+        autoFocus
+        onFocus={e => { e.currentTarget.select() }}
+        onBlur={e => { finish(e.currentTarget.value) }}
+        onKeyDown={e => {
+          if (e.key === 'Enter') finish(e.currentTarget.value)
+          if (e.key === 'Escape') finish(null)
+        }}
+      />
+    )
+  }
+  return (
+    <span
+      className="tl-track-label"
+      title={`${name}${bound.length ? `\nUsed by ${bound.join(', ')}` : '\nNot used by any node'}\nDouble-click to rename`}
+      onDoubleClick={() => { done.current = false; setEditing(true) }}
+    >
+      <span>{name}</span>
+      <span className="tl-track-label__value">{value}</span>
+      <button
+        type="button"
+        className="tl-track-label__remove"
+        aria-label={`Remove track ${name}`}
+        title="Remove track"
+        onClick={() => {
+          if (!bound.length || window.confirm(`${bound.join(', ')} follow ${name}. Remove it and keep its first value there?`)) onRemove()
+        }}
+      >
+        ×
+      </button>
+    </span>
   )
 }
 

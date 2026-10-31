@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { NODE_SCHEMAS, validateNodeConfig, type NumberParam, type ParamSchema } from '@overscan/nodes/browser'
+import { NODE_SCHEMAS, validateNodeConfig, type NodeSchema, type NumberParam, type ParamSchema } from '@overscan/nodes/browser'
 import { bindingOf } from '../engine/graph-model'
 import type { PlayerSection } from '../engine/player'
 import { rowsPerSecond, TrackSampler } from '../engine/timeline'
 import { Button, ColorField, NumberField, Select, Slider } from '../ui/kit'
 import { useFocusSection, useStudio, useStudioStore } from './studio-context'
 
-type SetValue = (value: unknown) => void
+export type SetValue = (value: unknown) => void
 
 /** Live context every control may need: the section, its tracks and the current rocket row. */
 interface ParamContext {
@@ -32,15 +32,12 @@ export function Inspector() {
 
   const schema = NODE_SCHEMAS[node.impl]
   const problems = schema ? validateNodeConfig(schema, node.config) : []
-  const problemKeys = new Set(problems.map(p => p.key.split(/[.[]/)[0]))
   const ctx: ParamContext = {
     section,
     sampler,
     row: Math.max(0, time - section.start) * rowsPerSecond(section.scene.bpm, section.scene.rowsPerBeat),
     bindNewTrack: (key, value) => { store.getState().bindNewTrack(section.scenePath, node.id, key, value) },
   }
-  const known = schema ? Object.keys(schema.params) : []
-  const extra = Object.keys(node.config).filter(k => !known.includes(k) && !schema?.deprecated?.includes(k))
   const set = (key: string): SetValue => value => { store.getState().setNodeParam(section.scenePath, node.id, key, value) }
   const isOutput = Object.values(section.scene.graph.outputs).includes(node.id)
 
@@ -71,23 +68,42 @@ export function Inspector() {
           {problems.map(p => <li key={`${p.key}:${p.message}`}><code>{p.key}</code>: {p.message}</li>)}
         </ul>
       )}
-      <div className="details__params">
-        {known.map(key => {
-          const param = schema!.params[key]!
-          const isSet = Object.prototype.hasOwnProperty.call(node.config, key)
-          return (
-            <ParamRow key={key} name={key} description={param.description} isSet={isSet} problem={problemKeys.has(key)} onReset={() => { set(key)(undefined) }}>
-              <ParamControl name={key} schema={param} value={isSet ? node.config[key] : defaultOf(param)} set={set(key)} ctx={ctx} />
-            </ParamRow>
-          )
-        })}
-        {extra.map(key => (
-          <ParamRow key={key} name={key} description="Not a setting this node knows; it has no effect." isSet problem onReset={() => { set(key)(undefined) }} resetLabel="Remove">
-            <JsonInput value={node.config[key]} onCommit={set(key)} label={key} />
-          </ParamRow>
-        ))}
-      </div>
+      <ConfigParams schema={schema} config={node.config} set={set} ctx={ctx} />
     </section>
+  )
+}
+
+/**
+ * One control per schema option of a config, plus raw JSON for keys the schema does not know. Without
+ * `ctx` (no tracks to follow, e.g. demo-wide modifiers) numbers are plain values.
+ */
+export function ConfigParams({ schema, config, set, ctx }: {
+  schema: NodeSchema | undefined
+  config: Record<string, unknown>
+  set: (key: string) => SetValue
+  ctx: ParamContext | null
+}) {
+  const problems = schema ? validateNodeConfig(schema, config) : []
+  const problemKeys = new Set(problems.map(p => p.key.split(/[.[]/)[0]))
+  const known = schema ? Object.keys(schema.params) : []
+  const extra = Object.keys(config).filter(k => !known.includes(k) && !schema?.deprecated?.includes(k))
+  return (
+    <div className="details__params">
+      {known.map(key => {
+        const param = schema!.params[key]!
+        const isSet = Object.prototype.hasOwnProperty.call(config, key)
+        return (
+          <ParamRow key={key} name={key} description={param.description} isSet={isSet} problem={problemKeys.has(key)} onReset={() => { set(key)(undefined) }}>
+            <ParamControl name={key} schema={param} value={isSet ? config[key] : defaultOf(param)} set={set(key)} ctx={ctx} />
+          </ParamRow>
+        )
+      })}
+      {extra.map(key => (
+        <ParamRow key={key} name={key} description="Not a setting this node knows; it has no effect." isSet problem onReset={() => { set(key)(undefined) }} resetLabel="Remove">
+          <JsonInput value={config[key]} onCommit={set(key)} label={key} />
+        </ParamRow>
+      ))}
+    </div>
   )
 }
 
@@ -113,10 +129,12 @@ function ParamRow({ name, description, isSet, problem, onReset, resetLabel = 'Re
   )
 }
 
-function ParamControl({ name, schema, value, set, ctx }: { name: string; schema: ParamSchema; value: unknown; set: SetValue; ctx: ParamContext }) {
+function ParamControl({ name, schema, value, set, ctx }: { name: string; schema: ParamSchema; value: unknown; set: SetValue; ctx: ParamContext | null }) {
   switch (schema.type) {
     case 'number':
-      return <AnimatableNumber name={name} schema={schema} value={value} set={set} ctx={ctx} />
+      return ctx
+        ? <AnimatableNumber name={name} schema={schema} value={value} set={set} ctx={ctx} />
+        : <PlainNumber name={name} value={value} min={schema.min} max={schema.max} step={schema.step} set={set} slider />
     case 'integer':
       return <PlainNumber name={name} value={value} min={schema.min} max={schema.max} step={1} set={set} />
     case 'boolean':
@@ -301,7 +319,7 @@ function PaletteControl({ name, value, set }: { name: string; value: unknown; se
   )
 }
 
-function VectorControl({ name, size, value, set, ctx }: { name: string; size: 2 | 3; value: unknown; set: SetValue; ctx: ParamContext }) {
+function VectorControl({ name, size, value, set, ctx }: { name: string; size: 2 | 3; value: unknown; set: SetValue; ctx: ParamContext | null }) {
   const items = Array.from({ length: size }, (_, i) => (Array.isArray(value) ? value[i] : 0) as unknown)
   const update = (i: number, v: unknown): void => { set(items.map((x, j) => (j === i ? v : x))) }
   return (
@@ -310,7 +328,7 @@ function VectorControl({ name, size, value, set, ctx }: { name: string; size: 2 
         const binding = bindingOf(item)
         const axis = 'xyz'[i]!
         if (binding) {
-          const live = binding.kind === 'track' ? ctx.sampler.valueAt(binding.track, ctx.row) : 0
+          const live = binding.kind === 'track' && ctx ? ctx.sampler.valueAt(binding.track, ctx.row) : 0
           return (
             <button
               key={axis}
@@ -330,7 +348,7 @@ function VectorControl({ name, size, value, set, ctx }: { name: string; size: 2 
 }
 
 /** Text that commits on Enter (single line) or blur. */
-function TextInput({ value, onCommit, label, multiline = false, placeholder }: {
+export function TextInput({ value, onCommit, label, multiline = false, placeholder }: {
   value: string
   onCommit: (value: string) => void
   label: string

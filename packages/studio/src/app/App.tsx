@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { ToggleGroup } from '../ui/kit'
+import { Button, ToggleGroup } from '../ui/kit'
+import { DemoPanel } from './DemoPanel'
+import { ExportDialog } from './ExportDialog'
 import { FilePicker } from './FilePicker'
 import { GraphPanel } from './GraphPanel'
 import { Inspector } from './Inspector'
@@ -21,7 +23,14 @@ export function App() {
 
   const [timelineHeight, setTimelineHeight] = useState(readTimelineHeight)
   const [showSide, setShowSide] = useState(() => readStored(GRAPH_KEY) !== 'hidden')
-  const [sideTab, setSideTab] = useState<SideTab>(() => (readStored(TAB_KEY) === 'json' ? 'json' : 'graph'))
+  const [sideTab, setSideTab] = useState<SideTab>(() => {
+    const stored = readStored(TAB_KEY)
+    return stored === 'json' || stored === 'demo' ? stored : 'graph'
+  })
+  const [exporting, setExporting] = useState(false)
+  const isDemo = document?.kind === 'demo'
+  // The demo tab only exists for demos; a scene falls back to the graph.
+  const tab: SideTab = sideTab === 'demo' && !isDemo ? 'graph' : sideTab
   const toggleSide = (): void => { setShowSide(v => { writeStored(GRAPH_KEY, v ? 'hidden' : 'shown'); return !v }) }
   const showTab = (tab: SideTab): void => {
     setSideTab(tab)
@@ -48,15 +57,18 @@ export function App() {
           {document && <SaveControls />}
         </div>
         <Transport onScreenshot={() => previewRef.current?.screenshot()} onFullscreen={() => previewRef.current?.fullscreen()} />
+        {document && <Button variant="ghost" title="Render a GIF, MP4 or PNG frames" onClick={() => { setExporting(true) }}>Export…</Button>}
+        {exporting && <ExportDialog onClose={() => { setExporting(false) }} />}
         {document && (
           <ToggleGroup
             label="Side panel"
-            value={showSide ? sideTab : 'none'}
+            value={showSide ? tab : 'none'}
             options={[
               { value: 'graph', label: 'Graph', title: 'Node graph and inspector (G shows or hides the panel)' },
+              ...(isDemo ? [{ value: 'demo' as const, label: 'Demo', title: 'Sections, transitions, soundtrack and demo-wide modifiers' }] : []),
               { value: 'json', label: 'JSON', title: 'View and edit the JSON (J)' },
             ]}
-            onChange={tab => { if (showSide && tab === sideTab) toggleSide(); else if (tab !== 'none') showTab(tab) }}
+            onChange={next => { if (showSide && next === tab) toggleSide(); else if (next !== 'none') showTab(next) }}
           />
         )}
       </header>
@@ -67,7 +79,7 @@ export function App() {
         <Preview ref={previewRef} />
         {document && showSide && (
           <aside className="app__side">
-            {sideTab === 'graph' ? <><GraphPanel /><Inspector /></> : <JsonPanel />}
+            {tab === 'graph' ? <><GraphPanel /><Inspector /></> : tab === 'demo' ? <DemoPanel /> : <JsonPanel />}
           </aside>
         )}
       </main>
@@ -103,7 +115,7 @@ export function App() {
 const HEIGHT_KEY = 'overscan.studio.timelineHeight'
 const GRAPH_KEY = 'overscan.studio.graph'
 const TAB_KEY = 'overscan.studio.sideTab'
-type SideTab = 'graph' | 'json'
+type SideTab = 'graph' | 'demo' | 'json'
 const clampHeight = (h: number): number => Math.round(Math.min(window.innerHeight * 0.75, Math.max(96, h)))
 
 // Layout preferences live in localStorage, which can be unavailable (private windows, blocked storage).
