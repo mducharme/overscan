@@ -265,10 +265,12 @@ function Sections({ scale, sections, focus, onZoom, editable }: {
                   const startX = event.clientX
                   const original = section.end - section.start
                   const beat = 60 / section.scene.bpm
-                  // Snaps to the section's beats; Alt for hundredths of a second.
+                  // The transition overlaps the next section, which should start on a beat: snap the length
+                  // without the overlap to whole beats. Alt gives hundredths of a second instead.
+                  const overlap = section.transition.type === 'cut' ? 0 : section.transition.duration
                   const lengthAt = (e: PointerEvent): number => {
-                    const raw = Math.max(beat, original + (e.clientX - startX) * ((scale.view.end - scale.view.start) / scale.width))
-                    return e.altKey ? Math.round(raw * 100) / 100 : Number((Math.round(raw / beat) * beat).toFixed(4))
+                    const raw = Math.max(beat + overlap, original + (e.clientX - startX) * ((scale.view.end - scale.view.start) / scale.width))
+                    return e.altKey ? Math.round(raw * 100) / 100 : Number((overlap + Math.round((raw - overlap) / beat) * beat).toFixed(4))
                   }
                   const move = (e: PointerEvent): void => { setResize({ index: i, length: lengthAt(e) }) }
                   const up = (e: PointerEvent): void => {
