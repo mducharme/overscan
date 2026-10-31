@@ -1,6 +1,6 @@
 {
   "name": "@overscan/sequencer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared demo sequencing types and helpers for multi-section Overscan productions",
   "type": "module",
   "main": "./dist/index.js",

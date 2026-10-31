@@ -1,6 +1,6 @@
 {
   "name": "@overscan/sink-export",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "PNG sequence and MP4/GIF export via ffmpeg",
   "type": "module",
   "main": "./dist/index.js",

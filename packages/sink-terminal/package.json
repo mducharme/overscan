@@ -1,6 +1,6 @@
 {
   "name": "@overscan/sink-terminal",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Sixel, ANSI block, and ASCII terminal output sink",
   "type": "module",
   "main": "./dist/index.js",
