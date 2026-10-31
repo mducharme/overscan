@@ -1,0 +1,22 @@
+{
+  "id": "dycp-scroller",
+  "title": "DYCP Scroller",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "bars", "type": "generator", "impl": "copperbars", "config": {} },
+      { "id": "dycp", "type": "generator", "impl": "scroller", "config": { "mode": "dycp", "text": "DIFFERENT Y CHARACTER POSITION  *  OVERSCAN  *  ", "speed": 24, "fontSize": 36, "waveAmplitude": 40, "waveFrequency": 0.45, "waveSpeed": 4 } },
+      { "id": "over", "type": "compositor", "impl": "alpha-blend", "config": {} }
+    ],
+    "edges": [
+      { "from": { "node": "bars", "output": "color" }, "to": { "node": "over", "input": "base" } },
+      { "from": { "node": "dycp", "output": "color" }, "to": { "node": "over", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "over", "browser": "over", "export": "over" }
+  }
+}

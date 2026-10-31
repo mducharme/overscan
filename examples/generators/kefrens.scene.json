@@ -1,0 +1,17 @@
+{
+  "id": "kefrens",
+  "title": "Kefrens Bars",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "kefrens1", "type": "generator", "impl": "kefrens", "config": {} }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "kefrens1", "browser": "kefrens1", "export": "kefrens1" }
+  }
+}

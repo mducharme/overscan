@@ -1,0 +1,17 @@
+{
+  "id": "chrome-torus",
+  "title": "Environment-mapped torus",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "torus", "type": "generator", "impl": "polygon", "config": { "mesh": "torus", "shading": "envmap", "rotationX": 0.9, "rotationY": 0.6, "backgroundColor": "#0a0618" } }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "torus", "browser": "torus", "export": "torus" }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "rubber-vector",
+  "title": "Rubber Vector",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "jelly",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "ease-out" },
+        { "row": 32, "value": 0.6, "interpolation": "smooth" },
+        { "row": 96, "value": 0.2, "interpolation": "smooth" },
+        { "row": 160, "value": 0.7, "interpolation": "smooth" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "cube", "type": "generator", "impl": "polygon", "config": { "mesh": "cube", "shading": "flat", "rubber": { "track": "jelly" }, "rotationX": 1.4, "rotationY": 1.1, "rotationZ": 0.3, "scale": 0.75, "backgroundColor": "#06040e" } }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "cube", "browser": "cube", "export": "cube" }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "particles",
+  "title": "Particles: fountain and explosions",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "fountain", "type": "generator", "impl": "particles", "config": { "mode": "fountain", "count": 2000 } },
+      { "id": "boom", "type": "generator", "impl": "particles", "config": { "mode": "explosion", "count": 900, "backgroundColor": "transparent", "palette": [[255, 255, 255], [120, 220, 255], [60, 80, 255], [20, 10, 60]], "randomSeed": 7 } },
+      { "id": "mix", "type": "compositor", "impl": "additive-blend", "config": {} }
+    ],
+    "edges": [
+      { "from": { "node": "fountain", "output": "color" }, "to": { "node": "mix", "input": "base" } },
+      { "from": { "node": "boom", "output": "color" }, "to": { "node": "mix", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "mix", "browser": "mix", "export": "mix" }
+  }
+}

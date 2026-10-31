@@ -1,0 +1,30 @@
+{
+  "id": "twirl",
+  "title": "Twirl",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "twist",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "smooth" },
+        { "row": 64, "value": 5, "interpolation": "smooth" },
+        { "row": 128, "value": -3, "interpolation": "smooth" },
+        { "row": 160, "value": 0, "interpolation": "smooth" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "checker", "type": "generator", "impl": "checkerboard-floor", "config": { "horizon": 0.05, "scrollSpeed": 0.5, "color1": "#ffd060", "color2": "#401060", "fogDistance": 1 } },
+      { "id": "twirl1", "type": "modifier", "impl": "uv-map", "config": { "preset": "twirl", "amount": { "track": "twist" }, "radius": 0.7 } }
+    ],
+    "edges": [
+      { "from": { "node": "checker", "output": "color" }, "to": { "node": "twirl1", "input": "in" } }
+    ],
+    "outputs": { "terminal": "twirl1", "browser": "twirl1", "export": "twirl1" }
+  }
+}

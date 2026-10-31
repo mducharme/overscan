@@ -1,0 +1,28 @@
+{
+  "id": "uv-map",
+  "title": "UV map: flower tunnel",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "spin",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "linear" },
+        { "row": 160, "value": 6.28, "interpolation": "linear" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "plasma1", "type": "generator", "impl": "plasma", "config": { "speed": 0.8, "scale": 1.2 } },
+      { "id": "uv", "type": "modifier", "impl": "uv-map", "config": { "preset": "flower", "amount": 0.6, "petals": 6, "speedV": 0.8, "rotation": { "track": "spin" } } }
+    ],
+    "edges": [
+      { "from": { "node": "plasma1", "output": "color" }, "to": { "node": "uv", "input": "in" } }
+    ],
+    "outputs": { "terminal": "uv", "browser": "uv", "export": "uv" }
+  }
+}

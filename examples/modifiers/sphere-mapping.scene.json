@@ -1,0 +1,24 @@
+{
+  "id": "sphere-mapping",
+  "title": "Sphere mapping",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "stars", "type": "generator", "impl": "starfield", "config": { "count": 250 } },
+      { "id": "tex", "type": "generator", "impl": "rotozoom", "config": { "textureUrl": "overscan://checkerboard" } },
+      { "id": "ball", "type": "modifier", "impl": "uv-map", "config": { "preset": "sphere", "speedU": 0.12, "radius": 0.4 } },
+      { "id": "over", "type": "compositor", "impl": "alpha-blend", "config": {} }
+    ],
+    "edges": [
+      { "from": { "node": "tex", "output": "color" }, "to": { "node": "ball", "input": "in" } },
+      { "from": { "node": "stars", "output": "color" }, "to": { "node": "over", "input": "base" } },
+      { "from": { "node": "ball", "output": "color" }, "to": { "node": "over", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "over", "browser": "over", "export": "over" }
+  }
+}

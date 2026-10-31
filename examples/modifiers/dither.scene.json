@@ -1,0 +1,20 @@
+{
+  "id": "dither",
+  "title": "Dither to the C64 palette",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "plasma1", "type": "generator", "impl": "plasma", "config": { "speed": 0.7 } },
+      { "id": "dither1", "type": "modifier", "impl": "dither", "config": { "palette": "c64", "matrix": "4x4", "pixelSize": 2 } }
+    ],
+    "edges": [
+      { "from": { "node": "plasma1", "output": "color" }, "to": { "node": "dither1", "input": "in" } }
+    ],
+    "outputs": { "terminal": "dither1", "browser": "dither1", "export": "dither1" }
+  }
+}

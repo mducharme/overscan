@@ -1,0 +1,29 @@
+{
+  "id": "radial-blur",
+  "title": "Light rays",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "cx",
+      "keys": [
+        { "row": 0, "value": 0.2, "interpolation": "smooth" },
+        { "row": 80, "value": 0.8, "interpolation": "smooth" },
+        { "row": 160, "value": 0.2, "interpolation": "smooth" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "RAYS", "scale": 0.7 } },
+      { "id": "rays", "type": "modifier", "impl": "radial-blur", "config": { "mode": "rays", "strength": 0.6, "threshold": 0.3, "centerX": { "track": "cx" } } }
+    ],
+    "edges": [
+      { "from": { "node": "logo", "output": "color" }, "to": { "node": "rays", "input": "in" } }
+    ],
+    "outputs": { "terminal": "rays", "browser": "rays", "export": "rays" }
+  }
+}

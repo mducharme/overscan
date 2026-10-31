@@ -1,0 +1,20 @@
+{
+  "id": "strange-attractor",
+  "title": "Strange Attractor",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "cloud", "type": "generator", "impl": "particles", "config": { "mode": "attractor", "count": 90000, "palette": [[255, 250, 220], [255, 170, 90], [200, 60, 140], [60, 30, 120]] } },
+      { "id": "glow", "type": "modifier", "impl": "glow", "config": { "radius": 2, "strength": 0.5 } }
+    ],
+    "edges": [
+      { "from": { "node": "cloud", "output": "color" }, "to": { "node": "glow", "input": "in" } }
+    ],
+    "outputs": { "terminal": "glow", "browser": "glow", "export": "glow" }
+  }
+}

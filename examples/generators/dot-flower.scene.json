@@ -1,0 +1,27 @@
+{
+  "id": "dot-flower",
+  "title": "Dot Flower",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "petal",
+      "keys": [
+        { "row": 0, "value": 0, "interpolation": "smooth" },
+        { "row": 64, "value": 1.1, "interpolation": "smooth" },
+        { "row": 128, "value": 0.3, "interpolation": "smooth" },
+        { "row": 160, "value": 0.8, "interpolation": "smooth" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "flower", "type": "generator", "impl": "dot-tunnel", "config": { "flower": { "track": "petal" }, "petals": 6, "twist": 0.18, "speed": 4, "bend": 0.2, "palette": [[60, 10, 40], [255, 60, 140], [255, 200, 90], [255, 255, 255]] } }
+    ],
+    "edges": [],
+    "outputs": { "terminal": "flower", "browser": "flower", "export": "flower" }
+  }
+}

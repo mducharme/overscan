@@ -24,6 +24,7 @@ Full option tables for every `impl` are in [`EFFECTS.md`](EFFECTS.md). JSON bloc
 ## Contents
 
 - [Generator examples](#generator-examples)
+- [Classic effects (CPU)](#classic-effects-cpu)
 - [Advanced compositions](#advanced-compositions)
 - [See also](#see-also)
 
@@ -34,25 +35,35 @@ Full option tables for every `impl` are in [`EFFECTS.md`](EFFECTS.md). JSON bloc
 | Impl | Description |
 | --- | --- |
 | `checkerboard-floor` | Perspective checker ground, sky, fog, scroll |
+| `chrome-torus` | `polygon` with environment-mapped (chrome) shading |
 | `copperbars` | Horizontal colour bars (Amiga-style copper) |
+| `dot-flower` | `dot-tunnel` with petal-shaped rings |
 | `dot-matrix` | Point grids / paths (e.g. helix) |
+| `dot-tunnel` | Rings of dots along a curving path |
+| `dycp-scroller` | `scroller` in DYCP mode: each character on its own sine |
 | `fire` | 2D heat simulation (stateful) |
 | `fractal-zoom` | Mandelbrot / Julia zoom |
 | `game-of-life` | Cellular automaton on a grid |
 | `glenz` | Stacked transparent shaded shapes |
+| `image` | Gradient text logo (or a picture), scaled and placed |
+| `kefrens` | One bar per scanline, never cleared: twisting walls |
 | `lasers` | Beams from emitters, sweep and glow |
 | `lissajous` | Parametric curves, trail, glow |
 | `matrix-rain` | Falling glyph columns |
 | `metaballs` | 2D metaball field |
 | `moire` | Interference patterns |
 | `oscilloscope` | Faux scope trace + grid |
+| `particles` | Fountain plus explosions, computed from time (seek-exact) |
 | `plasma` | Summed waves + palette |
+| `polygon` | Gouraud-shaded torus knot with a depth buffer |
 | `raymarcher` | SDF ray marching (inline or `scenePath` GLSL) |
 | `rotozoom` | Rotate + zoom texture |
+| `rubber-vector` | `polygon` with `rubber`: rotation lags line by line |
 | `scroller` | Horizontal text + sine warp |
 | `shadebobs` | Shaded blobs + palette |
 | `sinebobs` | Circles on sine paths |
 | `starfield` | 3D star motion |
+| `strange-attractor` | `particles` in attractor mode (Clifford) |
 | `text` | Positioned text + font |
 | `tunnel` | Cylindrical tunnel |
 | `twister` | Vertical sine “twister” bars |
@@ -512,6 +523,172 @@ Full option tables for every `impl` are in [`EFFECTS.md`](EFFECTS.md). JSON bloc
 | ANSI (80×24) | ASCII (160×48 downscaled) | WebGL |
 | :---: | :---: | :---: |
 | ![wireframe terminal](examples/generators/wireframe-terminal.gif) | ![wireframe ascii](examples/generators/wireframe-ascii.gif) | ![wireframe webgl](examples/generators/wireframe-webgl.gif) |
+
+---
+
+## Classic effects (CPU)
+
+These effects render on the CPU only (in the browser preview the result is uploaded as a texture), so there is no separate WebGL column.
+
+### Chrome Torus
+
+**Scene:** [`examples/generators/chrome-torus.scene.json`](../examples/generators/chrome-torus.scene.json)
+
+```jsonc
+// torus (polygon)
+{"mesh": "torus", "shading": "envmap", "rotationX": 0.9, "rotationY": 0.6, "backgroundColor": "#0a0618"}
+```
+
+| ANSI (80×24) | ASCII (160×48 downscaled) |
+| :---: | :---: |
+| ![chrome-torus terminal](examples/generators/chrome-torus-terminal.gif) | ![chrome-torus ascii](examples/generators/chrome-torus-ascii.gif) |
+
+### Dot Flower
+
+**Scene:** [`examples/generators/dot-flower.scene.json`](../examples/generators/dot-flower.scene.json)
+
+```jsonc
+// flower (dot-tunnel)
+{"flower": {"track": "petal"}, "petals": 6, "twist": 0.18, "speed": 4, "bend": 0.2, "palette": [[60, 10, 40], [255, 60, 140], [255, 200, 90], [255, 255, 255]]}
+```
+
+| ANSI (80×24) | ASCII (160×48 downscaled) |
+| :---: | :---: |
+| ![dot-flower terminal](examples/generators/dot-flower-terminal.gif) | ![dot-flower ascii](examples/generators/dot-flower-ascii.gif) |
+
+### Dot Tunnel
+
+**Scene:** [`examples/generators/dot-tunnel.scene.json`](../examples/generators/dot-tunnel.scene.json)
+
+```jsonc
+// dots (dot-tunnel)
+{"speed": 7, "bend": 0.8}
+```
+
+| ANSI (80×24) | ASCII (160×48 downscaled) |
+| :---: | :---: |
+| ![dot-tunnel terminal](examples/generators/dot-tunnel-terminal.gif) | ![dot-tunnel ascii](examples/generators/dot-tunnel-ascii.gif) |
+
+### DYCP Scroller
+
+**Scene:** [`examples/generators/dycp-scroller.scene.json`](../examples/generators/dycp-scroller.scene.json)
+
+```jsonc
+// bars (copperbars)
+{}
+// dycp (scroller)
+{"mode": "dycp", "text": "DIFFERENT Y CHARACTER POSITION  *  OVERSCAN  *  ", "speed": 24, "fontSize": 36, "waveAmplitude": 40, "waveFrequency": 0.45, "waveSpeed": 4}
+// over (alpha-blend)
+{}
+```
+
+| ANSI (80×24) | ASCII (160×48 downscaled) |
+| :---: | :---: |
+| ![dycp-scroller terminal](examples/generators/dycp-scroller-terminal.gif) | ![dycp-scroller ascii](examples/generators/dycp-scroller-ascii.gif) |
+
+### Image / Logo
+
+**Scene:** [`examples/generators/image.scene.json`](../examples/generators/image.scene.json)
+
+```jsonc
+// stars (starfield)
+{"count": 300}
+// logo (image)
+{"text": "OVERSCAN", "scale": {"track": "logo.scale"}, "y": 0.45, "outline": 1}
+// over (alpha-blend)
+{}
+```
+
+| ANSI (80×24) | ASCII (160×48 downscaled) |
+| :---: | :---: |
+| ![image terminal](examples/generators/image-terminal.gif) | ![image ascii](examples/generators/image-ascii.gif) |
+
+### Kefrens Bars
+
+**Scene:** [`examples/generators/kefrens.scene.json`](../examples/generators/kefrens.scene.json)
+
+```jsonc
+// kefrens1 (kefrens)
+{}
+```
+
+| ANSI (80×24) | ASCII (160×48 downscaled) |
+| :---: | :---: |
+| ![kefrens terminal](examples/generators/kefrens-terminal.gif) | ![kefrens ascii](examples/generators/kefrens-ascii.gif) |
+
+### Particles
+
+**Scene:** [`examples/generators/particles.scene.json`](../examples/generators/particles.scene.json)
+
+```jsonc
+// fountain (particles)
+{"mode": "fountain", "count": 2000}
+// boom (particles)
+{"mode": "explosion", "count": 900, "backgroundColor": "transparent", "palette": [[255, 255, 255], [120, 220, 255], [60, 80, 255], [20, 10, 60]], "randomSeed": 7}
+// mix (additive-blend)
+{}
+```
+
+| ANSI (80×24) | ASCII (160×48 downscaled) |
+| :---: | :---: |
+| ![particles terminal](examples/generators/particles-terminal.gif) | ![particles ascii](examples/generators/particles-ascii.gif) |
+
+### Polygon Object
+
+**Scene:** [`examples/generators/polygon.scene.json`](../examples/generators/polygon.scene.json)
+
+```jsonc
+// bg (copperbars)
+{}
+// knot (polygon)
+{"mesh": "torus-knot", "shading": "gouraud"}
+// over (alpha-blend)
+{}
+```
+
+| ANSI (80×24) | ASCII (160×48 downscaled) |
+| :---: | :---: |
+| ![polygon terminal](examples/generators/polygon-terminal.gif) | ![polygon ascii](examples/generators/polygon-ascii.gif) |
+
+### Rubber Vector
+
+**Scene:** [`examples/generators/rubber-vector.scene.json`](../examples/generators/rubber-vector.scene.json)
+
+```jsonc
+// cube (polygon)
+{"mesh": "cube", "shading": "flat", "rubber": {"track": "jelly"}, "rotationX": 1.4, "rotationY": 1.1, "rotationZ": 0.3, "scale": 0.75, "backgroundColor": "#06040e"}
+```
+
+| ANSI (80×24) | ASCII (160×48 downscaled) |
+| :---: | :---: |
+| ![rubber-vector terminal](examples/generators/rubber-vector-terminal.gif) | ![rubber-vector ascii](examples/generators/rubber-vector-ascii.gif) |
+
+### Strange Attractor
+
+**Scene:** [`examples/generators/strange-attractor.scene.json`](../examples/generators/strange-attractor.scene.json)
+
+```jsonc
+// cloud (particles)
+{"mode": "attractor", "count": 90000, "palette": [[255, 250, 220], [255, 170, 90], [200, 60, 140], [60, 30, 120]]}
+// glow (glow)
+{"radius": 2, "strength": 0.5}
+```
+
+| ANSI (80×24) | ASCII (160×48 downscaled) |
+| :---: | :---: |
+| ![strange-attractor terminal](examples/generators/strange-attractor-terminal.gif) | ![strange-attractor ascii](examples/generators/strange-attractor-ascii.gif) |
+
+### Modifier examples
+
+| Scene | What it shows |
+| --- | --- |
+| [`wobble`](../examples/modifiers/wobble.scene.json) | Raster wobble of a logo |
+| [`uv-map`](../examples/modifiers/uv-map.scene.json) | Flower tunnel of a plasma (UV map) |
+| [`sphere-mapping`](../examples/modifiers/sphere-mapping.scene.json) | Texture wrapped on a rotating ball (UV map sphere) |
+| [`twirl`](../examples/modifiers/twirl.scene.json) | Twirl of a checker floor (UV map twirl) |
+| [`dither`](../examples/modifiers/dither.scene.json) | Ordered dither to the C64 palette |
+| [`bump`](../examples/modifiers/bump.scene.json) | Bump-mapped logo lit by a moving light |
+| [`radial-blur`](../examples/modifiers/radial-blur.scene.json) | Light rays from a logo (radial blur, rays mode) |
 
 ---
 

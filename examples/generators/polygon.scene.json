@@ -1,0 +1,22 @@
+{
+  "id": "polygon",
+  "title": "Polygon Object (Gouraud torus knot)",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "bg", "type": "generator", "impl": "copperbars", "config": {} },
+      { "id": "knot", "type": "generator", "impl": "polygon", "config": { "mesh": "torus-knot", "shading": "gouraud" } },
+      { "id": "over", "type": "compositor", "impl": "alpha-blend", "config": {} }
+    ],
+    "edges": [
+      { "from": { "node": "bg", "output": "color" }, "to": { "node": "over", "input": "base" } },
+      { "from": { "node": "knot", "output": "color" }, "to": { "node": "over", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "over", "browser": "over", "export": "over" }
+  }
+}

@@ -5,7 +5,7 @@
  *   - {name}-ascii.gif     — 5s, ASCII at 160×48 char grid (2× density), then scaled to 640×384 to match ANSI GIF
  *   - {name}-webgl.gif     — 5s, export graph via headless WebGL blit → ffmpeg GIF
  *
- * Requires: pnpm build, ffmpeg on PATH.
+ * Requires: pnpm build, ffmpeg on PATH. Pass example names to export only those.
  * Output: docs/examples/generators/ and docs/examples/advanced/
  */
 import { spawnSync } from 'node:child_process'
@@ -148,9 +148,11 @@ async function main() {
   await mkdir(OUT_GENERATORS, { recursive: true })
   await mkdir(OUT_ADVANCED, { recursive: true })
 
+  // `pnpm export-example-gifs plasma tunnel` regenerates just those examples.
+  const only = new Set(process.argv.slice(2))
   const scenes = []
   for (const d of DIRS) {
-    scenes.push(...(await listSceneJson(d)))
+    scenes.push(...(await listSceneJson(d)).filter(p => only.size === 0 || only.has(sceneBaseName(p))))
   }
 
   if (scenes.length === 0) {

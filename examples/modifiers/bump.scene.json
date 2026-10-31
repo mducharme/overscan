@@ -1,0 +1,20 @@
+{
+  "id": "bump",
+  "title": "Bump-mapped logo",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "BUMP\nMAP", "scale": 0.7, "outline": 0, "backgroundColor": "#000000" } },
+      { "id": "bump1", "type": "modifier", "impl": "bump", "config": { "depth": 5 } }
+    ],
+    "edges": [
+      { "from": { "node": "logo", "output": "color" }, "to": { "node": "bump1", "input": "in" } }
+    ],
+    "outputs": { "terminal": "bump1", "browser": "bump1", "export": "bump1" }
+  }
+}

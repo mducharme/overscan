@@ -1,0 +1,31 @@
+{
+  "id": "image",
+  "title": "Image / Logo",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [
+    {
+      "name": "logo.scale",
+      "keys": [
+        { "row": 0, "value": 0.2, "interpolation": "elastic" },
+        { "row": 48, "value": 0.85, "interpolation": "smooth" },
+        { "row": 120, "value": 0.75, "interpolation": "smooth" }
+      ]
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "stars", "type": "generator", "impl": "starfield", "config": { "count": 300 } },
+      { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "OVERSCAN", "scale": { "track": "logo.scale" }, "y": 0.45, "outline": 1 } },
+      { "id": "over", "type": "compositor", "impl": "alpha-blend", "config": {} }
+    ],
+    "edges": [
+      { "from": { "node": "stars", "output": "color" }, "to": { "node": "over", "input": "base" } },
+      { "from": { "node": "logo", "output": "color" }, "to": { "node": "over", "input": "overlay" } }
+    ],
+    "outputs": { "terminal": "over", "browser": "over", "export": "over" }
+  }
+}

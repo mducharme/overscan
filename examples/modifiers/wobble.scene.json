@@ -1,0 +1,20 @@
+{
+  "id": "wobble",
+  "title": "Wobbling logo",
+  "duration": 10,
+  "bpm": 120,
+  "rowsPerBeat": 8,
+  "resolution": { "width": 640, "height": 360 },
+  "fps": 30,
+  "tracks": [],
+  "graph": {
+    "nodes": [
+      { "id": "logo", "type": "generator", "impl": "image", "config": { "text": "WOBBLE", "scale": 0.8 } },
+      { "id": "wobble1", "type": "modifier", "impl": "wobble", "config": { "amplitude": 24, "waves": 1.5, "speed": 4, "turbulence": 0.3 } }
+    ],
+    "edges": [
+      { "from": { "node": "logo", "output": "color" }, "to": { "node": "wobble1", "input": "in" } }
+    ],
+    "outputs": { "terminal": "wobble1", "browser": "wobble1", "export": "wobble1" }
+  }
+}
