@@ -162,7 +162,7 @@ const initialState: StudioState = {
   loop: true,
   muted: false,
   renderer: 'ansi',
-  renderScale: 1,
+  renderScale: 0.25,
   renderError: null,
   selectedNodeId: null,
   selectedSectionId: null,
