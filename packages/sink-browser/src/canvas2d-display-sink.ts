@@ -24,6 +24,8 @@ export class Canvas2dDisplaySink implements Sink {
     if (!ctx) throw new Error('Canvas 2D context unavailable')
     const img = ctx.createImageData(w, h)
     img.data.set(frame.data)
+    // Shown opaque, like the WebGL display, the terminal and the exports: alpha only matters inside the graph.
+    for (let i = 3; i < img.data.length; i += 4) img.data[i] = 255
     ctx.putImageData(img, 0, 0)
   }
 
