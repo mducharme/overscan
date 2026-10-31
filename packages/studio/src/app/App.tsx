@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { baseName } from '../engine/paths'
+import { Button } from '../ui/kit'
+import { GraphPanel } from './GraphPanel'
+import { NodeDetails } from './NodeDetails'
 import { Notices } from './Notices'
 import { Preview, type PreviewHandle } from './Preview'
 import { useStudio, useStudioStore } from './studio-context'
@@ -15,7 +18,11 @@ export function App() {
   const previewRef = useRef<PreviewHandle>(null)
 
   const [timelineHeight, setTimelineHeight] = useState(readTimelineHeight)
-  useEffect(() => bindPlayerKeys(store, () => { previewRef.current?.fullscreen() }), [store])
+  const [showGraph, setShowGraph] = useState(() => readStored(GRAPH_KEY) !== 'hidden')
+  useEffect(() => bindPlayerKeys(store, {
+    fullscreen: () => { previewRef.current?.fullscreen() },
+    toggleGraph: () => { setShowGraph(v => { writeStored(GRAPH_KEY, v ? 'hidden' : 'shown'); return !v }) },
+  }), [store])
   useAudio()
 
   const title = document?.demo?.title ?? document?.scene?.title
@@ -29,12 +36,28 @@ export function App() {
           {document && <span className="app__kind">{document.kind === 'demo' ? `${document.player.sections.length} sections` : 'scene'}</span>}
         </div>
         <Transport onScreenshot={() => previewRef.current?.screenshot()} onFullscreen={() => previewRef.current?.fullscreen()} />
+        {document && (
+          <Button
+            variant="ghost"
+            aria-pressed={showGraph}
+            title="Show or hide the node graph (G)"
+            onClick={() => { setShowGraph(v => { writeStored(GRAPH_KEY, v ? 'hidden' : 'shown'); return !v }) }}
+          >
+            Graph
+          </Button>
+        )}
       </header>
       <Notices />
       <main className="app__stage">
         {status === 'loading' && !document && <div className="app__placeholder">Loading…</div>}
         {status === 'idle' && <div className="app__placeholder">No file. Start the studio with <code>overscan dev &lt;file&gt;</code>.</div>}
         <Preview ref={previewRef} />
+        {document && showGraph && (
+          <aside className="app__side">
+            <GraphPanel />
+            <NodeDetails />
+          </aside>
+        )}
       </main>
       {document && (
         <footer className="app__footer" style={{ height: timelineHeight }}>
@@ -66,16 +89,23 @@ export function App() {
 }
 
 const HEIGHT_KEY = 'overscan.studio.timelineHeight'
+const GRAPH_KEY = 'overscan.studio.graph'
 const clampHeight = (h: number): number => Math.round(Math.min(window.innerHeight * 0.75, Math.max(96, h)))
 
+// Layout preferences live in localStorage, which can be unavailable (private windows, blocked storage).
+function readStored(key: string): string | null {
+  try { return window.localStorage.getItem(key) } catch { return null }
+}
+
+function writeStored(key: string, value: string): void {
+  try { window.localStorage.setItem(key, value) } catch { /* storage unavailable */ }
+}
+
 function readTimelineHeight(): number {
-  try {
-    const saved = Number(window.localStorage.getItem(HEIGHT_KEY))
-    if (saved > 0) return clampHeight(saved)
-  } catch { /* storage unavailable */ }
-  return clampHeight(window.innerHeight * 0.32)
+  const saved = Number(readStored(HEIGHT_KEY))
+  return clampHeight(saved > 0 ? saved : window.innerHeight * 0.32)
 }
 
 function saveTimelineHeight(h: number): void {
-  try { window.localStorage.setItem(HEIGHT_KEY, String(h)) } catch { /* storage unavailable */ }
+  writeStored(HEIGHT_KEY, String(h))
 }

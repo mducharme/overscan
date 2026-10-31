@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { RocketTrack } from '@overscan/types'
 import { loadWaveform, timelineAudio, type TimelineAudio, type Waveform } from '../engine/audio'
 import { formatTime } from '../engine/format'
+import { configBindings } from '../engine/graph-model'
 import type { PlayerSection } from '../engine/player'
 import {
   followTime,
@@ -16,7 +17,7 @@ import {
   type TimeView,
 } from '../engine/timeline'
 import { Button } from '../ui/kit'
-import { useBridge, useStudio, useStudioStore } from './studio-context'
+import { useBridge, useFocusSection, useStudio, useStudioStore } from './studio-context'
 
 const LABEL_W = 168
 const NO_SECTIONS: readonly PlayerSection[] = []
@@ -86,7 +87,13 @@ export function Timeline() {
     return () => { el.removeEventListener('wheel', onWheel) }
   }, [width, duration])
 
-  const focus = useMemo(() => [...sections].reverse().find(s => time >= s.start && time < s.end) ?? sections.at(-1), [sections, time])
+  const focus = useFocusSection()
+  const selectedNodeId = useStudio(s => s.selectedNodeId)
+  // Tracks the selected graph node reads, highlighted in their lanes.
+  const selectedTracks = useMemo(() => {
+    const node = focus?.scene.graph.nodes.find(n => n.id === selectedNodeId)
+    return new Set(node ? configBindings(node.config).flatMap(b => (b.binding.kind === 'track' ? [b.binding.track] : [])) : [])
+  }, [focus, selectedNodeId])
   const audio = useMemo(() => (document ? timelineAudio(document) : []), [document])
   const scale = makeScale(view, width)
   // During a transition overlap the incoming section owns the grid, so beat lines never double up.
@@ -147,7 +154,7 @@ export function Timeline() {
                 <AudioLane scale={scale} clip={clip} />
               </Row>
             ))}
-            {focus && <TrackLanes scale={scale} section={focus} time={time} demo={sections.length > 1} />}
+            {focus && <TrackLanes scale={scale} section={focus} time={time} demo={sections.length > 1} highlight={selectedTracks} />}
             <div className="timeline__playhead" style={{ left: LABEL_W + scale.x(time) }} hidden={time < view.start || time > view.end} />
           </>
         )}
@@ -277,7 +284,7 @@ function AudioLane({ scale, clip }: { scale: Scale; clip: TimelineAudio }) {
 
 const CURVE_STEP_PX = 2
 
-function TrackLanes({ scale, section, time, demo }: { scale: Scale; section: PlayerSection; time: number; demo: boolean }) {
+function TrackLanes({ scale, section, time, demo, highlight }: { scale: Scale; section: PlayerSection; time: number; demo: boolean; highlight: ReadonlySet<string> }) {
   const { scene } = section
   const rps = rowsPerSecond(scene.bpm, scene.rowsPerBeat)
   const sampler = useMemo(() => new TrackSampler(scene.tracks), [scene])
@@ -292,7 +299,7 @@ function TrackLanes({ scale, section, time, demo }: { scale: Scale; section: Pla
       {scene.tracks.map(track => (
         <Row
           key={track.name}
-          className="tl-row--track"
+          className={`tl-row--track${highlight.has(track.name) ? ' tl-row--highlight' : ''}`}
           label={
             <span className="tl-track-label" title={track.name}>
               <span>{track.name}</span>

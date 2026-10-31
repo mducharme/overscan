@@ -2,10 +2,10 @@ import type { StudioStore } from '../state/store'
 
 /**
  * Player shortcuts, matching `overscan run`: Space play/pause, ←/→ previous/next section in a demo
- * (±5 s in a scene), ↑/↓ double/halve the rate, Home rewind, L loop, M mute, F fullscreen.
+ * (±5 s in a scene), ↑/↓ double/halve the rate, Home rewind, L loop, M mute, F fullscreen, G graph, Esc deselect.
  * Ignored while typing in a field. Returns a function that removes the listener.
  */
-export function bindPlayerKeys(store: StudioStore, onFullscreen: () => void): () => void {
+export function bindPlayerKeys(store: StudioStore, actions: { fullscreen: () => void; toggleGraph: () => void }): () => void {
   const onKey = (event: KeyboardEvent): void => {
     const target = event.target
     if (target instanceof Element && target.closest('input, textarea, select, [contenteditable="true"]')) return
@@ -31,7 +31,9 @@ export function bindPlayerKeys(store: StudioStore, onFullscreen: () => void): ()
       case 'Home': s.seek(0); break
       case 'l': case 'L': s.setLoop(!s.loop); break
       case 'm': case 'M': s.setMuted(!s.muted); break
-      case 'f': case 'F': onFullscreen(); break
+      case 'f': case 'F': actions.fullscreen(); break
+      case 'g': case 'G': actions.toggleGraph(); break
+      case 'Escape': if (!s.selectedNodeId) return; s.selectNode(null); break
       default: return
     }
     event.preventDefault()

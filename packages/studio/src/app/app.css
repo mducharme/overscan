@@ -102,3 +102,65 @@
   position: absolute; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; transform: rotate(45deg);
   background: var(--text); border: 1px solid var(--surface); pointer-events: auto;
 }
+
+/* Side panel: node graph and the selected node's details. */
+.app__stage { display: flex; gap: var(--space-3); }
+.app__stage > .preview { flex: 1; min-width: 0; }
+.app__side { flex: none; width: clamp(320px, 32vw, 520px); display: flex; flex-direction: column; gap: var(--space-3); min-height: 0; }
+.tl-row--highlight .tl-row__label { box-shadow: inset 3px 0 0 var(--accent); color: var(--text); }
+.tl-row--highlight { background: var(--accent-soft); }
+
+.graph { position: relative; flex: 1; min-height: 180px; border-radius: var(--radius-l); background: var(--surface-sunken); overflow: hidden; border: 1px solid var(--border); }
+.graph .react-flow__controls { box-shadow: none; border: 1px solid var(--border); border-radius: var(--radius-m); overflow: hidden; }
+.graph .react-flow__controls-button { background: var(--surface); border-bottom-color: var(--border); fill: var(--text-muted); }
+.graph .react-flow__controls-button:hover { background: var(--surface-raised); }
+.graph .react-flow__node { cursor: pointer; }
+
+.gnode {
+  position: relative; border-radius: var(--radius-m); background: var(--surface); border: 1px solid var(--border-strong);
+  border-top: 3px solid var(--kind, var(--border-strong)); color: var(--text); font-size: var(--text-xs); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+.gnode--generator { --kind: #ff7a1a; }
+.gnode--modifier { --kind: #2fc59a; }
+.gnode--compositor { --kind: #8f86ff; }
+.gnode--signal { --kind: #e2b43c; }
+.gnode--output { --kind: var(--text-faint); background: var(--surface-raised); }
+.react-flow__node.selected .gnode { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft), 0 2px 10px rgba(0, 0, 0, 0.35); }
+.gnode--inactive { opacity: 0.45; }
+.gnode--problem { border-color: var(--warning); }
+.gnode { display: flex; flex-direction: column; justify-content: center; padding: 0 8px; }
+.gnode__id { font: 600 var(--text-s) var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 48px; }
+.gnode__kind { color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gnode__badges { position: absolute; right: 6px; top: 6px; display: flex; gap: 3px; }
+.gnode__badge { padding: 0 4px; border-radius: var(--radius-s); background: var(--surface-raised); color: var(--text-muted); font: 10px var(--font-mono); }
+.gnode__badge--problem { color: var(--warning); }
+.ghandle { width: 8px !important; height: 8px !important; min-width: 0 !important; min-height: 0 !important; background: var(--kind, var(--text-muted)) !important; border: 1px solid var(--surface) !important; }
+.ghandle--bind { background: var(--surface-raised) !important; border-color: #e2b43c !important; }
+.ghandle__label { position: absolute; bottom: 9px; left: 50%; transform: translateX(-50%); color: var(--text-faint); font: 9px var(--font-mono); white-space: nowrap; pointer-events: none; }
+.ghandle__label--out { bottom: auto; top: 9px; }
+
+.gedge .react-flow__edge-path { stroke: var(--text-faint); stroke-width: 1.5; }
+.gedge--binding .react-flow__edge-path { stroke: #e2b43c; stroke-dasharray: 4 4; }
+.gedge--output .react-flow__edge-path { stroke: var(--border-strong); }
+.gedge--selected .react-flow__edge-path { stroke: var(--accent); stroke-width: 2; }
+.graph .react-flow__arrowhead polyline { stroke: var(--text-faint) !important; fill: var(--text-faint) !important; }
+
+.details { flex: none; max-height: 52%; overflow-y: auto; border-radius: var(--radius-l); background: var(--surface); border: 1px solid var(--border); padding: var(--space-3); }
+.details__header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); }
+.details__title { font: 600 var(--text-l) var(--font-mono); }
+.details__subtitle { color: var(--text-faint); font-size: var(--text-xs); }
+.details__description { margin: var(--space-2) 0; color: var(--text-muted); font-size: var(--text-s); }
+.details__problems { margin: 0 0 var(--space-2); padding: var(--space-2) var(--space-2) var(--space-2) var(--space-5); border-radius: var(--radius-m); background: color-mix(in srgb, var(--warning) 12%, transparent); color: var(--warning); font-size: var(--text-xs); }
+.details__params { display: grid; margin: 0; }
+.param { display: grid; grid-template-columns: minmax(96px, 38%) 1fr; gap: var(--space-2); padding: 3px 0; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); font-size: var(--text-xs); }
+.param dt { color: var(--text-muted); font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis; }
+.param dd { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.param code { font-family: var(--font-mono); }
+.param--default dt, .param--default dd { opacity: 0.5; }
+.param--problem dt { color: var(--warning); }
+.param__binding { color: #e2b43c; }
+.param__live { color: var(--accent-strong); font-family: var(--font-mono); }
+.param__none { color: var(--text-faint); }
+.param__color, .param__palette { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); }
+.param__color i, .param__palette i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; border: 1px solid var(--border-strong); }
+.param__palette { gap: 1px; }
