@@ -216,6 +216,27 @@
 .json__error { padding: var(--space-2); border-top: 1px solid var(--border); background: color-mix(in srgb, var(--warning) 12%, var(--surface)); color: var(--warning); font: var(--text-xs) var(--font-mono); white-space: pre-wrap; max-height: 30%; overflow: auto; }
 .json__hint { color: var(--text-faint); font-family: var(--font-ui); }
 
+/* Graph editing */
+.graph__toolbar { position: absolute; top: var(--space-2); left: var(--space-2); z-index: 5; display: flex; gap: var(--space-1); }
+.graph__add { max-width: 180px; }
+.graph .react-flow__handle-connecting { background: var(--danger) !important; }
+.graph .react-flow__handle-valid { background: var(--ok) !important; }
+.graph .react-flow__connection-path { stroke: var(--accent); stroke-width: 2; }
+.graph .react-flow__edge.selected .react-flow__edge-path { stroke: var(--accent); stroke-width: 2.5; }
+.graph .ghandle.connectable { cursor: crosshair; }
+.details__actions { display: flex; gap: var(--space-1); margin-top: var(--space-2); }
+
+/* Keyframe editing */
+.curve__key { cursor: grab; }
+.curve__key:active { cursor: grabbing; }
+.curve__key:hover { background: var(--accent-strong); }
+.curve__key--selected { background: var(--accent); border-color: var(--text); width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; z-index: 1; }
+.curve__key:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.tl-key-editor { display: inline-flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-2); border-left: 1px solid var(--border); font-size: var(--text-xs); color: var(--text-faint); }
+.tl-key-editor label { display: inline-flex; align-items: center; gap: var(--space-1); }
+.tl-key-editor .ui-input { width: 72px; }
+.tl-key-editor__name { font-family: var(--font-mono); color: var(--accent-strong); }
+
 /* File picker */
 .files { position: relative; }
 .files__current { padding: 2px var(--space-2); border: 1px solid transparent; border-radius: var(--radius-s); background: none; color: var(--text); font: var(--text-s) var(--font-mono); cursor: pointer; }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import type { RocketTrack } from '@overscan/types'
+import type { RocketInterpolation, RocketTrack } from '@overscan/types'
 import { loadWaveform, timelineAudio, type TimelineAudio, type Waveform } from '../engine/audio'
 import { formatTime } from '../engine/format'
 import { configBindings } from '../engine/graph-model'
@@ -7,6 +7,7 @@ import type { PlayerSection } from '../engine/player'
 import {
   followTime,
   gridLines,
+  INTERPOLATIONS,
   interpolationLabel,
   panView,
   rowsPerSecond,
@@ -16,11 +17,21 @@ import {
   zoomView,
   type TimeView,
 } from '../engine/timeline'
-import { Button } from '../ui/kit'
+import { Button, NumberField, Select } from '../ui/kit'
 import { useBridge, useFocusSection, useStudio, useStudioStore } from './studio-context'
 
 const LABEL_W = 168
 const NO_SECTIONS: readonly PlayerSection[] = []
+/** A drag moves a key only after the pointer travels this far, so a click just selects it. */
+const DRAG_THRESHOLD_PX = 3
+let gestureCounter = 0
+
+/** The key picked for editing: its track and index in the focus section's scene. */
+interface KeyRef {
+  scenePath: string
+  track: string
+  index: number
+}
 
 /** Maps times to x pixels in the lane area. */
 interface Scale {
@@ -38,7 +49,9 @@ function makeScale(view: TimeView, width: number): Scale {
 /**
  * The timeline: ruler with the bar/beat grid, demo sections and transitions, audio waveforms and the
  * rocket tracks of the section under the playhead. Click or drag to seek; ⌘/Ctrl+wheel or pinch to zoom,
- * Shift+wheel or horizontal scroll to pan, double-click a section to zoom to it.
+ * Shift+wheel or horizontal scroll to pan, double-click a section to zoom to it. Keys: click to select
+ * (then edit row, value and easing in the toolbar), drag to move, double-click a track to add one,
+ * Delete to remove the selected one.
  */
 export function Timeline() {
   const store = useStudioStore()
@@ -89,6 +102,9 @@ export function Timeline() {
   }, [width, duration])
 
   const focus = useFocusSection()
+  const [keyRef, setKeyRef] = useState<KeyRef | null>(null)
+  // A key belongs to one section's scene: moving to another section (or file) drops the selection.
+  useEffect(() => { setKeyRef(null) }, [player, focus?.scenePath])
   const selectedNodeId = useStudio(s => s.selectedNodeId)
   // Tracks the selected graph node reads, highlighted in their lanes.
   const selectedTracks = useMemo(() => {
@@ -122,6 +138,7 @@ export function Timeline() {
         <span className="timeline__view">{formatTime(view.start)} – {formatTime(view.end)}</span>
         <span className="timeline__spacer" />
         <Button variant="ghost" title="Show the whole timeline" onClick={() => { setView({ start: 0, end: duration }) }}>Fit all</Button>
+        {focus && keyRef && <KeyEditor section={focus} keyRef={keyRef} onDone={() => { setKeyRef(null) }} />}
         {focus && sections.length > 1 && (
           <Button variant="ghost" title="Zoom to the section under the playhead (or double-click a section)" onClick={() => { zoomTo(focus.start, focus.end) }}>
             Fit {focus.id}
@@ -133,6 +150,7 @@ export function Timeline() {
         className="timeline__lanes"
         onPointerDown={event => {
           if (event.button !== 0 || event.clientX - event.currentTarget.getBoundingClientRect().left < LABEL_W) return
+          setKeyRef(null)
           event.currentTarget.setPointerCapture(event.pointerId)
           seekAt(event.clientX)
         }}
@@ -156,7 +174,17 @@ export function Timeline() {
                 <AudioLane scale={scale} clip={clip} />
               </Row>
             ))}
-            {focus && <TrackLanes scale={scale} section={focus} time={time} demo={sections.length > 1} highlight={selectedTracks} />}
+            {focus && (
+              <TrackLanes
+                scale={scale}
+                section={focus}
+                time={time}
+                demo={sections.length > 1}
+                highlight={selectedTracks}
+                selected={keyRef?.scenePath === focus.scenePath ? keyRef : null}
+                onSelect={(track, index) => { setKeyRef({ scenePath: focus.scenePath, track, index }) }}
+              />
+            )}
             <div className="timeline__playhead" style={{ left: LABEL_W + scale.x(time) }} hidden={time < view.start || time > view.end} />
           </>
         )}
@@ -286,7 +314,15 @@ function AudioLane({ scale, clip }: { scale: Scale; clip: TimelineAudio }) {
 
 const CURVE_STEP_PX = 2
 
-function TrackLanes({ scale, section, time, demo, highlight }: { scale: Scale; section: PlayerSection; time: number; demo: boolean; highlight: ReadonlySet<string> }) {
+function TrackLanes({ scale, section, time, demo, highlight, selected, onSelect }: {
+  scale: Scale
+  section: PlayerSection
+  time: number
+  demo: boolean
+  highlight: ReadonlySet<string>
+  selected: KeyRef | null
+  onSelect: (track: string, index: number) => void
+}) {
   const { scene } = section
   const rps = rowsPerSecond(scene.bpm, scene.rowsPerBeat)
   const sampler = useMemo(() => new TrackSampler(scene.tracks), [scene])
@@ -309,14 +345,31 @@ function TrackLanes({ scale, section, time, demo, highlight }: { scale: Scale; s
             </span>
           }
         >
-          <TrackCurve scale={scale} section={section} track={track} sampler={sampler} rps={rps} />
+          <TrackCurve
+            scale={scale}
+            section={section}
+            track={track}
+            sampler={sampler}
+            rps={rps}
+            selectedIndex={selected?.track === track.name ? selected.index : null}
+            onSelect={index => { onSelect(track.name, index) }}
+          />
         </Row>
       ))}
     </>
   )
 }
 
-function TrackCurve({ scale, section, track, sampler, rps }: { scale: Scale; section: PlayerSection; track: RocketTrack; sampler: TrackSampler; rps: number }) {
+function TrackCurve({ scale, section, track, sampler, rps, selectedIndex, onSelect }: {
+  scale: Scale
+  section: PlayerSection
+  track: RocketTrack
+  sampler: TrackSampler
+  rps: number
+  selectedIndex: number | null
+  onSelect: (index: number) => void
+}) {
+  const store = useStudioStore()
   const { curve, range } = useMemo(() => {
     const from = Math.max(0, scale.x(section.start))
     const to = Math.min(scale.width, scale.x(section.end))
@@ -328,25 +381,126 @@ function TrackCurve({ scale, section, track, sampler, rps }: { scale: Scale; sec
     const y = (v: number): number => 1 - (v - range.min) / (range.max - range.min)
     return { curve: xs.map((x, i) => `${x.toFixed(1)},${y(values[i]!).toFixed(4)}`).join(' '), range }
   }, [scale.view.start, scale.view.end, scale.width, section, track, sampler, rps])
-  const y = (v: number): number => (1 - (v - range.min) / (range.max - range.min)) * 100
+  // While a key is dragged the vertical scale holds still, so the key stays under the pointer.
+  const [frozen, setFrozen] = useState<{ min: number; max: number } | null>(null)
+  const shown = frozen ?? range
+  const y = (v: number): number => (1 - (v - shown.min) / (shown.max - shown.min)) * 100
+  const rowAt = (clientX: number, lane: DOMRect): number => (scale.t(clientX - lane.left) - section.start) * rps
   return (
-    <div className="curve">
+    <div
+      className="curve"
+      title="Double-click to add a key"
+      onDoubleClick={event => {
+        const row = Math.max(0, Math.round(rowAt(event.clientX, event.currentTarget.getBoundingClientRect())))
+        const before = [...track.keys].reverse().find(k => k.row <= row)
+        store.getState().addKey(section.scenePath, track.name, {
+          row,
+          value: roundValue(sampler.valueAt(track.name, row), shown),
+          interpolation: before?.interpolation ?? 'linear',
+        })
+        const index = [...track.keys, { row }].sort((a, b) => a.row - b.row).findIndex(k => k.row === row)
+        onSelect(index)
+      }}
+    >
       <svg width={scale.width} height="100%" viewBox={`0 0 ${scale.width} 1`} preserveAspectRatio="none">
         <polyline points={curve} vectorEffect="non-scaling-stroke" />
       </svg>
-      {track.keys.map(key => {
+      {track.keys.map((key, index) => {
         const t = section.start + key.row / rps
         if (t < scale.view.start || t > scale.view.end || t > section.end) return null
         return (
           <span
-            key={key.row}
-            className="curve__key"
+            key={index}
+            role="button"
+            tabIndex={0}
+            className={`curve__key${index === selectedIndex ? ' curve__key--selected' : ''}`}
             style={{ left: scale.x(t), top: `${y(key.value)}%` }}
-            title={`row ${key.row} (${formatTime(t)}) = ${formatValue(key.value)} · ${interpolationLabel(key.interpolation)}`}
+            aria-label={`${track.name} key at row ${key.row}`}
+            title={`row ${key.row} (${formatTime(t)}) = ${formatValue(key.value)} · ${interpolationLabel(key.interpolation)}\nDrag to move · Delete to remove`}
+            onDoubleClick={event => { event.stopPropagation() }}
+            onKeyDown={event => {
+              if (event.key !== 'Delete' && event.key !== 'Backspace') return
+              event.preventDefault()
+              event.stopPropagation()
+              store.getState().removeKey(section.scenePath, track.name, index)
+            }}
+            onPointerDown={event => {
+              if (event.button !== 0) return
+              event.stopPropagation()
+              onSelect(index)
+              const el = event.currentTarget
+              el.focus()
+              el.setPointerCapture(event.pointerId)
+              const lane = el.parentElement!.getBoundingClientRect()
+              const startX = event.clientX
+              const startY = event.clientY
+              const hold = shown
+              const gesture = `key:${track.name}:${++gestureCounter}`
+              let dragging = false
+              const move = (e: PointerEvent): void => {
+                if (!dragging && Math.hypot(e.clientX - startX, e.clientY - startY) < DRAG_THRESHOLD_PX) return
+                if (!dragging) setFrozen(hold)
+                dragging = true
+                const value = hold.max - ((e.clientY - lane.top) / lane.height) * (hold.max - hold.min)
+                // Shift keeps the row, so a key can be raised or lowered without slipping in time.
+                store.getState().updateKey(section.scenePath, track.name, index, {
+                  ...(e.shiftKey ? {} : { row: Math.max(0, rowAt(e.clientX, lane)) }),
+                  value: roundValue(value, hold),
+                }, gesture)
+              }
+              const up = (): void => {
+                el.removeEventListener('pointermove', move)
+                el.removeEventListener('pointerup', up)
+                el.removeEventListener('pointercancel', up)
+                setFrozen(null)
+              }
+              el.addEventListener('pointermove', move)
+              el.addEventListener('pointerup', up)
+              el.addEventListener('pointercancel', up)
+            }}
           />
         )
       })}
     </div>
+  )
+}
+
+/** Rounds a dragged value to about a thousandth of the track's range. */
+function roundValue(v: number, range: { min: number; max: number }): number {
+  const step = 10 ** Math.floor(Math.log10(Math.max(1e-6, range.max - range.min) / 1000))
+  return Number((Math.round(v / step) * step).toFixed(6))
+}
+
+/** Row, value and easing of the selected key, plus removing it. */
+function KeyEditor({ section, keyRef, onDone }: { section: PlayerSection; keyRef: KeyRef; onDone: () => void }) {
+  const store = useStudioStore()
+  const key = section.scene.tracks.find(t => t.name === keyRef.track)?.keys[keyRef.index]
+  if (!key) return null
+  const update = (patch: { row?: number; value?: number; interpolation?: RocketInterpolation }): void => {
+    store.getState().updateKey(section.scenePath, keyRef.track, keyRef.index, patch)
+  }
+  return (
+    <span className="tl-key-editor" aria-label={`Key ${keyRef.index + 1} of ${keyRef.track}`}>
+      <span className="tl-key-editor__name">{keyRef.track} · key {keyRef.index + 1}</span>
+      <label>row <NumberField aria-label="Key row" value={key.row} min={0} step={1} onCommit={row => { update({ row }) }} /></label>
+      <label>value <NumberField aria-label="Key value" value={key.value} onCommit={value => { update({ value }) }} /></label>
+      <Select
+        label="Key easing"
+        value={key.interpolation}
+        options={INTERPOLATIONS.map(i => ({ value: i, label: interpolationLabel(i) }))}
+        onChange={interpolation => { update({ interpolation }) }}
+      />
+      <Button
+        variant="ghost"
+        title="Remove this key"
+        onClick={() => {
+          store.getState().removeKey(section.scenePath, keyRef.track, keyRef.index)
+          onDone()
+        }}
+      >
+        Remove
+      </Button>
+    </span>
   )
 }
 

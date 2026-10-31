@@ -137,6 +137,11 @@ export function trackRange(track: RocketTrack, samples: readonly number[] = []):
 }
 
 /** Short label for an interpolation, for key tooltips. */
+/** Every interpolation a key can use, in menu order. */
+export const INTERPOLATIONS: readonly RocketInterpolation[] = [
+  'step', 'linear', 'smooth', 'ease-in', 'ease-out', 'ease-in-out', 'expo-in', 'expo-out', 'back', 'elastic', 'bounce',
+]
+
 export function interpolationLabel(mode: RocketInterpolation): string {
   return mode === 'step' ? 'hold' : mode
 }

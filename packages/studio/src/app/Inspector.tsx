@@ -13,6 +13,8 @@ interface ParamContext {
   section: PlayerSection
   sampler: TrackSampler
   row: number
+  /** Creates a track holding `value` and binds the option to it. */
+  bindNewTrack(key: string, value: number): void
 }
 
 /**
@@ -31,10 +33,16 @@ export function Inspector() {
   const schema = NODE_SCHEMAS[node.impl]
   const problems = schema ? validateNodeConfig(schema, node.config) : []
   const problemKeys = new Set(problems.map(p => p.key.split(/[.[]/)[0]))
-  const ctx: ParamContext = { section, sampler, row: Math.max(0, time - section.start) * rowsPerSecond(section.scene.bpm, section.scene.rowsPerBeat) }
+  const ctx: ParamContext = {
+    section,
+    sampler,
+    row: Math.max(0, time - section.start) * rowsPerSecond(section.scene.bpm, section.scene.rowsPerBeat),
+    bindNewTrack: (key, value) => { store.getState().bindNewTrack(section.scenePath, node.id, key, value) },
+  }
   const known = schema ? Object.keys(schema.params) : []
   const extra = Object.keys(node.config).filter(k => !known.includes(k) && !schema?.deprecated?.includes(k))
   const set = (key: string): SetValue => value => { store.getState().setNodeParam(section.scenePath, node.id, key, value) }
+  const isOutput = Object.values(section.scene.graph.outputs).includes(node.id)
 
   return (
     <section className="details" aria-label={`Inspector: ${node.id}`}>
@@ -45,6 +53,18 @@ export function Inspector() {
         </div>
         <Button variant="ghost" title="Close (Esc)" onClick={() => { store.getState().selectNode(null) }}>✕</Button>
       </header>
+      <div className="details__actions">
+        {node.type !== 'signal' && (
+          <Button
+            disabled={isOutput}
+            title={isOutput ? 'This is what the preview and export show' : 'Show this node in the preview and export'}
+            onClick={() => { store.getState().setOutput(section.scenePath, node.id) }}
+          >
+            {isOutput ? 'Output' : 'Make output'}
+          </Button>
+        )}
+        <Button variant="danger" title="Remove this node (Delete)" onClick={() => { store.getState().removeNode(section.scenePath, node.id) }}>Remove</Button>
+      </div>
       {schema && <p className="details__description">{schema.description}</p>}
       {problems.length > 0 && (
         <ul className="details__problems">
@@ -133,7 +153,7 @@ function AnimatableNumber({ name, schema, value, set, ctx }: { name: string; sch
   const mode = binding?.kind ?? 'value'
   const modes = [
     { value: 'value', label: 'Value' },
-    ...(schema.animatable && tracks.length ? [{ value: 'track', label: 'Track' }] : []),
+    ...(schema.animatable ? [{ value: 'track', label: 'Track' }] : []),
     ...(schema.animatable && outputs.length ? [{ value: 'node', label: 'Node' }] : []),
   ]
   return (
@@ -145,7 +165,11 @@ function AnimatableNumber({ name, schema, value, set, ctx }: { name: string; sch
           options={modes}
           onChange={next => {
             if (next === 'value') set(Number(current().toFixed(4)))
-            else if (next === 'track') set({ track: binding?.kind === 'track' ? binding.track : pickTrack(tracks, name) })
+            else if (next === 'track') {
+              // With no track to follow yet, make one that starts at the current value.
+              if (tracks.length) set({ track: binding?.kind === 'track' ? binding.track : pickTrack(tracks, name) })
+              else ctx.bindNewTrack(name, Number(current().toFixed(4)))
+            }
             else set({ node: outputs[0]!.node, output: outputs[0]!.output })
           }}
         />
@@ -153,7 +177,15 @@ function AnimatableNumber({ name, schema, value, set, ctx }: { name: string; sch
       {mode === 'value' && <PlainNumber name={name} value={value} min={schema.min} max={schema.max} step={schema.step} set={set} slider />}
       {binding?.kind === 'track' && (
         <>
-          <Select label={`${name} track`} value={binding.track} options={withMissing(tracks, binding.track)} onChange={track => { set({ track }) }} />
+          <Select
+            label={`${name} track`}
+            value={binding.track}
+            options={[...withMissing(tracks, binding.track), { value: NEW_TRACK, label: 'New track…' }]}
+            onChange={track => {
+              if (track === NEW_TRACK) ctx.bindNewTrack(name, Number(ctx.sampler.valueAt(binding.track, ctx.row).toFixed(4)))
+              else set({ track })
+            }}
+          />
           <span className="param__live" title="Current value">{formatNumber(ctx.sampler.valueAt(binding.track, ctx.row))}</span>
         </>
       )}
@@ -171,6 +203,8 @@ function AnimatableNumber({ name, schema, value, set, ctx }: { name: string; sch
     </div>
   )
 }
+
+const NEW_TRACK = '\u0000new'
 
 /** Track named after the option if there is one (e.g. `zoom` → `lens.zoom`), else the first. */
 const pickTrack = (tracks: string[], option: string): string =>
