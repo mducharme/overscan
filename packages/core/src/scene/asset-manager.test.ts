@@ -50,4 +50,17 @@ describe('SceneAssetManager', () => {
     expect(manager.getImage('terrain.json')?.width).toBe(2)
     expect(manager.getError('terrain.json')).toBeUndefined()
   })
+
+  it('leaves built-in bitmap fonts to the text renderer instead of reporting them missing', async () => {
+    const manager = createAssetManager({
+      resolveAssetUrl: url => url,
+      loadText: () => Promise.reject(new Error('should not load')),
+    })
+    const scene = {
+      id: 's', title: 's', duration: 1, bpm: 120, rowsPerBeat: 8, fps: 30, resolution: { width: 8, height: 8 }, tracks: [],
+      graph: { nodes: [{ id: 't', type: 'generator' as const, impl: 'text', config: { font: 'overscan://fonts/Press2P' } }], edges: [], outputs: { terminal: 't' } },
+    }
+    await manager.preloadScene(scene)
+    expect(manager.getError('overscan://fonts/Press2P')).toBeUndefined()
+  })
 })

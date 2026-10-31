@@ -95,7 +95,8 @@ export class SceneAssetManager implements AssetManager {
   }
 
   private collectConfigUrls(value: unknown, urls: Set<string>, key?: string): void {
-    if (typeof value === 'string' && key && ASSET_CONFIG_KEYS.has(key) && value !== '' && value !== 'noise' && value !== 'auto') {
+    // Built-in bitmap fonts (`overscan://fonts/…`) are drawn by @overscan/text, not loaded as assets.
+    if (typeof value === 'string' && key && ASSET_CONFIG_KEYS.has(key) && value !== '' && value !== 'noise' && value !== 'auto' && !value.startsWith('overscan://fonts/')) {
       urls.add(value)
       return
     }
