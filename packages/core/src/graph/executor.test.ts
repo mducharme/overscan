@@ -134,3 +134,47 @@ describe('GraphExecutor', () => {
     ).toThrow("cannot target signal node")
   })
 })
+
+describe('GPU and CPU buffers', () => {
+  /** A stand-in WebGL context that records which syncs the executor performs. */
+  function fakeGl() {
+    const calls: string[] = []
+    const gl = {
+      FRAMEBUFFER: 1, TEXTURE_2D: 2, RGBA: 3, UNSIGNED_BYTE: 4,
+      bindFramebuffer: (_target: number, fb: unknown) => { calls.push(fb ? 'bind-fb' : 'unbind-fb') },
+      readPixels: () => { calls.push('readback') },
+      bindTexture: () => {},
+      texImage2D: () => { calls.push('upload') },
+    }
+    return { gl: gl as unknown as WebGL2RenderingContext, calls }
+  }
+  /** A pool whose buffers look GPU-backed (texture + framebuffer). */
+  function gpuPool(): BufferPoolImpl {
+    const pool = new BufferPoolImpl()
+    const acquire = pool.acquire.bind(pool)
+    pool.acquire = (w, h) => Object.assign(acquire(w, h), { texture: {} as WebGLTexture, fbo: {} as WebGLFramebuffer })
+    return pool
+  }
+  const run = (render: Generator['render']) => {
+    const { gl, calls } = fakeGl()
+    const pool = gpuPool()
+    const gen: Generator = { ...makeGenerator('g', 0), renderers: ['gpu', 'cpu'], render }
+    const exec = new GraphExecutor()
+    exec.load({ nodes: [{ id: 'g', type: 'generator', impl: 'test', config: {} }], edges: [], outputs: { terminal: 'g' } }, new Map([['g', gen]]))
+    const ctx = { ...makeCtx(pool), gl }
+    exec.init(ctx)
+    calls.length = 0
+    exec.tick(ctx, buildSignal(), pool, 'g')
+    return calls
+  }
+
+  it('reads back a node that drew into its framebuffer', () => {
+    expect(run((ctx, out) => { ctx.gl!.bindFramebuffer(ctx.gl!.FRAMEBUFFER, out.fbo!) })).toContain('readback')
+  })
+
+  it('uploads a GPU-capable node that took a CPU path this frame, instead of reading back stale pixels', () => {
+    const calls = run((_ctx, out) => { out.data.fill(9) })
+    expect(calls).toContain('upload')
+    expect(calls).not.toContain('readback')
+  })
+})

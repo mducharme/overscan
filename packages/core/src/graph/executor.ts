@@ -62,11 +62,31 @@ function syncCpu(gl: WebGL2RenderingContext, buffer: FrameBuffer): void {
   gl.readPixels(0, 0, buffer.width, buffer.height, gl.RGBA, gl.UNSIGNED_BYTE, buffer.data)
 }
 
-function likelyGpuRendered(ctx: NodeContext, node: DemoNode, out: FrameBuffer): boolean {
-  if (!ctx.gl || !out.texture || !out.fbo) return false
-  if (node.type === 'generator') return node.renderers.includes('gpu')
-  if (node.type === 'signal') return false
-  return typeof node.glsl === 'string'
+/**
+ * Runs `fn` and reports whether it bound `out`'s framebuffer. A node that can render on the GPU may still
+ * take a CPU path for a given frame (a shortcut, an unsupported mode); then its pixels are in `out.data`
+ * and must be uploaded, not read back from an untouched framebuffer.
+ */
+function bindsOutput(gl: WebGL2RenderingContext | null | undefined, out: FrameBuffer, fn: () => void): boolean {
+  if (!gl || !out.fbo) {
+    fn()
+    return false
+  }
+  let bound = false
+  // Restored exactly afterwards: an own property put back as it was, a prototype method by removing ours.
+  const own = Object.getOwnPropertyDescriptor(gl, 'bindFramebuffer')
+  const original = gl.bindFramebuffer.bind(gl)
+  gl.bindFramebuffer = (target, framebuffer) => {
+    if (framebuffer === out.fbo) bound = true
+    original(target, framebuffer)
+  }
+  try {
+    fn()
+  } finally {
+    if (own) Object.defineProperty(gl, 'bindFramebuffer', own)
+    else delete (gl as Partial<Pick<WebGL2RenderingContext, 'bindFramebuffer'>>).bindFramebuffer
+  }
+  return bound
 }
 
 function isNodeActive(sceneNode: { startTime?: number; endTime?: number } | undefined, time: number): boolean {
@@ -231,25 +251,30 @@ export class GraphExecutor {
         continue
       }
 
+      let gpuWrote = false
       try {
-        if (node.type === 'generator') {
-          node.render(this.makeNodeContext(ctx, out.width, out.height), out, signal)
-        } else if (node.type === 'modifier') {
-          const input =
-            inputs['color'] ?? inputs['in'] ?? inputs['input'] ?? Object.values(inputs)[0]
-          if (input) node.apply(this.makeNodeContext(ctx, out.width, out.height), input, out, signal)
-        } else {
-          node.compose(ctx, inputs, out, signal, inputMeta)
-        }
+        // Whether a node drew on the GPU is observed, not declared: some nodes fall back to the CPU per frame.
+        gpuWrote = bindsOutput(ctx.gl, out, () => {
+          if (node.type === 'generator') {
+            node.render(this.makeNodeContext(ctx, out.width, out.height), out, signal)
+          } else if (node.type === 'modifier') {
+            const input =
+              inputs['color'] ?? inputs['in'] ?? inputs['input'] ?? Object.values(inputs)[0]
+            if (input) node.apply(this.makeNodeContext(ctx, out.width, out.height), input, out, signal)
+          } else {
+            node.compose(ctx, inputs, out, signal, inputMeta)
+          }
+        })
       } catch (error) {
         if (strictErrors) throw decorateNodeError(id, error)
         this.reportNodeError(id, error)
         fillErrorPlaceholder(out, id)
       }
 
-      if (ctx.gl && out.fbo && likelyGpuRendered(ctx, node, out)) {
+      // GPU output is read back for CPU consumers; CPU output is uploaded for GPU consumers.
+      if (ctx.gl && out.fbo && gpuWrote) {
         syncCpu(ctx.gl, out)
-      } else if (ctx.gl && out.texture && !likelyGpuRendered(ctx, node, out)) {
+      } else if (ctx.gl && out.texture) {
         syncTexture(ctx.gl, out)
       }
 
