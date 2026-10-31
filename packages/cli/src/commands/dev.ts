@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createReadStream } from 'node:fs'
-import { readFile, stat, writeFile } from 'node:fs/promises'
+import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
@@ -25,6 +25,29 @@ function normalizeFilePath(filePath: string, base = process.cwd()): string {
     throw new Error('Path outside project directory is not allowed')
   }
   return resolved
+}
+
+const SKIPPED_DIRS = new Set(['node_modules', 'dist', 'coverage'])
+const MAX_LISTED = 2000
+
+/** Scene and demo files under `root`, skipping dependencies, build output and dot directories. */
+async function listDocuments(root: string): Promise<string[]> {
+  const found: string[] = []
+  const walk = async (dir: string): Promise<void> => {
+    const entries = await readdir(dir, { withFileTypes: true })
+    for (const entry of entries) {
+      if (found.length >= MAX_LISTED) return
+      if (entry.name.startsWith('.')) continue
+      const full = path.join(dir, entry.name)
+      if (entry.isDirectory()) {
+        if (!SKIPPED_DIRS.has(entry.name)) await walk(full)
+      } else if (entry.name.endsWith('.scene.json') || entry.name.endsWith('.demo.json')) {
+        found.push(full)
+      }
+    }
+  }
+  await walk(root)
+  return found.sort()
 }
 
 function contentTypeFor(targetPath: string): string {
@@ -165,6 +188,22 @@ function makeStudioBridge(filePath: string): Plugin {
           res.end(JSON.stringify({
             error: error instanceof Error ? error.message : String(error),
           }))
+        }
+      }))
+
+      server.middlewares.use('/__overscan__/list', handleAsync(async (req, res) => {
+        if (req.method !== 'GET') {
+          res.statusCode = 405
+          res.end('Method not allowed')
+          return
+        }
+        try {
+          const root = process.cwd()
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ root, files: await listDocuments(root) }))
+        } catch (error) {
+          res.statusCode = 500
+          res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }))
         }
       }))
 
