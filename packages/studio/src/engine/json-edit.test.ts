@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatValue, removeJsonValue, setJsonValue } from './json-edit'
+import { formatValue, insertJsonValue, removeJsonValue, setJsonValue } from './json-edit'
 
 const doc = `{
   "id": "x",
@@ -65,5 +65,48 @@ describe('formatValue', () => {
     const long = formatValue(Array.from({ length: 12 }, (_, i) => [i * 20, i * 10, 255]), '      ')
     expect(long.split('\n')).toHaveLength(14)
     expect(JSON.parse(long)).toHaveLength(12)
+  })
+})
+
+describe('insertJsonValue', () => {
+  const list = `{
+  "nodes": [
+    { "id": "a", "config": { "speed": 1.4, "scale": 1.6, "palette": [[1, 2, 3], [4, 5, 6]], "long": "aaaaaaaaaaaaaaaaaaaaaa" } }
+  ],
+  "keys": [0, 1],
+  "empty": []
+}
+`
+  it('appends an item on its own line, one line like its neighbours', () => {
+    const value = { id: 'b', config: { speed: 2, scale: 1, palette: [[1, 2, 3], [4, 5, 6]], long: 'bbbbbbbbbbbbbbbbbbbbbb' } }
+    const out = insertJsonValue(list, ['nodes'], value)
+    expect(out).toContain(`"aaaaaaaaaaaaaaaaaaaaaa" } },\n    { "id": "b", "config": {`)
+    expect(JSON.parse(out).nodes[1]).toEqual(value)
+  })
+
+  it('inserts before an index in a one-line array', () => {
+    expect(insertJsonValue(list, ['keys'], 0.5, 1)).toContain('"keys": [0, 0.5, 1]')
+    expect(insertJsonValue(list, ['keys'], -1, 0)).toContain('"keys": [-1, 0, 1]')
+  })
+
+  it('fills an empty array', () => {
+    expect(insertJsonValue(list, ['empty'], { a: 1 })).toContain('"empty": [{ "a": 1 }]')
+  })
+})
+
+describe('removeJsonValue on arrays', () => {
+  const list = `{
+  "items": [
+    { "id": "a" },
+    { "id": "b" },
+    { "id": "c" }
+  ],
+  "one": [1]
+}
+`
+  it('removes an item with its line', () => {
+    expect(removeJsonValue(list, ['items', 1])).toBe(list.replace('    { "id": "b" },\n', ''))
+    expect(removeJsonValue(list, ['items', 2])).toBe(list.replace(',\n    { "id": "c" }', ''))
+    expect(removeJsonValue(list, ['one', 0])).toContain('"one": []')
   })
 })

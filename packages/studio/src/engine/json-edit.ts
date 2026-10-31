@@ -138,11 +138,48 @@ export function setJsonValue(text: string, path: JsonPath, value: unknown): stri
   return `${text.slice(0, last.value.end)}, ${JSON.stringify(key)}: ${formatValue(value)}${text.slice(last.value.end)}`
 }
 
-/** Removes the property at `path` (an object key) together with its separating comma. No-op if absent. */
+/**
+ * Inserts `value` into the array at `path` before index `index` (default: append). Items go on their own
+ * line when the array is multi-line, and stay on one line when their neighbours do.
+ */
+export function insertJsonValue(text: string, path: JsonPath, value: unknown, index?: number): string {
+  const array = find(parse(text), path)
+  if (array?.type !== 'array') throw new Error(`No array at ${path.join('.')}`)
+  const at = Math.min(index ?? array.items.length, array.items.length)
+  const multiline = text.slice(array.start, array.end).includes('\n')
+  const neighbour = array.items[at] ?? array.items[at - 1]
+  // Match the neighbours: one-line items stay one line however long, expanded ones expand.
+  const width = neighbour && !text.slice(neighbour.start, neighbour.end).includes('\n') ? Infinity : 100
+  if (!neighbour) {
+    const indent = indentAt(text, array.start)
+    const item = formatValue(value, `${indent}  `, '  ', width)
+    return text.slice(0, array.start) + (multiline ? `[\n${indent}  ${item}\n${indent}]` : `[${item}]`) + text.slice(array.end)
+  }
+  const separate = multiline && text.slice(array.start, neighbour.start).includes('\n')
+  const indent = separate ? indentAt(text, neighbour.start) : ''
+  const item = formatValue(value, indent, '  ', width)
+  const gap = separate ? `,\n${indent}` : ', '
+  if (at < array.items.length) return text.slice(0, neighbour.start) + item + gap + text.slice(neighbour.start)
+  return text.slice(0, neighbour.end) + gap + item + text.slice(neighbour.end)
+}
+
+/**
+ * Removes the value at `path` (an object key or an array index) together with its separating comma.
+ * No-op if absent.
+ */
 export function removeJsonValue(text: string, path: JsonPath): string {
   const root = parse(text)
   const key = path.at(-1)
   const parent = find(root, path.slice(0, -1))
+  if (parent?.type === 'array' && typeof key === 'number') {
+    const item = parent.items[key]
+    if (!item) return text
+    const prev = parent.items[key - 1]
+    const next = parent.items[key + 1]
+    if (next) return text.slice(0, item.start) + text.slice(next.start)
+    if (prev) return text.slice(0, prev.end) + text.slice(item.end)
+    return `${text.slice(0, parent.start)}[]${text.slice(parent.end)}`
+  }
   if (typeof key !== 'string' || parent?.type !== 'object') return text
   const index = parent.props.findIndex(p => p.key === key)
   if (index < 0) return text
