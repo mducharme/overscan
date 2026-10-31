@@ -7,6 +7,7 @@ import {
   type Signal,
 } from '@overscan/types'
 import { wrap } from '../color.js'
+import { createFullscreenPipeline, drawFullscreen, PIXEL_GLSL, type FullscreenPipeline } from '../webgl/fullscreen.js'
 import { scaleThickness } from '../viewport-scale.js'
 
 export interface WobbleConfig {
@@ -36,14 +37,19 @@ export function WobbleModifier(config: Partial<WobbleConfig> = {}): Modifier {
   const direction = config.direction ?? 'horizontal'
   const edges = config.edges ?? 'transparent'
 
+  let pipeline: FullscreenPipeline | null = null
+
   return {
     type: 'modifier',
     id: 'wobble',
     persistent: false,
+    glsl: 'gpu-wobble',
     config: config,
-    init() {},
-    destroy() {},
-    apply(_ctx: NodeContext, input: FrameBuffer, out: FrameBuffer, signal: Signal): void {
+    init(ctx: NodeContext) {
+      if (ctx.gl && !pipeline) pipeline = createFullscreenPipeline(ctx.gl, WOBBLE_GLSL, ['u_input', 'u_size', 'u_amp', 'u_waves', 'u_phase', 'u_turbulence', 'u_direction', 'u_edges'])
+    },
+    destroy() { pipeline = null },
+    apply(ctx: NodeContext, input: FrameBuffer, out: FrameBuffer, signal: Signal): void {
       const { width: w, height: h } = input
       const src = input.data
       const dst = out.data
@@ -51,6 +57,19 @@ export function WobbleModifier(config: Partial<WobbleConfig> = {}): Modifier {
       const waves = resolveAnimatableFloat(wavesRef, signal)
       const phase = resolveAnimatableFloat(speedRef, signal) * signal.t
       const turbulence = Math.max(0, Math.min(1, resolveAnimatableFloat(turbulenceRef, signal)))
+      if (ctx.gl && out.fbo && input.texture && pipeline) {
+        drawFullscreen(ctx.gl, pipeline, out.fbo, w, h, input.texture, u => {
+          const gl = ctx.gl!
+          gl.uniform2i(u['u_size'] ?? null, w, h)
+          gl.uniform1f(u['u_amp'] ?? null, amp)
+          gl.uniform1f(u['u_waves'] ?? null, waves)
+          gl.uniform1f(u['u_phase'] ?? null, phase)
+          gl.uniform1f(u['u_turbulence'] ?? null, turbulence)
+          gl.uniform1i(u['u_direction'] ?? null, direction === 'horizontal' ? 0 : direction === 'vertical' ? 1 : 2)
+          gl.uniform1i(u['u_edges'] ?? null, edges === 'transparent' ? 0 : edges === 'wrap' ? 1 : 2)
+        })
+        return
+      }
       const shiftAt = (pos: number, span: number): number => {
         const a = (pos / span) * waves * Math.PI * 2 + phase
         return amp * ((1 - turbulence) * Math.sin(a) + turbulence * Math.sin(a * 2.7 - phase * 1.9))
@@ -80,3 +99,33 @@ export function WobbleModifier(config: Partial<WobbleConfig> = {}): Modifier {
     },
   }
 }
+
+/** GPU twin of the CPU loop: the same per-row and per-column shifts, rounding and edge handling. */
+const WOBBLE_GLSL = `#version 300 es
+precision highp float;
+uniform sampler2D u_input;
+uniform ivec2 u_size;
+uniform float u_amp;
+uniform float u_waves;
+uniform float u_phase;
+uniform float u_turbulence;
+uniform int u_direction;
+uniform int u_edges;
+out vec4 fragColor;
+${PIXEL_GLSL}
+float shiftAt(float pos, float span) {
+  float a = pos / span * u_waves * 6.283185307179586 + u_phase;
+  return u_amp * ((1.0 - u_turbulence) * sin(a) + u_turbulence * sin(a * 2.7 - u_phase * 1.9));
+}
+int wrapInt(int v, int n) { return ((v % n) + n) % n; }
+void main() {
+  ivec2 p = pixelCoord();
+  float dx = u_direction != 1 ? shiftAt(float(p.y), float(u_size.y)) : 0.0;
+  float dy = u_direction != 0 ? shiftAt(float(p.x), float(u_size.x)) : 0.0;
+  ivec2 s = ivec2(jsRound(float(p.x) - dx), jsRound(float(p.y) - dy));
+  if (s.x < 0 || s.y < 0 || s.x >= u_size.x || s.y >= u_size.y) {
+    if (u_edges == 0) { fragColor = vec4(0.0); return; }
+    s = u_edges == 1 ? ivec2(wrapInt(s.x, u_size.x), wrapInt(s.y, u_size.y)) : clamp(s, ivec2(0), u_size - 1);
+  }
+  fragColor = texelFetch(u_input, s, 0);
+}`

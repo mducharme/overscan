@@ -7,6 +7,7 @@ import {
   type Signal,
 } from '@overscan/types'
 import { readPalette, type Rgb } from '../color.js'
+import { createFullscreenPipeline, drawFullscreen, PIXEL_GLSL, type FullscreenPipeline } from '../webgl/fullscreen.js'
 
 export interface DitherConfig {
   /** Fixed palette to reduce to; `levels` quantises each channel instead. */
@@ -66,21 +67,43 @@ export function DitherModifier(config: Partial<DitherConfig> = {}): Modifier {
   const pixelSize = Math.max(1, Math.round(config.pixelSize ?? 1))
   // Nearest palette colour per 5-bit RGB cell, built once.
   const lookup = palette ? buildLookup(palette) : null
+  // The GPU searches the palette per pixel (it holds up to MAX_GPU_COLORS); longer ones stay on the CPU.
+  const gpuPalette = palette && palette.length <= MAX_GPU_COLORS ? palette : null
+  let pipeline: FullscreenPipeline | null = null
 
   return {
     type: 'modifier',
     id: 'dither',
     persistent: false,
+    glsl: 'gpu-dither',
     config: config,
-    init() {},
-    destroy() {},
-    apply(_ctx: NodeContext, input: FrameBuffer, out: FrameBuffer, signal: Signal): void {
+    init(ctx: NodeContext) {
+      if (ctx.gl && !pipeline && (gpuPalette || !palette)) {
+        pipeline = createFullscreenPipeline(ctx.gl, DITHER_GLSL, ['u_input', 'u_size', 'u_palette[0]', 'u_count', 'u_levels', 'u_matrixSize', 'u_bayer[0]', 'u_push', 'u_pixel'])
+      }
+    },
+    destroy() { pipeline = null },
+    apply(ctx: NodeContext, input: FrameBuffer, out: FrameBuffer, signal: Signal): void {
       const { width: w, height: h } = input
       const src = input.data
       const dst = out.data
       const spread = Math.max(0, Math.min(1, resolveAnimatableFloat(spreadRef, signal)))
       // One palette step: how far apart neighbouring colours are, so the pattern can bridge them.
       const step = palette ? 255 / Math.max(1, Math.cbrt(palette.length)) : 255 / (levels - 1)
+      if (ctx.gl && out.fbo && input.texture && pipeline) {
+        drawFullscreen(ctx.gl, pipeline, out.fbo, w, h, input.texture, u => {
+          const gl = ctx.gl!
+          gl.uniform2i(u['u_size'] ?? null, w, h)
+          if (gpuPalette) gl.uniform3fv(u['u_palette[0]'] ?? null, gpuPalette.flat())
+          gl.uniform1i(u['u_count'] ?? null, gpuPalette?.length ?? 0)
+          gl.uniform1f(u['u_levels'] ?? null, levels)
+          gl.uniform1i(u['u_matrixSize'] ?? null, size)
+          if (matrix) gl.uniform1fv(u['u_bayer[0]'] ?? null, matrix)
+          gl.uniform1f(u['u_push'] ?? null, spread * step)
+          gl.uniform1i(u['u_pixel'] ?? null, pixelSize)
+        })
+        return
+      }
       for (let y = 0; y < h; y++) {
         const my = Math.floor(y / pixelSize)
         for (let x = 0; x < w; x++) {
@@ -126,3 +149,46 @@ function buildLookup(palette: readonly Rgb[]): Uint8Array {
   }
   return table
 }
+
+const MAX_GPU_COLORS = 32
+
+/** GPU twin of the CPU loop: the same thresholds, truncation and nearest colour (weights 2, 4, 3 on 5-bit cells). */
+const DITHER_GLSL = `#version 300 es
+precision highp float;
+uniform sampler2D u_input;
+uniform ivec2 u_size;
+uniform vec3 u_palette[${MAX_GPU_COLORS}];
+uniform int u_count;
+uniform float u_levels;
+uniform int u_matrixSize;
+uniform float u_bayer[64];
+uniform float u_push;
+uniform int u_pixel;
+out vec4 fragColor;
+${PIXEL_GLSL}
+float quantize(float v) { return jsRound(jsRound(v / 255.0 * (u_levels - 1.0)) / (u_levels - 1.0) * 255.0); }
+void main() {
+  ivec2 p = pixelCoord();
+  vec4 src = texelFetch(u_input, p, 0);
+  vec3 c = floor(src.rgb * 255.0 + 0.5);
+  float threshold = 0.0;
+  if (u_matrixSize > 0) {
+    ivec2 cell = (p / u_pixel) % u_matrixSize;
+    threshold = u_bayer[cell.y * u_matrixSize + cell.x] - 0.5;
+  }
+  vec3 v = floor(clamp(c + threshold * u_push, 0.0, 255.0));
+  vec3 outc;
+  if (u_count > 0) {
+    vec3 centre = floor(v / 8.0) * 8.0 + 4.0;
+    float best = 1e20;
+    for (int i = 0; i < ${MAX_GPU_COLORS}; i++) {
+      if (i >= u_count) break;
+      vec3 d = centre - u_palette[i];
+      float dist = 2.0 * d.r * d.r + 4.0 * d.g * d.g + 3.0 * d.b * d.b;
+      if (dist < best) { best = dist; outc = u_palette[i]; }
+    }
+  } else {
+    outc = vec3(quantize(v.r), quantize(v.g), quantize(v.b));
+  }
+  fragColor = vec4(outc / 255.0, src.a);
+}`

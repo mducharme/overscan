@@ -110,3 +110,65 @@ bool edgeTransformInside(vec2 uv, vec2 pos, vec2 scale, float rot, float enabled
   return local.x >= 0.0 && local.x <= 1.0 && local.y >= 0.0 && local.y <= 1.0;
 }
 `
+
+type Uniforms = FullscreenPipeline['uniforms']
+
+/**
+ * Draws `pipeline` over the whole of `target` (a framebuffer of `width`×`height`), with `input` bound to
+ * `u_input` on texture unit 0. `setUniforms` sets the rest.
+ */
+export function drawFullscreen(
+  gl: WebGL2RenderingContext,
+  pipeline: FullscreenPipeline,
+  target: WebGLFramebuffer,
+  width: number,
+  height: number,
+  input: WebGLTexture,
+  setUniforms: (u: Uniforms) => void,
+): void {
+  gl.bindFramebuffer(gl.FRAMEBUFFER, target)
+  gl.viewport(0, 0, width, height)
+  gl.useProgram(pipeline.program)
+  gl.bindVertexArray(pipeline.vao)
+  bindTexture(gl, 0, input, pipeline.uniforms['u_input'] ?? null)
+  setUniforms(pipeline.uniforms)
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+}
+
+/** An offscreen RGBA8 texture with its framebuffer, for passes between a node's input and output. */
+export interface RenderTarget {
+  texture: WebGLTexture
+  fbo: WebGLFramebuffer
+  width: number
+  height: number
+}
+
+/** Creates (or keeps, when the size still matches) a render target with nearest filtering. */
+export function ensureRenderTarget(gl: WebGL2RenderingContext, current: RenderTarget | null, width: number, height: number): RenderTarget {
+  if (current?.width === width && current.height === height) return current
+  if (current) {
+    gl.deleteTexture(current.texture)
+    gl.deleteFramebuffer(current.fbo)
+  }
+  const texture = requireGlObject(gl.createTexture(), 'createTexture failed')
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  const fbo = requireGlObject(gl.createFramebuffer(), 'createFramebuffer failed')
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0)
+  return { texture, fbo, width, height }
+}
+
+/**
+ * GLSL helpers shared by the ports of CPU effects: integer pixel coordinates (row 0 is the top, as in
+ * the CPU buffers), exact texel reads, and JavaScript's `Math.round`.
+ */
+export const PIXEL_GLSL = `
+ivec2 pixelCoord() { return ivec2(gl_FragCoord.xy); }
+vec4 texel(sampler2D tex, ivec2 p, ivec2 size) { return texelFetch(tex, clamp(p, ivec2(0), size - 1), 0); }
+float jsRound(float v) { return floor(v + 0.5); }
+`
