@@ -287,7 +287,8 @@ export async function dev(filePath: string, options: DevOptions = {}): Promise<v
     root: studioRoot(),
     server: {
       port: 4242,
-      open: options.open === false ? false : `/?file=${encodeURIComponent(normalized)}&type=${fileType}`,
+      // The file is baked in through __OVERSCAN_FILE__: Vite's macOS opener re-encodes the URL, which would mangle an encoded path.
+      open: options.open !== false,
     },
     define: {
       __OVERSCAN_FILE__: JSON.stringify(normalized),
