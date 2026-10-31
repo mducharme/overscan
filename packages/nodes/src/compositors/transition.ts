@@ -10,9 +10,10 @@ import {
   type Signal,
 } from '@overscan/types'
 import { createInputSampler } from './blend-utils.js'
+import { BLIND_SLATS, CHECKER_CELLS, MELT_COLUMNS, meltDelays, transitionDisplace, transitionMix as sharedMix } from '@overscan/sequencer'
 
 export interface TransitionConfig {
-  mode?: 'dissolve' | 'wipe-left' | 'wipe-right' | 'wipe-up' | 'wipe-down' | 'zoom-out' | 'flash' | 'iris'
+  mode?: 'dissolve' | 'wipe-left' | 'wipe-right' | 'wipe-up' | 'wipe-down' | 'zoom-out' | 'flash' | 'iris' | 'blinds' | 'checker' | 'push' | 'melt'
   progress?: AnimatableFloat
   easing?: RocketInterpolation
   flashColor?: string
@@ -119,6 +120,9 @@ function transitionMix(
       const dy = uvy - 0.5
       return Math.sqrt(dx * dx + dy * dy) <= p * 0.75 ? 1 : 0
     }
+    case 'blinds':
+    case 'checker':
+      return sharedMix(mode, p, uvx, uvy)
     case 'flash':
     case 'dissolve':
     default:
@@ -131,6 +135,7 @@ export function TransitionCompositor(config: Partial<TransitionConfig> = {}): Co
   const progressRef = config.progress ?? 0
   const easing = config.easing ?? 'smooth'
   const flashColor = hexToRgb(config.flashColor ?? '#ffffff')
+  const delays = meltDelays()
   let pipeline: FullscreenPipeline | null = null
 
   function ensureGpu(ctx: NodeContext): void {
@@ -153,6 +158,7 @@ uniform vec2 u_overlayPos;
 uniform vec2 u_overlayScale;
 uniform float u_overlayRot;
 uniform float u_overlayEnabled;
+uniform float u_melt[${MELT_COLUMNS}];
 uniform vec2 u_maskPos;
 uniform vec2 u_maskScale;
 uniform float u_maskRot;
@@ -173,8 +179,17 @@ float mixForMode(float mode, float p, vec2 uv) {
     return abs(d.x) <= 0.5 && abs(d.y) <= 0.5 ? p : 0.0;
   }
   if (mode < 6.5) return p;
-  vec2 c = uv - 0.5;
-  return length(c) <= p * 0.75 ? 1.0 : 0.0;
+  if (mode < 7.5) {
+    vec2 c = uv - 0.5;
+    return length(c) <= p * 0.75 ? 1.0 : 0.0;
+  }
+  if (mode < 8.5) return fract(uv.y * ${BLIND_SLATS}.0) < p ? 1.0 : 0.0;
+  vec2 cell = min(floor(uv * vec2(${CHECKER_CELLS[0]}.0, ${CHECKER_CELLS[1]}.0)), vec2(${CHECKER_CELLS[0] - 1}.0, ${CHECKER_CELLS[1] - 1}.0));
+  return fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453) < p ? 1.0 : 0.0;
+}
+float meltDrop(float p, float delay) {
+  float local = clamp((p - delay) / (1.0 - 0.35), 0.0, 1.0);
+  return local * local;
 }
 void main() {
   vec2 baseUv = applyEdgeTransform(v_uv, u_basePos, u_baseScale, u_baseRot, u_baseEnabled);
@@ -186,6 +201,24 @@ void main() {
       ? luma(texture(u_mask, applyEdgeTransform(v_uv, u_maskPos, u_maskScale, u_maskRot, u_maskEnabled)).rgb)
       : 0.0)
     : 1.0;
+  // push and melt move pixels: read the old or new image from a shifted position.
+  if (u_mode > 9.5) {
+    vec2 at = v_uv;
+    bool incoming;
+    if (u_mode < 10.5) {
+      incoming = v_uv.x * (1.0 - 1e-6) >= 1.0 - u_progress;
+      at.x = v_uv.x + u_progress - (incoming ? 1.0 : 0.0);
+    } else {
+      int column = int(min(float(${MELT_COLUMNS - 1}), floor(v_uv.x * ${MELT_COLUMNS}.0)));
+      float drop = meltDrop(u_progress, u_melt[column]);
+      incoming = v_uv.y * (1.0 - 1e-6) < drop;
+      if (!incoming) at.y = v_uv.y - drop;
+    }
+    fragColor = incoming
+      ? texture(u_overlay, applyEdgeTransform(at, u_overlayPos, u_overlayScale, u_overlayRot, u_overlayEnabled))
+      : texture(u_base, applyEdgeTransform(at, u_basePos, u_baseScale, u_baseRot, u_baseEnabled));
+    return;
+  }
   float k = mixForMode(u_mode, u_progress, v_uv) * mask;
   vec4 mixed = vec4(mix(base.rgb, over.rgb, k), mix(base.a, over.a, k));
   if (u_mode > 5.5 && u_mode < 6.5) {
@@ -194,7 +227,7 @@ void main() {
   }
   fragColor = mixed;
 }`, [
-      'u_base', 'u_overlay', 'u_mask', 'u_progress', 'u_mode', 'u_useMask', 'u_flashColor',
+      'u_base', 'u_overlay', 'u_mask', 'u_progress', 'u_mode', 'u_useMask', 'u_flashColor', 'u_melt[0]',
       'u_basePos', 'u_baseScale', 'u_baseRot', 'u_baseEnabled',
       'u_overlayPos', 'u_overlayScale', 'u_overlayRot', 'u_overlayEnabled',
       'u_maskPos', 'u_maskScale', 'u_maskRot', 'u_maskEnabled',
@@ -239,6 +272,7 @@ void main() {
         gl.uniform1f(pipeline.uniforms['u_mode'] ?? null, transitionModeIndex(mode))
         gl.uniform1f(pipeline.uniforms['u_useMask'] ?? null, maskBuf?.texture ? 1 : 0)
         gl.uniform3f(pipeline.uniforms['u_flashColor'] ?? null, flashColor[0] / 255, flashColor[1] / 255, flashColor[2] / 255)
+        if (mode === 'melt') gl.uniform1fv(pipeline.uniforms['u_melt[0]'] ?? null, delays)
         bindEdgeTransform(gl, pipeline.uniforms, 'u_base', inputMeta?.['base']?.transform)
         bindEdgeTransform(gl, pipeline.uniforms, 'u_overlay', inputMeta?.['overlay']?.transform)
         bindEdgeTransform(gl, pipeline.uniforms, 'u_mask', inputMeta?.['mask']?.transform)
@@ -250,9 +284,19 @@ void main() {
 
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
-          const { br, bg, bb, ba, or, og, ob, oa, mask } = sampler.sample(x, y)
           const uvx = x / Math.max(1, W - 1)
           const uvy = y / Math.max(1, H - 1)
+          if (mode === 'push' || mode === 'melt') {
+            const at = transitionDisplace(mode, p, uvx, uvy, delays)
+            const px = sampler.sample(Math.round(at.u * (W - 1)), Math.round(at.v * (H - 1)))
+            const o = (y * W + x) * 4
+            out.data[o] = at.incoming ? px.or : px.br
+            out.data[o + 1] = at.incoming ? px.og : px.bg
+            out.data[o + 2] = at.incoming ? px.ob : px.bb
+            out.data[o + 3] = at.incoming ? px.oa : px.ba
+            continue
+          }
+          const { br, bg, bb, ba, or, og, ob, oa, mask } = sampler.sample(x, y)
           const k = transitionMix(mode, p, uvx, uvy) * mask
           const o = (y * W + x) * 4
           let rr = Math.round(br * (1 - k) + or * k)
@@ -283,6 +327,10 @@ function transitionModeIndex(mode: NonNullable<TransitionConfig['mode']>): numbe
     case 'zoom-out': return 5
     case 'flash': return 6
     case 'iris': return 7
+    case 'blinds': return 8
+    case 'checker': return 9
+    case 'push': return 10
+    case 'melt': return 11
     case 'dissolve':
     default: return 0
   }

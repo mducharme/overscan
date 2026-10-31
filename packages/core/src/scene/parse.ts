@@ -77,7 +77,7 @@ export const SceneSchema = z.object({
 })
 
 const DemoTransitionSchema = z.object({
-  type:     z.enum(['cut', 'dissolve', 'wipe-left', 'wipe-right', 'wipe-up', 'wipe-down', 'zoom-out', 'flash', 'iris']),
+  type:     z.enum(['cut', 'dissolve', 'wipe-left', 'wipe-right', 'wipe-up', 'wipe-down', 'zoom-out', 'flash', 'iris', 'blinds', 'checker', 'push', 'melt']),
   duration: z.number().positive().optional(),
   easing:   RocketInterpolationSchema.optional(),
   flashColor: z.string().optional(),

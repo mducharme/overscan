@@ -219,8 +219,69 @@ export function findActiveDemoSectionIndex<TRuntime>(
   return sections.findIndex(section => t >= section.start && t < section.end)
 }
 
+/** Horizontal slats for `blinds`, and the cell grid for `checker`. */
+export const BLIND_SLATS = 12
+export const CHECKER_CELLS: readonly [number, number] = [16, 9]
+
+/** Stateless value in [0, 1) per grid cell; the GLSL twin is `fract(sin(dot(c, vec2(12.9898, 78.233))) * 43758.5453)`. */
+export function transitionCellHash(cx: number, cy: number): number {
+  const v = Math.sin(cx * 12.9898 + cy * 78.233) * 43758.5453
+  return v - Math.floor(v)
+}
+
+/** Columns of the `melt` transition, and the most a column waits before it starts to fall. */
+export const MELT_COLUMNS = 80
+export const MELT_MAX_DELAY = 0.35
+
+/** Start delay per melt column: a small random walk, so neighbouring columns fall at similar times (as in Doom). */
+export function meltDelays(columns = MELT_COLUMNS): Float32Array {
+  const delays = new Float32Array(columns)
+  let d = transitionCellHash(0, 7) * MELT_MAX_DELAY
+  for (let i = 0; i < columns; i++) {
+    d = Math.max(0, Math.min(MELT_MAX_DELAY, d + (transitionCellHash(i, 3) - 0.5) * 0.09))
+    delays[i] = d
+  }
+  return delays
+}
+
+/** How far (0–1 of the height) a melt column has fallen at progress `p`: it accelerates once its delay passes. */
+export function meltDrop(p: number, delay: number): number {
+  const local = Math.max(0, Math.min(1, (p - delay) / (1 - MELT_MAX_DELAY)))
+  return local * local
+}
+
+/**
+ * Transitions that move pixels rather than blend them in place: which image an output pixel shows
+ * (`incoming`) and the 0–1 position to read it from. `push` slides the new image in from the right,
+ * pushing the old one out; `melt` drops the old image column by column.
+ */
+export function transitionDisplace(
+  mode: 'push' | 'melt',
+  p: number,
+  uvx: number,
+  uvy: number,
+  delays: Float32Array,
+): { incoming: boolean; u: number; v: number } {
+  if (mode === 'push') {
+    // Shrunk a hair so the last column belongs to the old image at p = 0 and the first to the new at p = 1.
+    return uvx * (1 - 1e-6) < 1 - p ? { incoming: false, u: uvx + p, v: uvy } : { incoming: true, u: uvx + p - 1, v: uvy }
+  }
+  const column = Math.min(delays.length - 1, Math.floor(uvx * delays.length))
+  const drop = meltDrop(p, delays[column] ?? 0)
+  return uvy * (1 - 1e-6) >= drop ? { incoming: false, u: uvx, v: uvy - drop } : { incoming: true, u: uvx, v: uvy }
+}
+
 export function transitionMix(mode: DemoTransition['type'], p: number, uvx: number, uvy: number): number {
   switch (mode) {
+    case 'blinds': {
+      const slat = uvy * BLIND_SLATS
+      return slat - Math.floor(slat) < p ? 1 : 0
+    }
+    case 'checker': {
+      const cx = Math.min(CHECKER_CELLS[0] - 1, Math.floor(uvx * CHECKER_CELLS[0]))
+      const cy = Math.min(CHECKER_CELLS[1] - 1, Math.floor(uvy * CHECKER_CELLS[1]))
+      return transitionCellHash(cx, cy) < p ? 1 : 0
+    }
     case 'wipe-left':
       return uvx <= p ? 1 : 0
     case 'wipe-right':
@@ -260,10 +321,20 @@ export function mixDemoBuffers(
   flashColor: [number, number, number],
 ): void {
   const t = Math.max(0, Math.min(1, alpha))
+  const delays = transitionType === 'melt' ? meltDelays() : null
   for (let i = 0; i < dst.length; i += 4) {
     const pixel = i / 4
     const uvx = (pixel % width) / Math.max(1, width - 1)
     const uvy = Math.floor(pixel / width) / Math.max(1, height - 1)
+    if (transitionType === 'push' || transitionType === 'melt') {
+      const at = transitionDisplace(transitionType, t, uvx, uvy, delays ?? new Float32Array(1))
+      const px = sampleBuffer(at.incoming ? b : a, width, height, at.u, at.v)
+      dst[i] = px[0]
+      dst[i + 1] = px[1]
+      dst[i + 2] = px[2]
+      dst[i + 3] = px[3]
+      continue
+    }
     if (transitionType === 'zoom-out') {
       const dx = uvx - 0.5
       const dy = uvy - 0.5

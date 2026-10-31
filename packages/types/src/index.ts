@@ -283,7 +283,7 @@ export interface AudioClip {
 }
 
 export interface DemoTransition {
-  type: 'cut' | 'dissolve' | 'wipe-left' | 'wipe-right' | 'wipe-up' | 'wipe-down' | 'zoom-out' | 'flash' | 'iris'
+  type: 'cut' | 'dissolve' | 'wipe-left' | 'wipe-right' | 'wipe-up' | 'wipe-down' | 'zoom-out' | 'flash' | 'iris' | 'blinds' | 'checker' | 'push' | 'melt'
   duration?: number
   easing?: RocketInterpolation
   flashColor?: string

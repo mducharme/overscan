@@ -75,9 +75,9 @@ export const COMPOSITOR_SCHEMAS: NodeSchema[] = [
     params: {
       mode: {
         type: 'enum',
-        options: ['dissolve', 'wipe-left', 'wipe-right', 'wipe-up', 'wipe-down', 'zoom-out', 'flash', 'iris'],
+        options: ['dissolve', 'wipe-left', 'wipe-right', 'wipe-up', 'wipe-down', 'zoom-out', 'flash', 'iris', 'blinds', 'checker', 'push', 'melt'],
         default: 'dissolve',
-        description: 'Transition style.',
+        description: 'Transition style: blends (dissolve, flash), wipes, zoom-out and iris, blinds (slats), checker (cells flip at random), push (slides in from the right) or melt (columns drop away).',
       },
       progress: { type: 'number', default: 0, min: 0, max: 1, step: 0.01, animatable: true, description: 'Transition position from base (0) to overlay (1), usually driven by a track.' },
       easing: {

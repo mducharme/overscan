@@ -8,7 +8,7 @@ import { Button, NumberField, Select } from '../ui/kit'
 import { ConfigParams, TextInput } from './Inspector'
 import { useBridge, useStudio, useStudioStore } from './studio-context'
 
-const TRANSITIONS: readonly DemoTransition['type'][] = ['cut', 'dissolve', 'wipe-left', 'wipe-right', 'wipe-up', 'wipe-down', 'zoom-out', 'flash', 'iris']
+const TRANSITIONS: readonly DemoTransition['type'][] = ['cut', 'dissolve', 'wipe-left', 'wipe-right', 'wipe-up', 'wipe-down', 'zoom-out', 'flash', 'iris', 'blinds', 'checker', 'push', 'melt']
 const DEFAULT_TRANSITION_S = 0.5
 
 /**

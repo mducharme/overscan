@@ -3,39 +3,40 @@
   "version": "0.1.0",
   "description": "Generator, modifier, compositor, and signal source node implementations",
   "type": "module",
-  "main":  "./dist/index.js",
+  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "types":  "./dist/index.d.ts"
+      "types": "./dist/index.d.ts"
     },
     "./browser": {
       "import": "./dist/browser.js",
-      "types":  "./dist/browser.d.ts"
+      "types": "./dist/browser.d.ts"
     },
     "./generators/plasma": {
       "import": "./dist/generators/plasma/index.js",
-      "types":  "./dist/generators/plasma/index.d.ts"
+      "types": "./dist/generators/plasma/index.d.ts"
     },
     "./generators/starfield": {
       "import": "./dist/generators/starfield/index.js",
-      "types":  "./dist/generators/starfield/index.d.ts"
+      "types": "./dist/generators/starfield/index.d.ts"
     }
   },
   "scripts": {
-    "build":     "tsc",
+    "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test":      "vitest run",
-    "clean":     "rm -rf dist"
+    "test": "vitest run",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@overscan/core": "workspace:*",
+    "@overscan/sequencer": "workspace:*",
     "@overscan/text": "workspace:*",
     "@overscan/types": "workspace:*"
   },
   "devDependencies": {
     "typescript": "*",
-    "vitest":     "*"
+    "vitest": "*"
   }
 }
