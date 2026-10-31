@@ -58,6 +58,28 @@ function writeEditScene() {
   return 'bench-results/studio-smoke/edit/plasma.scene.json'
 }
 
+/** A second copy for the phase-5 editing scenario (undo, JSON, graph, keys). */
+function writeAuthorScene() {
+  const dir = join(OUT, 'author')
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, 'plasma.scene.json'), readFileSync(join(ROOT, 'examples', 'showcase', '03-plasma.scene.json')))
+  return 'bench-results/studio-smoke/author/plasma.scene.json'
+}
+
+/** Sets a text field's value as typing would (React listens for input events). */
+const typeInto = (selector, value) => `(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) return 'no ${selector.replace(/'/g, '')}'; const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : el instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, ${value}); el.dispatchEvent(new Event(el instanceof HTMLSelectElement ? 'change' : 'input', { bubbles: true })); return true })()`
+
+/** A real mouse drag (DevTools input events, so pointer capture and pointer events behave as in use). */
+const drag = (selector, dx, dy) => async ({ send }) => {
+  const rect = await evaluate(send, `(() => { const r = document.querySelector(${JSON.stringify(selector)})?.getBoundingClientRect(); return r && { x: r.x + r.width / 2, y: r.y + r.height / 2 } })()`)
+  if (!rect) return `nothing to drag at ${selector}`
+  const mouse = (type, x, y, buttons) => send('Input.dispatchMouseEvent', { type, x, y, button: 'left', buttons, clickCount: 1 })
+  await mouse('mousePressed', rect.x, rect.y, 1)
+  for (let i = 1; i <= 6; i++) await mouse('mouseMoved', rect.x + (dx * i) / 6, rect.y + (dy * i) / 6, 1)
+  await mouse('mouseReleased', rect.x + dx, rect.y + dy, 0)
+  return true
+}
+
 const key = (k, modifiers = {}) => `window.dispatchEvent(new KeyboardEvent('keydown', ${JSON.stringify({ key: k, ...modifiers })}))`
 const store = 'window.__overscanStudio.getState()'
 const disk = `(await (await fetch('/__overscan__/read?path=' + encodeURIComponent(${store}.document.filePath))).json()).text`
@@ -155,6 +177,68 @@ const SCENARIOS = [
   },
 ]
 
+SCENARIOS.push(
+  {
+    name: 'author',
+    file: writeAuthorScene,
+    steps: [
+      [`(() => { window.__original = ${store}.document.files[${store}.document.filePath].text; window.__text = () => ${store}.document.files[${store}.document.filePath].text; ${store}.selectNode('lens'); return true })()`, 400],
+      // Undo and redo a slider edit with the keyboard.
+      [typeInto('input[type=range][aria-label="zoom"]', 4), 300],
+      [`window.__text().includes('"zoom": 4,') || 'slider edit missing'`, 0],
+      [key('z', { metaKey: true }), 200],
+      [`window.__text() === window.__original || 'undo did not restore the file'`, 0],
+      [key('z', { metaKey: true, shiftKey: true }), 200],
+      [`window.__text().includes('"zoom": 4,') || 'redo did not reapply'`, 0],
+      // The JSON tab: an edit applies live once valid; an invalid one is held back and reported.
+      [`(() => { const b = [...document.querySelectorAll('.ui-toggle-group button')].find(b => b.textContent === 'JSON'); if (!b) return 'no JSON tab'; b.click(); return true })()`, 300],
+      [`document.querySelector('.json__text')?.value === window.__text() || 'JSON editor does not show the file'`, 0],
+      [`(() => { window.__before = ${frame}; return true })()`, 0],
+      [typeInto('.json__text', `window.__text().replace('"chroma": 0.8', '"chroma": 3')`), 900],
+      [`window.__text().includes('"chroma": 3') || 'JSON edit not applied'`, 0],
+      [`${frame} !== window.__before || 'preview did not change after the JSON edit'`, 0],
+      [typeInto('.json__text', `window.__text().replace('"graph"', '"graph" oops')`), 900],
+      [`(!window.__text().includes('oops') && document.querySelector('.json__error') !== null) || 'invalid JSON was applied or not reported'`, 0],
+      [`(() => { const el = document.querySelector('.json__text'); el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); return true })()`, 200],
+      [`(document.querySelector('.json__text').value === window.__text() && !document.querySelector('.json__error')) || 'Escape did not restore the valid text'`, 0],
+      // Graph: add a glow after the lens through the picker, then remove it with Delete.
+      [`(() => { [...document.querySelectorAll('.ui-toggle-group button')].find(b => b.textContent === 'Graph').click(); return true })()`, 400],
+      [typeInto('select[aria-label="Add a node"]', `'glow'`), 600],
+      [`(${store}.selectedNodeId === 'glow' && JSON.parse(window.__text()).graph.outputs.browser === 'glow') || 'glow was not inserted after the lens'`, 0],
+      [`document.querySelectorAll('.react-flow__node').length === 4 || 'graph shows ' + document.querySelectorAll('.react-flow__node').length + ' nodes'`, 0],
+      [key('Delete'), 400],
+      [`(!JSON.parse(window.__text()).graph.nodes.some(n => n.id === 'glow') && JSON.parse(window.__text()).graph.outputs.browser === 'lens') || 'Delete did not remove the node'`, 0],
+      // Keys: drag the second lens.x key right and up.
+      [`(() => { ${store}.selectNode(null); window.__key = JSON.parse(window.__text()).tracks[0].keys[1]; return document.querySelectorAll('.curve__key').length > 2 || 'no keys drawn' })()`, 200],
+      [drag('.tl-row--track .curve__key:nth-of-type(2)', 30, -8), 400],
+      [`(() => { const k = JSON.parse(window.__text()).tracks[0].keys[1]; return (k.row > window.__key.row && k.value !== window.__key.value) || 'key did not move: ' + JSON.stringify(k) })()`, 0],
+      [`document.querySelector('.tl-key-editor') !== null || 'dragged key is not selected in the toolbar'`, 0],
+      [`(() => { const n = ${store}.past.length; ${store}.undo(); return (JSON.parse(window.__text()).tracks[0].keys[1].row === window.__key.row && ${store}.past.length === n - 1) || 'a drag should undo in one step' })()`, 0],
+    ],
+    checks: [
+      ['loads', 's => s.status === "ready"'],
+      ['no edit error', 's => s.editError === null'],
+      ['no render error', 's => s.renderError === null'],
+    ],
+  },
+  {
+    name: 'files',
+    file: 'examples/generators/plasma.scene.json',
+    steps: [
+      [`(() => { document.querySelector('.files__current').click(); return true })()`, 600],
+      [`document.querySelectorAll('.files__item').length > 50 || 'file list has ' + document.querySelectorAll('.files__item').length + ' entries'`, 0],
+      [typeInto('.files__popover input', `'showcase demo'`), 100],
+      [`(() => { document.querySelector('.files__popover input').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); return true })()`, 3000],
+      [`(${store}.document?.kind === 'demo' && ${store}.document.filePath.endsWith('showcase.demo.json')) || 'did not open the demo: ' + ${store}.document?.filePath`, 0],
+      [`new URLSearchParams(location.search).get('file') === ${store}.document.filePath || 'URL does not remember the file'`, 0],
+    ],
+    checks: [
+      ['loads', 's => s.status === "ready"'],
+      ['no render error', 's => s.renderError === null'],
+    ],
+  },
+)
+
 async function startDevServer(file) {
   const proc = spawn(process.execPath, [CLI, 'dev', file, '--no-open'], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] })
   let output = ''
@@ -233,7 +317,7 @@ for (const scenario of SCENARIOS) {
       const failed = []
       if (hooked) {
         for (const [code, wait] of scenario.steps ?? []) {
-          const result = await evaluate(send, code).catch(e => `threw ${e.message}`)
+          const result = await (typeof code === 'function' ? code({ send }) : evaluate(send, code)).catch(e => `threw ${e.message}`)
           if (typeof result === 'string') failed.push(`step: ${result}`)
           if (wait) await sleep(wait)
         }
