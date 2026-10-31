@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createReadStream } from 'node:fs'
-import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
@@ -13,6 +13,7 @@ function handleAsync(handler: AsyncHandler) {
   }
 }
 import { createServer, type Plugin } from 'vite'
+import type { ExportKind, TerminalExportGrid } from './export.js'
 
 function studioRoot(): string {
   return fileURLToPath(new URL('../../../studio', import.meta.url))
@@ -50,6 +51,58 @@ async function listDocuments(root: string): Promise<string[]> {
   return found.sort()
 }
 
+interface ExportJob {
+  id: number
+  filePath: string
+  output: string
+  state: 'running' | 'done' | 'error' | 'cancelled'
+  frames: number
+  error?: string
+  cancel: boolean
+}
+
+let exportJob: ExportJob | null = null
+let exportCounter = 0
+
+/** Runs one export at a time in this process; progress and the outcome are read from `exportJob`. */
+function startExport(request: { filePath: string; kind: ExportKind; output: string; terminal?: TerminalExportGrid }): ExportJob {
+  if (exportJob?.state === 'running') throw new Error('An export is already running')
+  const job: ExportJob = { id: ++exportCounter, filePath: request.filePath, output: request.output, state: 'running', frames: 0, cancel: false }
+  exportJob = job
+  void (async () => {
+    try {
+      await mkdir(request.kind === 'png' || request.kind === 'png-gl' ? request.output : path.dirname(request.output), { recursive: true })
+      const { exportScene } = await import('./export.js')
+      await exportScene(request.filePath, {
+        kind: request.kind,
+        output: request.output,
+        ...(request.terminal ? { terminal: request.terminal } : {}),
+        onFrame: frames => {
+          job.frames = frames
+          if (job.cancel) throw new Error('Export cancelled')
+        },
+      })
+      job.state = 'done'
+    } catch (error) {
+      job.state = job.cancel ? 'cancelled' : 'error'
+      job.error = error instanceof Error ? error.message : String(error)
+      // A stopped video or GIF is cut short: do not leave it looking like a finished export.
+      if (job.cancel && request.kind !== 'png' && request.kind !== 'png-gl') await rm(request.output, { force: true }).catch(() => {})
+    }
+  })()
+  return job
+}
+
+const publicJob = (job: ExportJob | null) => job && {
+  id: job.id, filePath: job.filePath, output: job.output, state: job.state, frames: job.frames, ...(job.error ? { error: job.error } : {}),
+}
+
+async function readJson<T>(req: IncomingMessage): Promise<T> {
+  const chunks: Uint8Array[] = []
+  for await (const chunk of req as AsyncIterable<string | Uint8Array>) chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk)
+  return JSON.parse(Buffer.concat(chunks).toString('utf8')) as T
+}
+
 function contentTypeFor(targetPath: string): string {
   switch (path.extname(targetPath).toLowerCase()) {
     case '.mp3': return 'audio/mpeg'
@@ -60,6 +113,8 @@ function contentTypeFor(targetPath: string): string {
     case '.jpg':
     case '.jpeg': return 'image/jpeg'
     case '.webp': return 'image/webp'
+    case '.gif': return 'image/gif'
+    case '.mp4': return 'video/mp4'
     default: return 'application/octet-stream'
   }
 }
@@ -201,6 +256,41 @@ function makeStudioBridge(filePath: string): Plugin {
           const root = process.cwd()
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify({ root, files: await listDocuments(root) }))
+        } catch (error) {
+          res.statusCode = 500
+          res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }))
+        }
+      }))
+
+      // POST starts an export of a saved file ({ filePath, kind, output, terminal? }); GET reports the
+      // current one; DELETE cancels it.
+      server.middlewares.use('/__overscan__/export', handleAsync(async (req, res) => {
+        res.setHeader('Content-Type', 'application/json')
+        try {
+          if (req.method === 'GET') {
+            res.end(JSON.stringify({ job: publicJob(exportJob) }))
+          } else if (req.method === 'DELETE') {
+            if (exportJob?.state === 'running') exportJob.cancel = true
+            res.end(JSON.stringify({ job: publicJob(exportJob) }))
+          } else if (req.method === 'POST') {
+            const body = await readJson<{ filePath?: string; kind?: string; output?: string; terminal?: TerminalExportGrid }>(req)
+            const kinds: ExportKind[] = ['gif', 'mp4', 'png', 'png-gl']
+            if (!body.filePath || !body.output || !kinds.includes(body.kind as ExportKind)) {
+              res.statusCode = 400
+              res.end(JSON.stringify({ error: 'Need filePath, output and kind (gif, mp4, png or png-gl)' }))
+              return
+            }
+            const job = startExport({
+              filePath: normalizeFilePath(body.filePath),
+              kind: body.kind as ExportKind,
+              output: normalizeFilePath(body.output),
+              ...(body.terminal ? { terminal: body.terminal } : {}),
+            })
+            res.end(JSON.stringify({ job: publicJob(job) }))
+          } else {
+            res.statusCode = 405
+            res.end(JSON.stringify({ error: 'Method not allowed' }))
+          }
         } catch (error) {
           res.statusCode = 500
           res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }))

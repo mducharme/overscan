@@ -40,6 +40,22 @@ export interface ExportOptions {
   maxFrames?: number
   /** When set, render through the terminal graph path and rasterize like `overscan run`. */
   terminal?: TerminalExportGrid
+  /** Called after each frame is written, with the number written so far. Throwing stops the export. */
+  onFrame?: (frames: number) => void
+}
+
+/** Reports each written frame, so a caller can show progress (or stop the export by throwing). */
+function withProgress(inner: Sink, onFrame: (frames: number) => void): Sink {
+  let frames = 0
+  return {
+    id: inner.id,
+    init: (width, height, fps) => inner.init(width, height, fps),
+    async write(frame, index, signal) {
+      await inner.write(frame, index, signal)
+      onFrame(++frames)
+    },
+    flush: () => inner.flush(),
+  }
 }
 
 function resolveExportOutputNodeId(scene: Scene): string {
@@ -184,10 +200,16 @@ export async function exportScene(scenePath: string, opts: ExportOptions): Promi
     durationSeconds: audioAndDuration.durationSeconds,
   })
 
-  const sink = opts.terminal ? wrapTerminalRaster(pool, innerSink, opts.terminal) : innerSink
+  const rasterSink = opts.terminal ? wrapTerminalRaster(pool, innerSink, opts.terminal) : innerSink
+  const sink = opts.onFrame ? withProgress(rasterSink, opts.onFrame) : rasterSink
 
-  const framesRendered =
-    loaded.kind === 'demo'
+  // A failed (or stopped) export still closes the sink, so ffmpeg is not left waiting for frames.
+  const framesRendered = await renderAll().catch(async (error: unknown) => {
+    await sink.flush().catch(() => {})
+    throw error
+  })
+  async function renderAll(): Promise<number> {
+    return loaded.kind === 'demo'
       ? await exportDemo(scenePath, loaded.demo, opts, sink, pool)
       : await (async () => {
           const scene = loaded.scene
@@ -234,6 +256,7 @@ export async function exportScene(scenePath: string, opts: ExportOptions): Promi
           })
           return framesRendered
         })()
+  }
 
   await sink.flush()
 
