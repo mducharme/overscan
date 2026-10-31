@@ -50,8 +50,18 @@ function writeAudioDemo() {
   return 'bench-results/studio-smoke/audio-demo/audio.demo.json'
 }
 
-const key = k => `window.dispatchEvent(new KeyboardEvent('keydown', { key: ${JSON.stringify(k)} }))`
+/** A copy of the plasma showcase scene the edit scenario may change and save. */
+function writeEditScene() {
+  const dir = join(OUT, 'edit')
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, 'plasma.scene.json'), readFileSync(join(ROOT, 'examples', 'showcase', '03-plasma.scene.json')))
+  return 'bench-results/studio-smoke/edit/plasma.scene.json'
+}
+
+const key = (k, modifiers = {}) => `window.dispatchEvent(new KeyboardEvent('keydown', ${JSON.stringify({ key: k, ...modifiers })}))`
 const store = 'window.__overscanStudio.getState()'
+const disk = `(await (await fetch('/__overscan__/read?path=' + encodeURIComponent(${store}.document.filePath))).json()).text`
+const frame = `document.querySelector('.preview__canvas').toDataURL()`
 
 /**
  * Each scenario serves one file. Once the studio store reports ready, `steps` run in order (page JS,
@@ -118,6 +128,28 @@ const SCENARIOS = [
     ],
     checks: [
       ['loads', 's => s.status === "ready"'],
+      ['no render error', 's => s.renderError === null'],
+    ],
+  },
+  {
+    name: 'edit',
+    file: writeEditScene,
+    steps: [
+      [`(() => { window.__loadMarker = 1; window.__before = ${frame}; ${store}.selectNode('lens'); return true })()`, 400],
+      // Drive the real slider, as a user would.
+      [`(() => { const r = document.querySelector('input[type=range][aria-label="zoom"]'); if (!r) return 'no zoom slider in the inspector'; const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(r, 4); r.dispatchEvent(new Event('input', { bubbles: true })); return true })()`, 800],
+      [`${frame} !== window.__before || 'preview did not change after the edit'`, 0],
+      [`(document.querySelector('.save__dot')?.textContent ?? '').includes('unsaved') || 'edit not marked unsaved'`, 0],
+      [`(async () => { ${key('s', { metaKey: true })}; await new Promise(r => setTimeout(r, 600)); const text = ${disk}; return (text.includes('"zoom": 4,') && text.includes('"radius": 0.28, "zoom": 4, "centerX"')) || 'saved file is not a minimal in-place edit' })()`, 0],
+      [`window.__loadMarker === 1 || 'saving reloaded the page'`, 0],
+      // Someone else changes the file; our next save must refuse, then overwrite when forced.
+      [`(async () => { const text = ${disk}; await fetch('/__overscan__/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ filePath: ${store}.document.filePath, text: text + ' ' }) }); return true })()`, 300],
+      [`(async () => { ${store}.setNodeParam(${store}.document.filePath, 'lens', 'zoom', 3); await ${store}.save(); return (${store}.saveError?.conflicts.length === 1) || 'outside change was not detected' })()`, 0],
+      [`(async () => { await ${store}.save({ force: true }); return (${store}.saveError === null && (${disk}).includes('"zoom": 3,')) || 'forced save failed' })()`, 0],
+    ],
+    checks: [
+      ['loads', 's => s.status === "ready"'],
+      ['no edit error', 's => s.editError === null'],
       ['no render error', 's => s.renderError === null'],
     ],
   },
