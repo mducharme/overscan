@@ -58,7 +58,7 @@ export function TunnelGenerator(config: Partial<TunnelConfig> = {}): Generator {
 in vec2 a_pos;
 void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }`
     const frag = `#version 300 es
-precision mediump float;
+precision highp float;
 uniform vec2 u_resolution;
 uniform float u_time;
 uniform float u_twist;
@@ -69,8 +69,9 @@ out vec4 fragColor;
 vec3 pattern(vec2 uv) {
   vec2 p = fract(uv);
   float check = step(0.5, fract(floor(uv.x) * 0.5 + floor(uv.y) * 0.5));
-  vec3 a = vec3(0.02, 0.65, 0.95);
-  vec3 b = vec3(1.0, 0.15, 0.75);
+  // TUNNEL_COLOR_A and TUNNEL_COLOR_B, as on the CPU.
+  vec3 a = vec3(8.0, 166.0, 242.0) / 255.0;
+  vec3 b = vec3(255.0, 36.0, 170.0) / 255.0;
   vec3 c = mix(a, b, check);
   float line = smoothstep(0.08, 0.0, min(abs(p.x - 0.5), abs(p.y - 0.5)));
   return c + line * 0.35;
@@ -80,8 +81,9 @@ void main() {
   vec2 uv = (gl_FragCoord.xy / u_resolution - 0.5) * 2.0 * aspectScale(u_resolution);
   uv += u_offset;
   float z = max(0.06, length(uv) / max(u_zoom, 0.05));
-  float angle = atan(uv.y, uv.x) / 6.28318530718 + 0.5 + u_time * 0.02 + z * u_twist;
-  float depth = 1.0 / z + u_time * max(0.05, u_time * 0.0 + 0.35);
+  // Same motion as the CPU path: the wall turns at 0.35 and rushes in at 1.2 per unit of time.
+  float angle = atan(uv.y, uv.x) / 6.28318530718 + 0.5 + u_time * 0.35 + z * u_twist;
+  float depth = 1.0 / z + u_time * 1.2;
   vec2 tex = vec2(angle * 12.0, depth * 3.0);
   vec3 col = pattern(tex);
   float fog = clamp(exp(-z * mix(0.6, 4.0, clamp(u_fog, 0.0, 1.0))), 0.0, 1.0);
@@ -121,7 +123,8 @@ void main() {
   return {
     type: 'generator',
     id: 'tunnel',
-    renderers: ['gpu', 'cpu'],
+    // The shader draws the built-in pattern only; a texture is sampled on the CPU (and uploaded).
+    renderers: textureUrl ? ['cpu'] : ['gpu', 'cpu'],
     config: config,
     init(ctx) {
       ensureGpu(ctx)
@@ -135,7 +138,7 @@ void main() {
       const offsetY = resolveAnimatableFloat(offsetYRef, signal)
       const time = signal.t * speed
       const texture = textureUrl ? ctx.assets?.getImage(textureUrl) : undefined
-      if (ctx.gl && out.fbo && program && vao) {
+      if (!textureUrl && ctx.gl && out.fbo && program && vao) {
         const gl = ctx.gl
         gl.bindFramebuffer(gl.FRAMEBUFFER, out.fbo)
         gl.viewport(0, 0, out.width, out.height)

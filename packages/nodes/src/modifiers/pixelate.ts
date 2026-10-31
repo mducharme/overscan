@@ -40,7 +40,8 @@ void main() {
   vec2 frag = gl_FragCoord.xy;
   vec2 block = max(vec2(1.0), vec2(u_size));
   vec2 samplePos = (floor(frag / block) + 0.5) * block;
-  vec2 uv = vec2(samplePos.x / u_resolution.x, 1.0 - (samplePos.y / u_resolution.y));
+  // Textures store the top row first, like gl_FragCoord here: no flip between them.
+  vec2 uv = samplePos / u_resolution;
   vec4 src = texture(u_input, v_uv);
   vec4 pix = texture(u_input, uv);
   vec2 local = fract(frag / block);

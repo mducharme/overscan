@@ -58,7 +58,7 @@ export function RotozoomGenerator(config: Partial<RotozoomConfig> = {}): Generat
 in vec2 a_pos;
 void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }`
     const frag = `#version 300 es
-precision mediump float;
+precision highp float;
 uniform vec2 u_resolution;
 uniform float u_angle;
 uniform float u_zoom;
@@ -118,7 +118,8 @@ void main() {
   return {
     type: 'generator',
     id: 'rotozoom',
-    renderers: ['gpu', 'cpu'],
+    // The shader draws the built-in pattern only; a texture is sampled on the CPU (and uploaded).
+    renderers: textureUrl ? ['cpu'] : ['gpu', 'cpu'],
     config: config,
     init(ctx) {
       ensureGpu(ctx)
@@ -132,7 +133,7 @@ void main() {
       const zoomOsc = Math.sin(signal.t * zoomSpeed) * 0.5 + 0.5
       const zoom = zoomRange[0] + (zoomRange[1] - zoomRange[0]) * zoomOsc
       const texture = textureUrl ? ctx.assets?.getImage(textureUrl) : undefined
-      if (ctx.gl && out.fbo && program && vao) {
+      if (!textureUrl && ctx.gl && out.fbo && program && vao) {
         const gl = ctx.gl
         gl.bindFramebuffer(gl.FRAMEBUFFER, out.fbo)
         gl.viewport(0, 0, out.width, out.height)

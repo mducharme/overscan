@@ -49,7 +49,7 @@ void main() {
   gl_Position = vec4(a_pos, 0.0, 1.0);
 }`
     const frag = `#version 300 es
-precision mediump float;
+precision highp float;
 uniform float u_time;
 uniform float u_scale;
 uniform vec2 u_resolution;
@@ -67,7 +67,9 @@ vec3 samplePalette(float t) {
 }
 ${ASPECT_SCALE_GLSL}
 void main() {
+  // Buffers store the top row first (gl_FragCoord.y = 0 is the top); the field is defined with y up, as on the CPU.
   vec2 uv = gl_FragCoord.xy / u_resolution;
+  uv.y = 1.0 - uv.y;
   vec2 p = (uv - 0.5) * aspectScale(u_resolution) * (3.5 * max(u_scale, 0.001));
   float v = 0.0;
   float c = clamp(u_complexity, 2.0, 8.0);
@@ -80,7 +82,10 @@ void main() {
   if (c >= 7.0) v += sin(length(p + vec2(sin(u_time), cos(u_time)) * 0.3) * 8.0);
   if (c >= 8.0) v += sin((p.x * p.x + p.y * p.y) * 12.0 - u_time * 0.7);
   float n = 0.5 + 0.5 * sin((v / c) * 1.2 + u_time * 0.2);
-  vec3 col = samplePalette(n);
+  // The palette rotates over time, wrapping around like the CPU path's 256-entry table.
+  float idx = floor(clamp(n, 0.0, 1.0) * 255.0);
+  float rotated = mod(idx + floor(u_time * 32.0), 256.0);
+  vec3 col = samplePalette(rotated / 256.0);
   fragColor = vec4(col, 1.0);
 }`
     const vs = compile(gl, gl.VERTEX_SHADER, vert)

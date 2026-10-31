@@ -83,7 +83,7 @@ export function StarfieldGenerator(config: Partial<StarfieldConfig> = {}): Gener
 in vec2 a_pos;
 void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }`
     const frag = `#version 300 es
-precision mediump float;
+precision highp float;
 uniform float u_time;
 uniform float u_count;
 uniform float u_speed;

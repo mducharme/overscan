@@ -89,7 +89,8 @@ vec3 paletteSample(float t) {
   return mix(u_palette[int(idx)], u_palette[int(nextIdx)], fract(scaled));
 }
 void main() {
-  vec2 uv = (gl_FragCoord.xy / u_resolution - 0.5) * vec2(u_resolution.x / max(u_resolution.y,1.0), 1.0);
+  // Same mapping as the CPU path: the short side spans -1…1 (times the aspect on the long side), top row first.
+  vec2 uv = (gl_FragCoord.xy / u_resolution - 0.5) * 2.0 * vec2(u_resolution.x / max(u_resolution.y,1.0), 1.0);
   vec2 c = u_type < 0.5 ? u_center + uv / max(u_zoom, 0.0001) : u_julia;
   vec2 z = u_type < 0.5 ? vec2(0.0) : u_center + uv / max(u_zoom, 0.0001);
   float iter = 0.0;
@@ -103,8 +104,8 @@ void main() {
     }
     iter = float(i);
   }
-  float t = iter / ${maxIter}.0;
-  fragColor = vec4(iter >= ${maxIter - 1}.0 ? vec3(0.0) : paletteSample(t), 1.0);
+  ${smooth ? 'float mu = iter + 1.0 - log(log(length(z))) / log(2.0);' : 'float mu = iter;'}
+  fragColor = vec4(dot(z, z) <= 4.0 ? vec3(0.0) : paletteSample(mu / ${maxIter}.0), 1.0);
 }`
     const vs = compile(gl, gl.VERTEX_SHADER, vert)
     const fs = compile(gl, gl.FRAGMENT_SHADER, frag)

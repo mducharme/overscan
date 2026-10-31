@@ -30,28 +30,30 @@ export function BlurGlowModifier(config: Partial<BlurGlowConfig> = {}): Modifier
 precision mediump float;
 uniform sampler2D u_input;
 uniform vec2 u_texel;
+uniform float u_radius;
 uniform float u_glow;
 uniform float u_mode;
 in vec2 v_uv;
 out vec4 fragColor;
 void main() {
   vec2 uv = v_uv;
+  // A box blur of the given radius (at most 8), matching the CPU path's two box passes.
   vec4 c = vec4(0.0);
-  c += texture(u_input, uv + u_texel * vec2(-1.0, -1.0));
-  c += texture(u_input, uv + u_texel * vec2( 0.0, -1.0));
-  c += texture(u_input, uv + u_texel * vec2( 1.0, -1.0));
-  c += texture(u_input, uv + u_texel * vec2(-1.0,  0.0));
-  c += texture(u_input, uv);
-  c += texture(u_input, uv + u_texel * vec2( 1.0,  0.0));
-  c += texture(u_input, uv + u_texel * vec2(-1.0,  1.0));
-  c += texture(u_input, uv + u_texel * vec2( 0.0,  1.0));
-  c += texture(u_input, uv + u_texel * vec2( 1.0,  1.0));
-  vec4 blur = c / 9.0;
+  float n = 0.0;
+  for (int dy = -8; dy <= 8; dy++) {
+    if (abs(float(dy)) > u_radius) continue;
+    for (int dx = -8; dx <= 8; dx++) {
+      if (abs(float(dx)) > u_radius) continue;
+      c += texture(u_input, uv + u_texel * vec2(float(dx), float(dy)));
+      n += 1.0;
+    }
+  }
+  vec4 blur = c / n;
   vec4 src = texture(u_input, uv);
   fragColor = u_mode > 0.5
     ? vec4(min(vec3(1.0), src.rgb + blur.rgb * u_glow), src.a)
     : blur;
-}`, ['u_input', 'u_texel', 'u_glow', 'u_mode'])
+}`, ['u_input', 'u_texel', 'u_radius', 'u_glow', 'u_mode'])
   }
 
   return {
@@ -76,13 +78,14 @@ void main() {
       const glow = Math.min(1, Math.max(0, resolveAnimatableFloat(glowRef, signal)))
       if (ctx.gl && out.fbo && input.texture && pipeline) {
         const gl = ctx.gl
-        const rad = Math.max(1, Math.min(rIn, 8))
+        const rad = Math.min(rIn, 8)
         gl.bindFramebuffer(gl.FRAMEBUFFER, out.fbo)
         gl.viewport(0, 0, out.width, out.height)
         gl.useProgram(pipeline.program)
         gl.bindVertexArray(pipeline.vao)
         bindTexture(gl, 0, input.texture, pipeline.uniforms['u_input'] ?? null)
-        gl.uniform2f(pipeline.uniforms['u_texel'] ?? null, rad / out.width, rad / out.height)
+        gl.uniform2f(pipeline.uniforms['u_texel'] ?? null, 1 / out.width, 1 / out.height)
+        gl.uniform1f(pipeline.uniforms['u_radius'] ?? null, rad)
         gl.uniform1f(pipeline.uniforms['u_glow'] ?? null, glow)
         gl.uniform1f(pipeline.uniforms['u_mode'] ?? null, mode === 'glow' ? 1 : 0)
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
