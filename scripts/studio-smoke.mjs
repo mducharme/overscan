@@ -66,6 +66,48 @@ function writeAuthorScene() {
   return 'bench-results/studio-smoke/author/plasma.scene.json'
 }
 
+/** Copies of examples the authoring scenarios may change and save, under bench-results/studio-smoke/<dir>/. */
+function copyExample(dir, source, name = source.split('/').pop()) {
+  mkdirSync(join(OUT, dir), { recursive: true })
+  writeFileSync(join(OUT, dir, name), readFileSync(join(ROOT, 'examples', source)))
+  return `bench-results/studio-smoke/${dir}/${name}`
+}
+
+/** A three-section demo over copies of the first showcase scenes. */
+function writeEditDemo() {
+  const dir = join(OUT, 'demo-edit')
+  mkdirSync(dir, { recursive: true })
+  const demo = JSON.parse(readFileSync(join(ROOT, 'examples', 'showcase.demo.json'), 'utf8'))
+  demo.sections = demo.sections.slice(0, 3).map(s => {
+    const name = s.scene.split('/').pop()
+    writeFileSync(join(dir, name), readFileSync(join(ROOT, 'examples', 'showcase', name)))
+    return { ...s, scene: `./${name}` }
+  })
+  writeFileSync(join(dir, 'edit.demo.json'), `${JSON.stringify(demo, null, 2)}\n`)
+  return 'bench-results/studio-smoke/demo-edit/edit.demo.json'
+}
+
+/** Presses Enter in a field (fields commit on Enter). */
+const enter = selector => `(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) return 'no ${selector.replace(/'/g, '')}'; el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); return true })()`
+const click = selector => `(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) return 'nothing to click at ${selector.replace(/'/g, '')}'; el.click(); return true })()`
+const tab = name => `(() => { const b = [...document.querySelectorAll('.ui-toggle-group[aria-label="Side panel"] button')].find(b => b.textContent === ${JSON.stringify(name)}); if (!b) return 'no ${name} tab'; b.click(); return true })()`
+
+/** A real mouse drag from one element's centre to another's. */
+const dragTo = (from, to) => async ({ send }) => {
+  const centre = sel => evaluate(send, `(() => { const r = document.querySelector(${JSON.stringify(sel)})?.getBoundingClientRect(); return r && { x: r.x + r.width / 2, y: r.y + r.height / 2 } })()`)
+  const a = await centre(from)
+  const b = await centre(to)
+  if (!a || !b) return `cannot drag ${from} → ${to}`
+  const mouse = (type, x, y, buttons) => send('Input.dispatchMouseEvent', { type, x, y, button: 'left', buttons, clickCount: 1 })
+  await mouse('mousePressed', a.x, a.y, 1)
+  for (let i = 1; i <= 8; i++) await mouse('mouseMoved', a.x + ((b.x - a.x) * i) / 8, a.y + ((b.y - a.y) * i) / 8, 1)
+  await mouse('mouseReleased', b.x, b.y, 0)
+  return true
+}
+
+/** Waits (up to `ms`) for page code to return true. */
+const until = (code, ms, what) => `(async () => { for (let i = 0; i < ${ms / 100}; i++) { if (${code}) return true; await new Promise(r => setTimeout(r, 100)) } return 'timed out waiting for ${what}' })()`
+
 /** Sets a text field's value as typing would (React listens for input events). */
 const typeInto = (selector, value) => `(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) return 'no ${selector.replace(/'/g, '')}'; const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : el instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, ${value}); el.dispatchEvent(new Event(el instanceof HTMLSelectElement ? 'change' : 'input', { bubbles: true })); return true })()`
 
@@ -239,6 +281,84 @@ SCENARIOS.push(
   },
 )
 
+const fileText = `${store}.document.files[${store}.document.filePath].text`
+SCENARIOS.push(
+  {
+    name: 'wiring',
+    file: () => copyExample('wiring', 'signals/lfo.scene.json'),
+    steps: [
+      // Drag the LFO's output onto the curve's settings handle, then pick the setting.
+      [dragTo('.react-flow__node[data-id="lfo1"] .react-flow__handle.source', '.react-flow__node[data-id="curve1"] .ghandle--bind'), 300],
+      [`document.querySelector('.graph__bind') !== null || 'no setting picker after dropping a signal'`, 0],
+      [`(() => { const b = [...document.querySelectorAll('.graph__bind li button')].find(b => b.textContent.startsWith('delta')); if (!b) return 'delta not offered'; b.click(); return true })()`, 300],
+      [`JSON.stringify(JSON.parse(${fileText}).graph.nodes[1].config.delta) === '{"node":"lfo1","output":"value"}' || 'delta not bound to the LFO'`, 0],
+      // Tracks: add, rename by double-click, remove.
+      [click('.tl-group__add'), 300],
+      [`JSON.parse(${fileText}).tracks.length === 1 || 'track not added'`, 0],
+      [`(() => { document.querySelector('.tl-track-label').dispatchEvent(new MouseEvent('dblclick', { bubbles: true })); return true })()`, 200],
+      [typeInto('.tl-track-label__input', `'pulse'`), 50],
+      [enter('.tl-track-label__input'), 300],
+      [`JSON.parse(${fileText}).tracks[0]?.name === 'pulse' || 'rename failed: ' + JSON.parse(${fileText}).tracks[0]?.name`, 0],
+      [click('.tl-track-label__remove'), 300],
+      [`JSON.parse(${fileText}).tracks.length === 0 || 'track not removed'`, 0],
+    ],
+    checks: [
+      ['loads', 's => s.status === "ready"'],
+      ['no edit error', 's => s.editError === null'],
+      ['no render error', 's => s.renderError === null'],
+    ],
+  },
+  {
+    name: 'demo-edit',
+    file: writeEditDemo,
+    steps: [
+      [tab('Demo'), 400],
+      [`document.querySelectorAll('.demo__section').length === 3 || 'Demo tab does not list the 3 sections'`, 0],
+      [typeInto('input[aria-label="intro length"]', `'4'`), 50],
+      [enter('input[aria-label="intro length"]'), 0],
+      [until(`${store}.document.player.sections[0].end === 4`, 8000, 'the rebuilt demo'), 0],
+      [typeInto('select[aria-label="intro transition"]', `'dissolve'`), 200],
+      [`JSON.parse(${fileText}).sections[0].transition.type === 'dissolve' || 'transition not changed'`, 0],
+      [click('button[aria-label="Move intro later"]'), 200],
+      [`JSON.parse(${fileText}).sections.map(s => s.id).join() === 'copper,intro,plasma' || 'move failed'`, 0],
+      [typeInto('select[aria-label="Add a demo-wide modifier"]', `'glow'`), 200],
+      [`JSON.parse(${fileText}).modifiers.map(m => m.id).join() === 'crt,glow' || 'modifier not added'`, 0],
+      [until(`${store}.document.player.sections[0].id === 'copper'`, 8000, 'the reordered demo'), 0],
+      // Resize the first section on the timeline: drag its edge right.
+      [`(() => { window.__len = ${store}.document.player.sections[0].end; return true })()`, 0],
+      [drag('.tl-section .tl-section__edge', 80, 0), 0],
+      [until(`${store}.document.player.sections[0].end > window.__len`, 8000, 'the resized section'), 0],
+      [`(() => { const d = JSON.parse(${fileText}).sections[0].duration; return Math.abs(d * 2 - Math.round(d * 2)) < 1e-6 || 'length did not snap to beats: ' + d })()`, 0],
+    ],
+    checks: [
+      ['loads', 's => s.status === "ready"'],
+      ['no edit error', 's => s.editError === null'],
+      ['no render error', 's => s.renderError === null'],
+    ],
+  },
+  {
+    name: 'export',
+    file: () => copyExample('export', 'showcase/03-plasma.scene.json', 'plasma.scene.json'),
+    steps: [
+      [`(() => { const b = [...document.querySelectorAll('button')].find(b => b.textContent === 'Export…'); if (!b) return 'no Export button'; b.click(); return true })()`, 300],
+      [typeInto('select[aria-label="Look"]', `'ansi'`), 100],
+      [typeInto('input[aria-label="Columns"]', `'80'`), 0],
+      [enter('input[aria-label="Columns"]'), 0],
+      [typeInto('input[aria-label="Rows"]', `'24'`), 0],
+      [enter('input[aria-label="Rows"]'), 100],
+      [`(() => { const b = [...document.querySelectorAll('.export__actions button')].find(b => b.textContent === 'Export'); if (!b) return 'no Export action'; b.click(); return true })()`, 0],
+      [until(`document.querySelector('.export__done') || document.querySelector('.export__status .export__error')`, 90000, 'the export'), 0],
+      [`document.querySelector('.export__done') !== null || document.querySelector('.export__error')?.textContent`, 0],
+      [until(`document.querySelector('.export__preview')?.naturalWidth > 0`, 5000, 'the GIF preview'), 0],
+      [`(async () => { const r = await (await fetch('/__overscan__/stat?path=' + encodeURIComponent(${store}.document.filePath.replace(/plasma\.scene\.json$/, 'plasma.gif')))).json(); return r.mtimeMs > 0 || 'no GIF on disk' })()`, 0],
+    ],
+    checks: [
+      ['loads', 's => s.status === "ready"'],
+      ['no render error', 's => s.renderError === null'],
+    ],
+  },
+)
+
 async function startDevServer(file) {
   const proc = spawn(process.execPath, [CLI, 'dev', file, '--no-open'], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] })
   let output = ''
@@ -300,7 +420,9 @@ if (!CHROME) {
 }
 mkdirSync(OUT, { recursive: true })
 let failures = 0
-for (const scenario of SCENARIOS) {
+// STUDIO_SMOKE_ONLY=author,export runs just those scenarios.
+const only = process.env.STUDIO_SMOKE_ONLY?.split(',')
+for (const scenario of SCENARIOS.filter(s => !only || only.includes(s.name))) {
   if (typeof scenario.file === 'function') scenario.file = scenario.file()
   const server = await startDevServer(scenario.file)
   try {
@@ -343,5 +465,6 @@ for (const scenario of SCENARIOS) {
     server.proc.kill()
   }
 }
-console.log(`studio-smoke: ${SCENARIOS.length - failures}/${SCENARIOS.length} passed · screenshots in bench-results/studio-smoke/`)
+const ran = SCENARIOS.filter(s => !only || only.includes(s.name)).length
+console.log(`studio-smoke: ${ran - failures}/${ran} passed · screenshots in bench-results/studio-smoke/`)
 process.exitCode = failures ? 1 : 0
