@@ -164,7 +164,8 @@ export function UvMapModifier(config: Partial<UvMapConfig> = {}): Modifier {
             const a = Math.atan2(py, px) + rotation
             const wall = preset === 'flower' ? 1 + amount * 0.6 * Math.sin(petals * a + phase) : 1
             const depth = (0.3 * zoom) / Math.max(1e-3, r * wall)
-            const u = (a / (Math.PI * 2)) * repeat + scrollU
+            // One turn spans a whole mirrored period (there and back), so the wrap of the angle leaves no seam.
+            const u = (a / Math.PI) * repeat + scrollU
             const v = depth + scrollV
             sx = mirror(Math.floor(u * w), w)
             sy = mirror(Math.floor(v * h), h)
@@ -249,7 +250,7 @@ void main() {
   float a = atan(p.y, p.x) + u_rotation;
   float wall = u_preset == 1 ? 1.0 + u_amount * 0.6 * sin(u_petals * a + u_phase) : 1.0;
   float depth = 0.3 * u_zoom / max(1e-3, r * wall);
-  vec4 c = at((a / TAU * u_repeat + u_scroll.x) * size.x, (depth + u_scroll.y) * size.y);
+  vec4 c = at((a / PI * u_repeat + u_scroll.x) * size.x, (depth + u_scroll.y) * size.y);
   float light = 1.0 - u_shade + u_shade * min(1.0, r * wall * 2.4);
   fragColor = vec4(c.rgb * light, c.a);
 }`

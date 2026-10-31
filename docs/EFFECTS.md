@@ -777,7 +777,7 @@ Ignored (kept for compatibility): `threshold`, `color`, `passes`.
 | `petals` | integer | `5` | 1 – 16 | Petals of the flower tunnel. |
 | `radius` | number, animatable | `0.6` | 0.02 – 2 | Sphere (default 0.42) or twirl radius, as a fraction of the short side. |
 | `shade` | number, animatable | `0.8` | 0 – 1 | Depth darkening (tunnel) or lighting (sphere). |
-| `repeat` | integer | `1` | 1 – 16 | How often the input repeats around the tunnel or ball (sphere default 2). |
+| `repeat` | integer | `1` | 1 – 16 | How often the input repeats around the tunnel (each repeat there and back, mirrored) or the ball (sphere default 2). |
 
 ### wobble
 

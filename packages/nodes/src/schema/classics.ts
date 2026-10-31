@@ -133,7 +133,7 @@ export const CLASSIC_SCHEMAS: NodeSchema[] = [
       petals: { type: 'integer', default: 5, min: 1, max: 16, description: 'Petals of the flower tunnel.' },
       radius: { type: 'number', default: 0.6, min: 0.02, max: 2, step: 0.01, animatable: true, description: 'Sphere (default 0.42) or twirl radius, as a fraction of the short side.' },
       shade: { type: 'number', default: 0.8, min: 0, max: 1, step: 0.01, animatable: true, description: 'Depth darkening (tunnel) or lighting (sphere).' },
-      repeat: { type: 'integer', default: 1, min: 1, max: 16, description: 'How often the input repeats around the tunnel or ball (sphere default 2).' },
+      repeat: { type: 'integer', default: 1, min: 1, max: 16, description: 'How often the input repeats around the tunnel (each repeat there and back, mirrored) or the ball (sphere default 2).' },
     },
   },
   {
