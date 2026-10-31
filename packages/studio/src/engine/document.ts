@@ -31,6 +31,18 @@ export interface StudioDocument {
   demo: Demo | null
   player: Player
   assetProblems: AssetProblem[]
+  /** Every scene file the document is built from, keyed by path: what is on disk and what is edited. */
+  sceneFiles: Record<string, SceneFile>
+}
+
+export interface SceneFile {
+  path: string
+  /** Current (possibly edited) text. */
+  text: string
+  /** Text as last loaded or saved; the file is dirty when `text` differs. */
+  savedText: string
+  /** Modification time of the version on disk we last saw, to detect outside changes before saving. */
+  mtimeMs: number
 }
 
 export interface LoadOptions {
@@ -94,11 +106,13 @@ export async function loadDocument(bridge: Bridge, filePath: string, options: Lo
       mtimeMs: file.mtimeMs,
       scene,
       demo: null,
-      player: createScenePlayer(scene, file.filePath, runtime),
+      player: createScenePlayer(scene, file.filePath, runtime, buildBuiltinRegistry),
       assetProblems: collectAssetProblems(scene, file.filePath, runtime.assets),
+      sceneFiles: { [file.filePath]: { path: file.filePath, text: file.text, savedText: file.text, mtimeMs: file.mtimeMs } },
     }
   }
   const demo = parseDemoJson(file.text)
+  const sceneFiles: Record<string, SceneFile> = {}
   const runtimeDocument = await createDemoRuntimeDocument(demo, {
     sinkId: 'browser',
     buildRegistry: buildBuiltinRegistry,
@@ -107,6 +121,7 @@ export async function loadDocument(bridge: Bridge, filePath: string, options: Lo
     async loadSection(rawScenePath) {
       const scenePath = resolvePath(file.filePath, rawScenePath)
       const sceneFile = await bridge.read(scenePath)
+      sceneFiles[sceneFile.filePath] = { path: sceneFile.filePath, text: sceneFile.text, savedText: sceneFile.text, mtimeMs: sceneFile.mtimeMs }
       return { scene: parseSceneJson(sceneFile.text), scenePath: sceneFile.filePath }
     },
   })
@@ -117,7 +132,8 @@ export async function loadDocument(bridge: Bridge, filePath: string, options: Lo
     mtimeMs: file.mtimeMs,
     scene: null,
     demo,
-    player: createDemoPlayer(runtimeDocument),
+    player: createDemoPlayer(runtimeDocument, buildBuiltinRegistry),
+    sceneFiles,
     assetProblems: runtimeDocument.sections.flatMap(section =>
       collectAssetProblems(section.runtime.scene, section.scenePath, section.runtime.assets)),
   }
