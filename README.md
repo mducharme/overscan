@@ -8,14 +8,36 @@ JSON node graphs in TypeScript: frames to the terminal (sixel, ANSI half-blocks,
 
 ## Try it
 
-Node 20+, pnpm 9+, from repo root:
+[![The Overscan showcase: signal lock, neon grid, Kefrens bars, glenz jelly, a planet, a burning logo, the finale and the afterglow](docs/media/showcase-teaser.gif)](docs/media/showcase.mp4)
+
+*Highlights of the showcase demo. Click for the full 97 seconds with sound ([MP4](docs/media/showcase.mp4)).*
+
+You need Node 20+ and pnpm 9+. From the repository root:
 
 ```bash
 pnpm install && pnpm build
-pnpm run overscan -- run examples/generators/twister.scene.json
+pnpm run overscan -- run examples/showcase.demo.json
 ```
 
-That should fill the terminal with a twister. For the full tour, `pnpm run overscan -- run examples/showcase.demo.json` plays the 97-second showcase with its synthesised soundtrack (left/right skip sections, space pauses, Esc quits; audio needs `mpv`). Browser: `pnpm run overscan -- dev examples/generators/plasma.scene.json` — run `run` and `dev` side by side if you want terminal + canvas.
+That plays the showcase in your terminal: twelve scenes cut to a synthesised soundtrack. **←/→** jump between scenes, **Space** pauses, **↑/↓** double or halve the speed, **Esc** quits. A bigger terminal window (or a smaller font) gives a sharper picture.
+
+### Sound
+
+The terminal player plays the soundtrack through [mpv](https://mpv.io). Without it the demo still runs, just silent.
+
+- **macOS:** `brew install mpv` (with [Homebrew](https://brew.sh))
+- **Windows:** `scoop bucket add extras` then `scoop install mpv` (with [Scoop](https://scoop.sh)), or `winget install --id shinchiro.mpv -e`. Open a new terminal afterwards and check that `mpv --version` works.
+- **Linux:** your package manager's `mpv`, for example `sudo apt install mpv`.
+
+### In the browser
+
+```bash
+pnpm run overscan -- dev examples/showcase.demo.json
+```
+
+This opens **Overscan Studio** at http://localhost:4242: the same demo with its node graphs, timeline, keyframes and soundtrack, all editable. Run `run` and `dev` side by side to watch the terminal and the canvas together.
+
+Every other effect has its own example scene, listed with previews in [docs/EXAMPLES.md](docs/EXAMPLES.md). Play any of them the same way, for example `pnpm run overscan -- run examples/generators/plasma.scene.json`.
 
 ## What it looks like
 
