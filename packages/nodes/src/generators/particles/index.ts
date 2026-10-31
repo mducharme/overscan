@@ -55,6 +55,8 @@ export function ParticlesGenerator(config: Partial<ParticlesConfig> = {}): Gener
   const lifetimeRef = config.lifetime ?? (mode === 'explosion' ? 1.6 : 2.2)
   const sizeRef = config.size ?? (mode === 'attractor' ? 0.6 : 2)
   const seed = config.randomSeed ?? DEFAULT_RANDOM_SEED
+  let light = new Float32Array(0)
+  let lut: Float32Array | null = null
 
   return {
     type: 'generator',
@@ -88,12 +90,34 @@ export function ParticlesGenerator(config: Partial<ParticlesConfig> = {}): Gener
         const cc = 1.0 + 0.15 * Math.sin(t * 0.13), d = 0.7 + 0.2 * Math.cos(t * 0.11)
         let x = 0.1, y = 0.1
         const scale = unit * 0.2
+        // Small points (the usual case) splat into a light buffer, coloured from a palette table: much
+        // cheaper than a soft dot each. Each splat carries the same total light as the dot it replaces.
+        const splat = size <= 1
+        if (splat) {
+          if (light.length !== w * h * 3) light = new Float32Array(w * h * 3)
+          else light.fill(0)
+          lut ??= paletteTable(palette)
+        }
+        const energy = 0.35 * (Math.PI * (size + 0.75) ** 2) / 3
         for (let i = 0; i < count + 50; i++) {
           const nx = Math.sin(a * y) + cc * Math.cos(a * x)
           const ny = Math.sin(b * x) + d * Math.cos(b * y)
           x = nx; y = ny
           if (i < 50) continue
-          plot(ex + x * scale, ey + y * scale, 1 - Math.min(1, Math.hypot(x, y) / 2.5), 0.35)
+          const age01 = 1 - Math.min(1, Math.hypot(x, y) / 2.5)
+          if (!splat) {
+            plot(ex + x * scale, ey + y * scale, age01, 0.35)
+            continue
+          }
+          addSplat(light, lut!, w, h, ex + x * scale - 0.5, ey + y * scale - 0.5, age01, energy)
+        }
+        if (splat) {
+          for (let p = 0, o = 0; p < light.length; p += 3, o += 4) {
+            const r = light[p]!, g = light[p + 1]!, bl = light[p + 2]!
+            if (r + g + bl === 0) continue
+            data[o] = data[o]! + r; data[o + 1] = data[o + 1]! + g; data[o + 2] = data[o + 2]! + bl
+            if (!background) data[o + 3] = data[o + 3]! + Math.max(r, g, bl)
+          }
         }
         return
       }
@@ -156,4 +180,33 @@ function glow(data: Uint8ClampedArray, w: number, h: number, cx: number, cy: num
       if (transparent) data[o + 3] = data[o + 3]! + 255 * k
     }
   }
+}
+
+const LUT_SIZE = 256
+
+/** The palette sampled at LUT_SIZE steps, as r, g, b triples. */
+function paletteTable(palette: readonly Rgb[]): Float32Array {
+  const table = new Float32Array(LUT_SIZE * 3)
+  const c: Rgb = [0, 0, 0]
+  for (let i = 0; i < LUT_SIZE; i++) {
+    samplePalette(palette, i / (LUT_SIZE - 1), c)
+    table[i * 3] = c[0]; table[i * 3 + 1] = c[1]; table[i * 3 + 2] = c[2]
+  }
+  return table
+}
+
+/** Adds `energy` of the palette colour at `t` to the four pixels around (x, y), bilinearly. */
+function addSplat(light: Float32Array, lut: Float32Array, w: number, h: number, x: number, y: number, t: number, energy: number): void {
+  const x0 = Math.floor(x), y0 = Math.floor(y)
+  if (x0 < -1 || y0 < -1 || x0 >= w || y0 >= h) return
+  const fx = x - x0, fy = y - y0
+  const li = Math.min(LUT_SIZE - 1, Math.max(0, Math.round(t * (LUT_SIZE - 1)))) * 3
+  const r = lut[li]! * energy, g = lut[li + 1]! * energy, b = lut[li + 2]! * energy
+  const put = (px: number, py: number, k: number): void => {
+    if (px < 0 || py < 0 || px >= w || py >= h || k <= 0) return
+    const p = (py * w + px) * 3
+    light[p] = light[p]! + r * k; light[p + 1] = light[p + 1]! + g * k; light[p + 2] = light[p + 2]! + b * k
+  }
+  put(x0, y0, (1 - fx) * (1 - fy)); put(x0 + 1, y0, fx * (1 - fy))
+  put(x0, y0 + 1, (1 - fx) * fy); put(x0 + 1, y0 + 1, fx * fy)
 }
