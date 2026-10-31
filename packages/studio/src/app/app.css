@@ -196,3 +196,41 @@
 .param__swatch input { width: 24px; height: 22px; padding: 0; border: 1px solid var(--border-strong); border-radius: var(--radius-s); background: none; cursor: pointer; }
 .param__swatch button { position: absolute; top: -6px; right: -6px; display: none; width: 14px; height: 14px; padding: 0; border: 0; border-radius: 50%; background: var(--danger); color: #fff; font-size: 10px; line-height: 14px; cursor: pointer; }
 .param__swatch:hover button { display: block; }
+
+/* Undo / redo */
+.history { display: inline-flex; gap: 2px; margin-right: var(--space-2); }
+.save--clean { display: inline-flex; align-items: center; }
+
+/* JSON editor */
+.json { flex: 1; min-height: 0; display: flex; flex-direction: column; border-radius: var(--radius-l); background: var(--surface-sunken); border: 1px solid var(--border); overflow: hidden; }
+.json__header { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2); border-bottom: 1px solid var(--border); background: var(--surface); }
+.json__header .ui-select { min-width: 0; max-width: 60%; }
+.json__file { font: var(--text-s) var(--font-mono); }
+.json__follow { border: 0; background: none; color: var(--focus); font-size: var(--text-xs); cursor: pointer; padding: 0; }
+.json__status { margin-left: auto; color: var(--text-faint); font-size: var(--text-xs); white-space: nowrap; }
+.json__status--error { color: var(--warning); }
+.json__editor { position: relative; flex: 1; min-height: 0; display: flex; font: var(--text-xs) / 16px var(--font-mono); }
+.json__gutter { flex: none; overflow: hidden; padding: var(--space-2) var(--space-2) var(--space-2) var(--space-1); min-width: 36px; text-align: right; color: var(--text-faint); background: var(--surface); border-right: 1px solid var(--border); user-select: none; }
+.json__text { flex: 1; min-width: 0; margin: 0; padding: var(--space-2); border: 0; outline: none; resize: none; background: transparent; color: var(--text); font: inherit; tab-size: 2; white-space: pre; overflow: auto; }
+.json__text[aria-invalid='true'] { box-shadow: inset 3px 0 0 var(--warning); }
+.json__error { padding: var(--space-2); border-top: 1px solid var(--border); background: color-mix(in srgb, var(--warning) 12%, var(--surface)); color: var(--warning); font: var(--text-xs) var(--font-mono); white-space: pre-wrap; max-height: 30%; overflow: auto; }
+.json__hint { color: var(--text-faint); font-family: var(--font-ui); }
+
+/* File picker */
+.files { position: relative; }
+.files__current { padding: 2px var(--space-2); border: 1px solid transparent; border-radius: var(--radius-s); background: none; color: var(--text); font: var(--text-s) var(--font-mono); cursor: pointer; }
+.files__current:hover, .files__current[aria-expanded='true'] { border-color: var(--border-strong); background: var(--surface-raised); }
+.files__current span { color: var(--text-faint); font-size: 9px; }
+.files__popover {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 20; width: min(440px, 90vw); max-height: 60vh; display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-2); border: 1px solid var(--border-strong); border-radius: var(--radius-m); background: var(--surface); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+}
+.files__list { margin: 0; padding: 0; list-style: none; overflow-y: auto; }
+.files__item { display: flex; align-items: baseline; gap: var(--space-2); padding: 3px var(--space-2); border-radius: var(--radius-s); cursor: pointer; font-size: var(--text-s); }
+.files__item[aria-selected='true'] { background: var(--accent-soft); }
+.files__item--open .files__name { color: var(--accent-strong); }
+.files__name { font-family: var(--font-mono); white-space: nowrap; }
+.files__dir { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-faint); font-size: var(--text-xs); }
+.files__kind { color: var(--focus); font-size: var(--text-xs); }
+.files__note { color: var(--text-faint); font-size: var(--text-xs); padding: 0 var(--space-2); }
+.files__note--error { color: var(--danger); }

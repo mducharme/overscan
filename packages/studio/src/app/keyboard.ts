@@ -2,10 +2,11 @@ import type { StudioStore } from '../state/store'
 
 /**
  * Player shortcuts, matching `overscan run`: Space play/pause, ←/→ previous/next section in a demo
- * (±5 s in a scene), ↑/↓ double/halve the rate, Home rewind, L loop, M mute, F fullscreen, G graph, Esc deselect, ⌘/Ctrl+S save.
- * Ignored while typing in a field. Returns a function that removes the listener.
+ * (±5 s in a scene), ↑/↓ double/halve the rate, Home rewind, L loop, M mute, F fullscreen, G side panel, J JSON,
+ * Esc deselect, Delete/Backspace remove the selected node, ⌘/Ctrl+S save, ⌘/Ctrl+Z undo, ⇧⌘Z or Ctrl+Y redo.
+ * Ignored while typing in a field (text fields keep their own undo). Returns a function that removes the listener.
  */
-export function bindPlayerKeys(store: StudioStore, actions: { fullscreen: () => void; toggleGraph: () => void }): () => void {
+export function bindPlayerKeys(store: StudioStore, actions: { fullscreen: () => void; toggleGraph: () => void; toggleJson: () => void }): () => void {
   const onKey = (event: KeyboardEvent): void => {
     const target = event.target
     const s = store.getState()
@@ -16,7 +17,18 @@ export function bindPlayerKeys(store: StudioStore, actions: { fullscreen: () => 
       void s.save()
       return
     }
-    if (target instanceof Element && target.closest('input, textarea, select, [contenteditable="true"]')) return
+    const inField = target instanceof Element && target.closest('input, textarea, select, [contenteditable="true"]') !== null
+    const key = event.key.toLowerCase()
+    if ((event.metaKey || event.ctrlKey) && (key === 'z' || key === 'y')) {
+      // Text fields undo their own typing; elsewhere (sliders, pickers, the graph) undo document edits.
+      const textField = target instanceof Element && target.closest('textarea, input:not([type=range]):not([type=color]):not([type=checkbox])') !== null
+      if (textField) return
+      event.preventDefault()
+      if (key === 'y' || event.shiftKey) s.redo()
+      else s.undo()
+      return
+    }
+    if (inField) return
     if (event.metaKey || event.ctrlKey || event.altKey) return
     const player = s.document?.player
     if (!player) return
@@ -40,7 +52,14 @@ export function bindPlayerKeys(store: StudioStore, actions: { fullscreen: () => 
       case 'm': case 'M': s.setMuted(!s.muted); break
       case 'f': case 'F': actions.fullscreen(); break
       case 'g': case 'G': actions.toggleGraph(); break
+      case 'j': case 'J': actions.toggleJson(); break
       case 'Escape': if (!s.selectedNodeId) return; s.selectNode(null); break
+      case 'Delete': case 'Backspace': {
+        const section = player.sectionAt(s.time) ?? player.sections.at(-1)
+        if (!s.selectedNodeId || !section) return
+        s.removeNode(section.scenePath, s.selectedNodeId)
+        break
+      }
       default: return
     }
     event.preventDefault()

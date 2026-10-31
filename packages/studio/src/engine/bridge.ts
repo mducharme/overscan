@@ -12,6 +12,8 @@ export interface Bridge {
   stat(filePath: string): Promise<number>
   readBinary(filePath: string): Promise<Uint8Array>
   mediaUrl(filePath: string): string
+  /** Scene and demo files in the project, for opening another one. */
+  list?(): Promise<{ root: string; files: string[] }>
 }
 
 async function json<T>(response: Response, what: string): Promise<T> {
@@ -45,6 +47,9 @@ export function createHttpBridge(fetchImpl: typeof fetch = (...args) => fetch(..
     },
     mediaUrl(filePath) {
       return `/__overscan__/media?${q(filePath)}`
+    },
+    async list() {
+      return json<{ root: string; files: string[] }>(await fetchImpl('/__overscan__/list'), 'Listing files')
     },
   }
 }
