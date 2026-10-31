@@ -130,6 +130,8 @@ vec3 calcNormal(vec3 p) {
 }
 void main() {
   vec2 uv = (gl_FragCoord.xy / u_resolution - 0.5) * 2.0;
+  // Buffers store the top row first, so gl_FragCoord.y = 0 is the top of the frame: flip so +y is up.
+  uv.y = -uv.y;
   uv.x *= u_resolution.x / max(u_resolution.y, 1.0);
   vec3 forward = normalize(u_target - u_cameraPos);
   vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), forward));
